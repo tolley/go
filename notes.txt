@@ -1,0 +1,49 @@
+Project Name: mygogames.com
+
+Purpose: To create a website based around uploading, sorting, storing, and publishing saved go game (.sgf) files.
+
+Phase 1
+
+Actions:
+- Create an account
+- Login/Logout
+- Change your password
+- Upload a .sgf file
+- Delete an sgf file
+- Create a label
+- Delete a label
+- Label sgf files
+- Sort the games by label, or by the following game attributes
+	- Date
+	- Players name/rank
+	- Final score
+- View any additional information like location(?).
+- Share games / Make games private
+- Add comments that won't be placed in the game file (Only visible on my site).
+- Embeddable game browser so user's can place their game on any website.
+
+The sharing games functionality will consist of the following:
+1. User's will be able to automatically share any game they upload using an account level setting
+2. User's will be able to share, or unshare, any game they upload using an override setting
+3. Once a game has been shared, a page will be made accessible with the following:
+	- The game browser for viewers to step through the game with
+	- A forum system for comments
+	- A link system so that user's can link to a certain move within the game browser.
+4. User's will also be given a link to send to other people (probably an "Email This" link)
+
+
+Phase 2:
+The purpose of phase 2 is to build a game/page editor.  User's will be able to use the game editor
+to add comments to existing uploaded games or to show alternative plays.  The page editor will be used 
+to create tutorial pages.  It should be easy for the user to create mini game browser instances and 
+position on the page as well as to fill out situations on the board.  The main purpose of this is to
+create a resource that people can use to quickly build tutorial pages.
+
+Distant future:
+I'd like to be able to do the following:
+- Create images from an sgf file.  The image could be for any given point in the game, any dimensions.
+- Actually play go on my site.
+- Try to create a sort of Go oriented social site (need a nice user base for this)
+- Create some type of Game Review ladder system so that players can review other player's games
+- Intergrate with different go servers (IGS, KGS) so that I can dynamically pull a player's rank/stats/games.
+- Play against Go programs.
