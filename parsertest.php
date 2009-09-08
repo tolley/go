@@ -13,7 +13,7 @@
 $( document ).ready( function()
 {
 	// The url of the sgf file data
-	var url = '/sgfserver.php';
+	var url = '/tolley.sgf';
 	
 	// A global variable to store the go game data
 	window.goGame = false;
@@ -22,16 +22,15 @@ $( document ).ready( function()
 	$.loadSGF( url, function( data )
 	{
 		window.goGame = data;
-		console.log( window.goGame );
-/*		for( var n in window.goGame )
+		
+		for( var n in window.goGame )
 		{
 			for( var m in window.goGame[n] )
 			{
 				console.log( m + ' = ' + window.goGame[n][m] );
 			}// End for m
-			console.log( 'end' );
+			console.log( 'End node' );
 		}// End for n
-*/
 	} );
 } );
 </script>

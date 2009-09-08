@@ -9,7 +9,8 @@
 
 $.extend( {
 
-	// Takes in a url of an sgf file.  It GET's the raw sgf data and passes to callback
+	// Takes in a url of an sgf file.  It GET's the raw sgf data, parses it into javascript object,
+	// and passes that to callback.  callback must take in a single parameter, which will be the game tree data
 	loadSGF : function( url, callback )
 	{
 		// Takes in a string of game tree data (including leading and trailing ()'s and returns
@@ -107,14 +108,9 @@ $.extend( {
 			
 			node = $.trim( node );
 		
-			// Prevent infinite loops while I develop
-			var count = 0;
-		
 			// While there's another property/value pair
-			while( node.length > 0 && count < 10 )
-			{
-				count++;
-		
+			while( node.length > 0 )
+			{		
 				// If the first character in the node is opening an new sub tree
 				if( node.charAt( 0 ) == '(' )
 				{
@@ -150,7 +146,7 @@ $.extend( {
 					
 					// Remove the opening [ from the property value
 					node = $.trim( node.substr( 1 ) );
-					
+
 					// Find the closing ] for the property value
 					var end = nonnestedFindPos( ']', node );
 					
@@ -164,14 +160,14 @@ $.extend( {
 						node = $.trim( node.substr( end + 1 ) );
 						
 						// Add our property to the properties array
-						if( ! properties[ propertyName ] instanceof Array )
+						if( ! ( properties[ propertyName ] instanceof Array ) )
 						{
 							var temp = new Array( properties[ propertyName ] );
 							temp.push( propertyValue );
 							properties[ propertyName ] = temp;
 						}// End if
 						else
-							properties[ propertyName ] = propertyValue;
+							properties[ propertyName ].push( propertyValue );
 					}// End else
 				}// End else if
 				else
