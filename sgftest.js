@@ -16,7 +16,7 @@ $( document ).ready( function()
 	loadSGF( url, function( data )
 	{
 		window.goGame = parseSGFTree( data );
-		for( var n in window.goGame )
+/*		for( var n in window.goGame )
 		{
 			for( var m in window.goGame[n] )
 			{
@@ -24,5 +24,6 @@ $( document ).ready( function()
 			}// End for m
 			console.log( 'end' );
 		}// End for n
+*/
 	} );
 } );
