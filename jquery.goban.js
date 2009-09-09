@@ -1,7 +1,7 @@
 (function($)
 {
 	$.fn.extend( { 
-		goban: function( options ){
+		gogame: function( options ){
 			return this.each( function()
 			{
 				options = $.extend( {
