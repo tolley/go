@@ -264,7 +264,79 @@ $.extend( {
 		$.get( url, function( data )
 		{
 			var gameTree = parseSGFTree( data );
-			callback( gameTree );
+			
+			// Define the sgf File object
+			var sgfFile = new Object( 
+			{
+				// The actual game data
+				'gameTree': gameTree,
+				
+				// The display elements for the board
+				board: false,
+				
+				// A place holder that keeps track of which node in the game tree we are on.
+				currentNode: 0,
+				
+				// Sets the gameTree data
+				setGameTreeData: function( gameTree ){ this.gameTree = gameTree; },
+				
+				// Returns the gameTree data
+				getGameTreeData: function(){ return this.gameTree; },
+								
+				setBoard: function( board )
+				{
+					this.board = board;
+					this.updateBoard();
+					this.board.render();
+				},// End setBoard
+				
+				// Reads in the properties of current node in the game and updates
+				// the board object accordingly.  You can use first, next, last, previous, and goto
+				// to move from one node to another and then call updateBoard.
+				updateBoard: function()
+				{
+					// If we have a board
+					if( this.board )
+					{
+						// If we have a valid node
+						if( this.currentNode > -1 && this.currentNode <= this.gameTree.length )
+						{
+							// Loop over each property in the current node
+							for( var property in this.gameTree[ this.currentNode ] )
+							{
+								// Switch based on the property name
+								switch( property )
+								{
+									case 'SZ':	
+										this.board.setBoardSize( this.gameTree[ this.currentNode ][property] );
+										break;
+									default:
+										console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[ this.currentNode ][property] );
+								}// End switch property name
+							}// End for n
+						}// End if
+					}// End if
+				},// End updateBoard
+				
+				// Advances the loaded game to the next move
+				next: function()
+				{
+					this.currentNode++;
+					if( this.currentNode > this.gameTree.length )
+						this.currentNode = this.gameTree.length;
+				},// End this.next
+				
+				// Backs the loaded game up to the previous move
+				previous: function()
+				{
+					this.currentNode--;
+					if( this.currentNode < 0 )
+						this.currentNode = 0;
+				}// End this.previous
+			} );
+
+			// Create an sgf parser and pass it to the callback function
+			callback( sgfFile );
 		} );
 	}// End function loadSGF
 } );
