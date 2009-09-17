@@ -187,6 +187,17 @@ $.extend( {
 						liberty.appendChild( libertyImageElem );
 					}// End for y
 				}// End for x
+				
+				// Create the chat window
+				var chatWindow = document.createElement( 'textarea' );
+				chatWindow.id = 'gogameChat';
+				chatWindow.style.width = '100%';
+				var row = document.createElement( 'tr' );
+				var col = document.createElement( 'td' );
+				col.colSpan = options.size;
+				col.appendChild( chatWindow );
+				row.appendChild( col );
+				goTable.appendChild( row );
 			}
 		} );
 		

@@ -16,25 +16,12 @@ $( document ).ready( function()
 	// The url of the sgf file data
 	var url = '/tolley.sgf';
 
+	// Create the board image
 	var goban = $( '#goban' ).gogame( { 'url': url, 'format': 'sgf' } );
 	
-	$( '#next' ).click( function()
-	{
-		for( var n in goban )
-			console.log( n );
-	} );
-	$( '#previous' ).click( function(){  goban.previous(); } );
-	
-/*	// A global variable to store the go game data
-	window.goGame = false;
-
-	// Get the game data from the server and parse it into javascript structures
-	$.loadSGF( url, function( gameTree )
-	{
-		window.goGame = gameTree;
-		console.log( window.goGame );
-	} );
-	*/
+	// Plug into the UI hooks
+	$( '#next' ).click( function(){ goban.goGameNext(); } );
+	$( '#previous' ).click( function(){ goban.goGamePrevious(); } );
 } );
 </script>
 

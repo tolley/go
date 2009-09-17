@@ -322,16 +322,24 @@ $.extend( {
 				next: function()
 				{
 					this.currentNode++;
+					
+					// If we can't actually move forward, don't update the board
 					if( this.currentNode > this.gameTree.length )
 						this.currentNode = this.gameTree.length;
+					else
+						this.updateBoard();
 				},// End this.next
 				
 				// Backs the loaded game up to the previous move
 				previous: function()
 				{
 					this.currentNode--;
-					if( this.currentNode < 0 )
-						this.currentNode = 0;
+					// Don't let the editor go back to the first info node.  If we
+					// can't move back, don't update the board
+					if( this.currentNode < 1 )
+						this.currentNode = 1;
+					else
+						this.updateBoard();
 				}// End this.previous
 			} );
 
