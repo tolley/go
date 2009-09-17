@@ -307,9 +307,28 @@ $.extend( {
 								// Switch based on the property name
 								switch( property )
 								{
-									case 'SZ':	
-										this.board.setBoardSize( this.gameTree[ this.currentNode ][property] );
+									// Black makes a move
+									case 'B':
+										// Get the coordinates of the move and send them to the board
+										this.board.playBlackStone( this.gameTree[this.currentNode][property] );
 										break;
+										
+									// White makes a move
+									case 'W':
+										// Get the coordinates of the move and send them to the board
+										this.board.playWhiteStone( this.gameTree[this.currentNode][property] );
+										break;
+
+									// A player made a comment
+									case 'C':
+										this.board.addComment( this.gameTree[this.currentNode][property] );
+										break;
+
+									// Game property, the size of the board.
+									case 'SZ':
+										this.board.setBoardSize( this.gameTree[this.currentNode][property] );
+										break;
+
 									default:
 										console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[ this.currentNode ][property] );
 								}// End switch property name
@@ -327,7 +346,10 @@ $.extend( {
 					if( this.currentNode > this.gameTree.length )
 						this.currentNode = this.gameTree.length;
 					else
+					{
 						this.updateBoard();
+						this.board.render();
+					}// End else
 				},// End this.next
 				
 				// Backs the loaded game up to the previous move
@@ -339,7 +361,10 @@ $.extend( {
 					if( this.currentNode < 1 )
 						this.currentNode = 1;
 					else
+					{
 						this.updateBoard();
+						this.board.render();
+					}// End else
 				}// End this.previous
 			} );
 

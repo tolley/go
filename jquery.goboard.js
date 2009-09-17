@@ -27,13 +27,21 @@ $.extend( {
 			t_image: '/images/t-20x20.png',
 			b_image: '/images/b-20x20.png',
 			l_image: '/images/l-20x20.png',
-			r_image: '/images/r-20x20.png'
+			r_image: '/images/r-20x20.png',
+			white_image: '/images/white-20x20.png',
+			black_image: '/images/black-20x20.png'
 		}, options );
 
 		// The go board object definition
 		var goBoard = new Object( {
 			// The internal representation of the state of the board
 			internalBoard: false,
+			
+			// A reference to the chat window
+			chatWindow: false,
+			
+			// A reference to the html elements that make up the board display
+			boardElem: false,
 			
 			// Sets the size of the board
 			setBoardSize: function( size )
@@ -60,6 +68,67 @@ $.extend( {
 				}// End if
 			},
 			
+			// Places a black stone on the board. Coordinates are letter pairs
+			playWhiteStone: function( coords )
+			{
+				if( ! coords || coords.length != 2 )
+					return;
+
+				// Break up the coordinates and translate them from a letter to a number
+				var x = parseInt( coords.charCodeAt( 0 ) ) - 97;
+				var y = parseInt( coords.charCodeAt( 1 ) ) - 97;
+				
+				// If this is a valid play 
+				if( this.isValidPlay( 'b', x, y ) )
+				{
+					// Correct spot in the games internal memory
+					this.internalBoard[y][x] = 'w';
+					
+					// Remove any captured stones
+					this.cleanUpPrisoners( x, y );
+				}// End if
+			},
+			
+			// Places a white stone on the board. Coordinates are letter pairs
+			playBlackStone: function( coords )
+			{
+				if( ! coords || coords.length != 2 )
+					return;
+
+				// Break up the coordinates and translate them from a letter to a number
+				var x = parseInt( coords.charCodeAt( 0 ) ) - 97;
+				var y = parseInt( coords.charCodeAt( 1 ) ) - 97;
+				
+				// If this is a valid play 
+				if( this.isValidPlay( 'b', x, y ) )
+				{
+					// Correct spot in the games internal memory
+					this.internalBoard[y][x] = 'b';
+					
+					// Remove any captured stones
+					this.cleanUpPrisoners( x, y );
+				}// End if
+			}, 
+
+			// Adds a comment to the board
+			addComment: function( msg )
+			{
+				this.chatWindow.value += msg + "\n";
+			},
+
+			// Returns true if x/y is a valid play for color(w,b)
+			isValidPlay: function( color, x, y )
+			{
+				// Return true for now
+				return true;
+			},
+			
+			// Determines if a play at x/y by whatever color is there now captured
+			// any stones.  If so, it removes the captured stones on the internal board.
+			cleanUpPrisoners: function( x, y )
+			{
+			},
+
 			// A dummy function to draw the board
 			render: function()
 			{
@@ -74,18 +143,18 @@ $.extend( {
 				var self = $( elem ).empty().addClass( 'goban' );
 				
 				// Create the table that we will use to hold our board
-				var goTable = document.createElement( 'table' );
-				goTable.border = 0;
-				goTable.cellPadding = 0;
-				goTable.cellSpacing = 0;
-				elem.appendChild( goTable );
+				this.boardElem = document.createElement( 'table' );
+				this.boardElem.border = 0;
+				this.boardElem.cellPadding = 0;
+				this.boardElem.cellSpacing = 0;
+				elem.appendChild( this.boardElem );
 				
 				// Create each liberty
 				for( var x = 1; x <= options.size; ++x )
 				{
 					// Create the current row and append it to the table
 					var row = document.createElement( 'tr' );
-					goTable.appendChild( row );
+					this.boardElem.appendChild( row );
 
 					// Create each table cell
 					for( var y = 1; y <= options.size; ++y )
@@ -189,15 +258,17 @@ $.extend( {
 				}// End for x
 				
 				// Create the chat window
-				var chatWindow = document.createElement( 'textarea' );
-				chatWindow.id = 'gogameChat';
-				chatWindow.style.width = '100%';
+				this.chatWindow = document.createElement( 'textarea' );
+				this.chatWindow.id = 'gogameChat';
+				this.chatWindow.style.width = '100%';
+
+				// Add the chat window to the board html element
 				var row = document.createElement( 'tr' );
 				var col = document.createElement( 'td' );
 				col.colSpan = options.size;
-				col.appendChild( chatWindow );
+				col.appendChild( this.chatWindow );
 				row.appendChild( col );
-				goTable.appendChild( row );
+				this.boardElem.appendChild( row );
 			}
 		} );
 		
