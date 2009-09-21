@@ -4,6 +4,8 @@
 
 <title>A test file for the javascript sgf parsing object</title>
 
+<link rel="stylesheet" type="text/css" href="/jquery.gogame.css"/>
+
 <script type="text/javascript" src="/jquery.js"></script>
 <script type="text/javascript" src="/jquery.gogame.js"></script>
 <script type="text/javascript" src="/jquery.goboard.js"></script>

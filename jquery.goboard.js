@@ -169,6 +169,7 @@ $.extend( {
 							case 'e':
 								// Determine which liberty graphic to show
 								var libertyImage = 'c';
+								var libertyText = '.';
 								
 								// The series of if else if statements basically handle the edges of the board.
 								// If the final else condition is executed it will check for star points.  The
@@ -237,23 +238,30 @@ $.extend( {
 							
 							// The x/y'th liberty has a black stone on it
 							case 'b':
-								libertyImage = 'black';
+								var libertyImage = 'black';
+								var libertyText = 'B';
 								break;
 							
 							// The x/y'th liberty has a white stone on it
 							case 'w':
-								libertyImage = 'white';
+								var libertyImage = 'white';
+								var libertyText = 'W';
 								break;
 						}// End switch
 						
 						// Create the liberty image
-						var libertyImageElem = document.createElement( 'img' );
-						libertyImageElem.src = options.imageBase + options[ libertyImage + '_image' ];
-						libertyImageElem.height = options.cellDim;
-						libertyImageElem.width = options.cellDim;
-						
+//						var libertyImageElem = document.createElement( 'img' );
+//						libertyImageElem.src = options.imageBase + options[ libertyImage + '_image' ];
+//						libertyImageElem.height = options.cellDim;
+//						libertyImageElem.width = options.cellDim;
+
 						// Add the liberty to the table cell
-						liberty.appendChild( libertyImageElem );
+//						liberty.appendChild( libertyImageElem );
+
+						var libertyElem = document.createElement( 'span' );
+						libertyElem.innerHTML = libertyText;
+						liberty.vAlign = 'center';
+						liberty.appendChild( libertyElem );
 					}// End for y
 				}// End for x
 				
