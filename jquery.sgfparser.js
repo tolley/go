@@ -269,7 +269,7 @@ $.extend( {
 			var sgfFile = new Object( 
 			{
 				// The actual game data
-				'gameTree': gameTree,
+				gameTree: gameTree,
 				
 				// The display elements for the board
 				board: false,
@@ -282,15 +282,95 @@ $.extend( {
 				
 				// Returns the gameTree data
 				getGameTreeData: function(){ return this.gameTree; },
-								
+
+				// Loops over each node in the sgf file and sets all properties on the board, and
+				// generates the list of delta's between turns.
+				prepBoard: function( board )
+				{
+					if( ! board )
+					{
+						alert( 'No board found in prepBoard: board = ' + board );
+						return;
+					}// End if
+
+					this.board = board;
+					
+					// Loop over each node and each node's properties, applying any static board
+					// properties to the board, and generating delta's between each move
+					for( var node = 0; node < this.gameTree.length; ++node )
+					{
+						// Create the properties for a go stone
+						var goStone = { x: false, y: false, color: false, action: false, comments: '', action: false };
+						
+						// Make sure the board size was set in the first node
+						if( node == 1 && ! this.board.size )
+						{
+							alert( 'Board size not found in the first node, unable to generate deltas' );
+							return;
+						}// End if
+
+						for( var property in this.gameTree[node] )
+						{
+							// Switch based on the property name
+							switch( property )
+							{
+								// Black makes a move
+								case 'B':
+									if( ! goStone.x && ! goStone.y && ! goStone.action )
+									{
+										// Get the coordinates of the move and send them to the board
+										goStone.x = this.gameTree[node][property].charAt( 0 );
+										goStone.y = this.gameTree[node][property].charAt( 1 );
+										goStone.color = 'b';
+										goStone.action = 'place';
+									}// End if
+									else
+										alert( 'Two stones placed in node '  + node );
+									break;
+									
+								// White makes a move
+								case 'W':
+									if( ! goStone.x && ! goStone.y && ! goStone.action )
+									{
+										// Get the coordinates of the move and send them to the board
+										goStone.x = this.gameTree[node][property].charAt( 0 );
+										goStone.y = this.gameTree[node][property].charAt( 1 );
+										goStone.color = 'w';
+										goStone.action = 'place';
+									}// End if
+									else
+										alert( 'Two stones placed in node '  + node );
+									break;
+
+								// A player made a comment
+								case 'C':
+									goStone.comments += this.gameTree[node][property];
+									break;
+
+								// Game property, the size of the board.
+								case 'SZ':
+									this.board.setBoardSize( this.gameTree[node][property] );
+									break;
+
+								default:
+									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
+							}// End switch property name
+						}// End for property
+						
+						// If we have a stone, add it to the board
+						if( goStone.x && goStone.y && goStone.action )
+						{
+							this.board.setTurnDelta( node, goStone, {} );
+						}// End if
+					}// End for each node					
+				},
+				
 				setBoard: function( board )
 				{
-					this.board = board;
-					this.updateBoard();
-					this.board.render();
-				},// End setBoard
+					alert( 'still calling setboard?' );
+				},
 				
-				// Reads in the properties of current node in the game and updates
+/*				// Reads in the properties of current node in the game and updates
 				// the board object accordingly.  You can use first, next, last, previous, and goto
 				// to move from one node to another and then call updateBoard.
 				updateBoard: function()
@@ -336,6 +416,7 @@ $.extend( {
 						}// End if
 					}// End if
 				},// End updateBoard
+*/
 				
 				// Advances the loaded game to the next move
 				next: function()
@@ -368,7 +449,7 @@ $.extend( {
 				}// End this.previous
 			} );
 
-			// Create an sgf parser and pass it to the callback function
+			// Pass the sgf file to the callback function
 			callback( sgfFile );
 		} );
 	}// End function loadSGF

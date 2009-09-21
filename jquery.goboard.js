@@ -31,28 +31,54 @@ $.extend( {
 			white_image: '/images/white-20x20.png',
 			black_image: '/images/black-20x20.png'
 		}, options );
+		
+		// A go stone object.  Used to hold data for the update queue
+		// action can be either "place" or "remove"
+		function goStone( x, y, color, action, comments )
+		{
+			// Set the defaults
+			this.x = false;
+			this.y = false;
+			this.color = false;
+			this.action = 'place';
+			this.comments = '';
+			
+			// If the user override any of the values, us it.
+			if( x && x.length == 1 ) this.x = x;
+			if( y && y.length == 1 ) this.y = y;
+			if( color && color.length == 1 ) this.color = color;
+			if( this.action && this.action.length > 0 ) this.action = action;
+			if( this.comments && this.comments.length > 0 ) this.comments = comments;
+		}// End goStone
 
 		// The go board object definition
 		var goBoard = new Object( {
 			// The internal representation of the state of the board
 			internalBoard: false,
 			
+			// The size of the board
+			size: false,
+
 			// A reference to the chat window
 			chatWindow: false,
 			
 			// A reference to the html elements that make up the board display
 			boardElem: false,
 			
+			// An queue of stones to place on the board.  This variable is emptied
+			// during an update.
+			stoneQueue: new Array(),
+
 			// Sets the size of the board
 			setBoardSize: function( size )
 			{
 				// If the board has already been sized, then don't do it again
-				if( this.internalBoard )
-					return;					
+				if( this.internalBoard && this.size )
+					return;			
 
 				if( size > 0 )
 				{
-					options.size = size;
+					this.size = size;
 					
 					// Update the internal board
 					this.internalBoard = new Array();
@@ -66,6 +92,30 @@ $.extend( {
 						}// End for y
 					}// End for x
 				}// End if
+			},
+			
+			// Creates and adds a stone to the go board to be displayed during 
+			// the next board update
+			addToQueue: function( x, y, color, action )
+			{
+				
+				if( ! x     || x.length != 1     || ! y      || y.length != 1 || 
+				    ! color || color.length != 1 || ! action || action.length == 0 )
+				{
+					alert( 'Error adding stone to queue: x = ' + x + ', y = ' + y + ', color = ' + color + ', action = ' + action );
+				}// End if
+				this.stoneQueue.push( new goStone( x, y, color ) );							
+			},
+			
+			// Applies any updates in the stoneQueue to the board
+			update: function()
+			{
+				return;
+				// While there are updates waiting in the queue
+				while( this.stoneQueue.length > 0 )
+				{
+							
+				}// End while updates
 			},
 			
 			// Places a black stone on the board. Coordinates are letter pairs
@@ -128,6 +178,11 @@ $.extend( {
 			cleanUpPrisoners: function( x, y )
 			{
 			},
+			
+			// Called by the parser object, in order of moves, to set the turn deltas
+			setTurnDelta: function( turn, stone, removeList )
+			{
+			},			
 
 			// A dummy function to draw the board
 			render: function()
@@ -150,14 +205,14 @@ $.extend( {
 				elem.appendChild( this.boardElem );
 				
 				// Create each liberty
-				for( var x = 1; x <= options.size; ++x )
+				for( var x = 1; x <= this.size; ++x )
 				{
 					// Create the current row and append it to the table
 					var row = document.createElement( 'tr' );
 					this.boardElem.appendChild( row );
 
 					// Create each table cell
-					for( var y = 1; y <= options.size; ++y )
+					for( var y = 1; y <= this.size; ++y )
 					{
 						var liberty = document.createElement( 'td' );
 						row.appendChild( liberty );
@@ -178,16 +233,16 @@ $.extend( {
 								{
 									if( y == 1 )
 										libertyImage = 'tl';
-									else if( y == options.size )
+									else if( y == this.size )
 										libertyImage = 'tr';
 									else
 										libertyImage = 't';
 								}// End if
-								else if( x == options.size )
+								else if( x == this.size )
 								{
 									if( y == 1 )
 										libertyImage = 'bl';
-									else if( y == options.size )
+									else if( y == this.size )
 										libertyImage = 'br';
 									else
 										libertyImage = 'b';				
@@ -196,7 +251,7 @@ $.extend( {
 								{
 									libertyImage = 'l';
 								}// End else if
-								else if( y == options.size )
+								else if( y == this.size )
 								{
 									libertyImage = 'r';
 								}// End else if
@@ -204,33 +259,33 @@ $.extend( {
 								{
 									// Here we check for star points
 									// Calculate the center of the board
-									var center = Math.ceil( ( options.size ) / 2 );
+									var center = Math.ceil( ( this.size ) / 2 );
 									
 									if( x == 4 )
 									{
 										if( y == 4 )
 											libertyImage = 'cs';
-										else if( y == ( options.size - 3 ) )
+										else if( y == ( this.size - 3 ) )
 											libertyImage = 'cs';
-										else if( y == center && options.size >= 17 )
+										else if( y == center && this.size >= 17 )
 											libertyImage = 'cs';
 									}// End else if
 									else if( x == center )
 									{
-										if( y == 4 && options.size >= 17 )
+										if( y == 4 && this.size >= 17 )
 											libertyImage = 'cs';
-										else if( y == ( options.size - 3 ) && options.size >= 17 )
+										else if( y == ( this.size - 3 ) && this.size >= 17 )
 											libertyImage = 'cs';
 										else if( y == center )
 											libertyImage = 'cs';
 									}// End else if
-									else if( x == ( options.size - 3 ) )
+									else if( x == ( this.size - 3 ) )
 									{
 										if( y == 4 )
 											libertyImage = 'cs';
-										else if( y == ( options.size - 3 ) )
+										else if( y == ( this.size - 3 ) )
 											libertyImage = 'cs';
-										else if( y == center && options.size >= 17 )
+										else if( y == center && this.size >= 17 )
 											libertyImage = 'cs';
 									}// End else if
 								}// End else

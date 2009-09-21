@@ -30,7 +30,7 @@
 						// game as been loaded, and pass the board to the parser
 						gameFile = gameTree;
 						gameLoaded = true;
-						gameFile.setBoard( goBoard );
+						gameFile.prepBoard( goBoard );
 					} );
 					break;
 				default:

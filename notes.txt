@@ -47,3 +47,4 @@ I'd like to be able to do the following:
 - Create some type of Game Review ladder system so that players can review other player's games
 - Intergrate with different go servers (IGS, KGS) so that I can dynamically pull a player's rank/stats/games.
 - Play against Go programs.
+- A mode of viewing a game that will have some way of showing you who's territory is who's at the end of the game while you step through the game. ( maybe a magnifiying glass that on the mouse cursor that shows you the end result of whatever part of the board it is over).
