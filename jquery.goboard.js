@@ -58,16 +58,15 @@ $.extend( {
 			
 			// The size of the board
 			size: false,
+			
+			// Keeps track of the turn we are on
+			deltaIndex: 0,
 
 			// A reference to the chat window
 			chatWindow: false,
 			
 			// A reference to the html elements that make up the board display
 			boardElem: false,
-			
-			// An queue of stones to place on the board.  This variable is emptied
-			// during an update.
-			stoneQueue: new Array(),
 			
 			// An array to hold the delta's between turns
 			turnDeltas: new Array(),
@@ -96,78 +95,6 @@ $.extend( {
 					}// End for x
 				}// End if
 			},
-			
-			// Creates and adds a stone to the go board to be displayed during 
-			// the next board update
-			addToQueue: function( x, y, color, action )
-			{
-				
-				if( ! x     || x.length != 1     || ! y      || y.length != 1 || 
-				    ! color || color.length != 1 || ! action || action.length == 0 )
-				{
-					alert( 'Error adding stone to queue: x = ' + x + ', y = ' + y + ', color = ' + color + ', action = ' + action );
-				}// End if
-				this.stoneQueue.push( new goStone( x, y, color ) );							
-			},
-			
-			// Applies any updates in the stoneQueue to the board
-			update: function()
-			{
-				return;
-				// While there are updates waiting in the queue
-				while( this.stoneQueue.length > 0 )
-				{
-							
-				}// End while updates
-			},
-			
-			// Places a black stone on the board. Coordinates are letter pairs
-			playWhiteStone: function( coords )
-			{
-				if( ! coords || coords.length != 2 )
-					return;
-
-				// Break up the coordinates and translate them from a letter to a number
-				var x = parseInt( coords.charCodeAt( 0 ) ) - 97;
-				var y = parseInt( coords.charCodeAt( 1 ) ) - 97;
-				
-				// If this is a valid play 
-				if( this.isLegalPlay( {color: 'w', x: x, y: y, action: 'place' } ) )
-				{
-					// Correct spot in the games internal memory
-					this.internalBoard[y][x] = 'w';
-					
-					// Remove any captured stones
-					this.cleanUpPrisoners( x, y );
-				}// End if
-			},
-			
-			// Places a white stone on the board. Coordinates are letter pairs
-			playBlackStone: function( coords )
-			{
-				if( ! coords || coords.length != 2 )
-					return;
-
-				// Break up the coordinates and translate them from a letter to a number
-				var x = parseInt( coords.charCodeAt( 0 ) ) - 97;
-				var y = parseInt( coords.charCodeAt( 1 ) ) - 97;
-				
-				// If this is a valid play 
-				if( this.isLegalPlay( {color: 'b', x: x, y: y, action: 'place' } ) )
-				{
-					// Correct spot in the games internal memory
-					this.internalBoard[y][x] = 'b';
-					
-					// Remove any captured stones
-					this.cleanUpPrisoners( x, y );
-				}// End if
-			}, 
-
-			// Adds a comment to the board
-			addComment: function( msg )
-			{
-				this.chatWindow.value += msg + "\n";
-			},
 
 			// Returns true if x/y is a valid play for color(w,b)
 			isLegalPlay: function( stone )
@@ -195,9 +122,9 @@ $.extend( {
 					return;
 				}// End if
 				
-				// Translate the alpha coordinates into numeric coordinates
-				var x = parseInt( stone.x.charCodeAt( 0 ) ) - 97;
-				var y = parseInt( stone.y.charCodeAt( 0 ) ) - 97;
+				// Get shortcuts to the stone's coordinates
+				var x = stone.x;
+				var y = stone.y;
 				
 				// Keeps track of the removed stones list
 				var removedList = new Array();
@@ -208,7 +135,13 @@ $.extend( {
 					case 'place':
 						// Place the stone on the board and see if any stones where captured
 						if( x >= 0 && x < this.size && y >= 0 && y < this.size )
+						{
 							this.internalBoard[y][x] = stone.color;
+							
+							// Remove any captured stones and store the list
+							// in the list of delta's
+							this.turnDeltas[turn] = { stone: stone, removeList: {} }
+						}// End if
 						break;
 					case 'pass':
 						// If the user is passing, do nothing.
@@ -218,17 +151,45 @@ $.extend( {
 						break;
 				}// End switch
 			},
-
-			// A function to draw the board
-			render: function()
+			
+			// To be called after the turn delta's have been calculated.  It generates the html elements
+			// used to display the board.
+			onDeltasFinished: function()
 			{
-				// If the internal board isn't set, let the user know
-				if( ! this.internalBoard )
+				// Make sure we actually have some delta's
+				if( this.turnDeltas.length == 0 )
 				{
-					alert( 'Board has not been set, unable to render' );
+					alert( 'Unable to render game, turn delta have not been calculated' );
 					return;
 				}// End if
+				
+				// Reset the board's internal representation
+				if( this.size > 0 )
+				{
+					// Update the internal board
+					this.internalBoard = new Array();
+					for( var y = 0; y < this.size; ++y )
+					{
+						for( var x = 0; x < this.size; ++x )
+						{
+							if( ! ( this.internalBoard[x] instanceof Array ) )
+								this.internalBoard[x] = new Array();
+							this.internalBoard[x].push( 'e' );
+						}// End for y
+					}// End for x
+				}// End if
+				else
+				{
+					alert( 'Unable to render board in onDeltasFinished: board size not set' );
+					return;
+				}// End else
+				
+				// Make sure we are on the first set of turn delta's
+				this.deltaIndex = 0;
 
+				// Add any handicapped stones to the internal memory
+
+				// Draw the board using the internal representation
 				// Create a names reference to this element and prepare it for the goban
 				var self = $( elem ).empty().addClass( 'goban' );
 				
@@ -367,8 +328,147 @@ $.extend( {
 				col.appendChild( this.chatWindow );
 				row.appendChild( col );
 				this.boardElem.appendChild( row );
+			},
+			
+			// Moves the delta index forward one and applies the changes to the board display
+			nextTurn: function()
+			{
+				this.deltaIndex++;
+
+				// If the index went out of range, put it back in range and return
+				if( this.deltaIndex >= this.turnDeltas.length )
+				{
+					this.deltaIndex = this.turnDeltas.length - 1;
+					return;
+				}// End if
+				
+				// Apply the deltas for the current turn
+				var currentDeltas = this.turnDeltas[ this.deltaIndex ];
+				var currentStone = currentDeltas.stone;
+				
+				// Switch based on the stones action
+				switch( currentStone.action )
+				{
+					case 'place':
+						// Add the stone to the board
+						this.addStoneToDisplay( currentStone.x,
+									currentStone.y,
+									currentStone.color );
+						
+						// Foreach stone in the remove list, remove it from the board
+						
+						// If we have a comment, add it to the board
+						if( currentStone.comments && currentStone.comments.length > 0 )
+							this.addCommentToDisplay( currentStone.comments );
+						break;
+					case 'pass':
+						// Do nothing for a pass
+						break;
+					default:
+						alert( 'Error: Unrecognized action in turn delta: ' + currentStone.action );
+						break;
+				}// End switch action
+			},
+			
+			// Moves the delta index back one and applies the changes to the board display
+			previousTurn: function()
+			{				
+				// Apply the changes for the current delta
+				var currentDeltas = this.turnDeltas[ this.deltaIndex ];
+				var currentStone = currentDeltas.stone;
+				
+				// Switch based on the stones action
+				switch( currentStone.action )
+				{
+					case 'place':
+						// Remove the stone from the board
+						this.removeStoneFromDisplay( currentStone.x,
+									     currentStone.y,
+									     currentStone.color );
+						
+						// Foreach stone in the remove list, put it back on the board
+						
+						// If we have a comment, remove it from the board
+						if( currentStone.comments && currentStone.comments.length > 0 )
+							this.removeCommentFromDisplay( currentStone.comments );
+						break;
+					case 'pass':
+						// Do nothing for a pass
+						break;
+					default:
+						alert( 'Error: Unrecognized action in turn delta: ' + currentStone.action );
+						break;
+				}// End switch action
+				
+				// Now that we've reversed the current turn, move back to the previous turn
+				this.deltaIndex--;
+
+				// If the index went out of range, put it back in range and return
+				if( this.deltaIndex < 1 )
+					this.deltaIndex = 1;
+			},
+			
+			// Adds a stone to the board's display elements. Note: This function simply displays
+			// the stone, it doesn't do any validation on the move
+			addStoneToDisplay: function( x, y, color )
+			{
+				// Get a reference to the actual html element that will be used to display this stone
+				var rows = this.boardElem.getElementsByTagName( 'tr' );
+				if( rows.length > y )
+				{
+					var row = rows[y];
+					var cells = row.getElementsByTagName( 'td' );
+					if( cells.length > x )
+					{
+						var cell = cells[x];
+						
+						// Set the inner html of the display to the approiate color
+						var display = cell.getElementsByTagName( 'span' )[0];
+						display.innerHTML = color.toUpperCase();
+					}// End if
+				}// End if
+			},
+			
+			// Removes a stone from the board's display elements. Note: This function simply removes
+			// the stone from the display.  Other than verifying the correct color, it does no other checks
+			removeStoneFromDisplay: function( x, y, color )
+			{
+				// Get a reference to the actual html element that will be used to display this stone
+				var rows = this.boardElem.getElementsByTagName( 'tr' );
+				if( rows.length > y )
+				{
+					var row = rows[y];
+					var cells = row.getElementsByTagName( 'td' );
+					if( cells.length > x )
+					{
+						var cell = cells[x];
+						
+						// Set the inner html of the display to the approiate color
+						var display = cell.getElementsByTagName( 'span' )[0];
+						display.innerHTML = '.';
+					}// End if
+				}// End if
+			},
+			
+			// Adds a comment to the chat window
+			addCommentToDisplay: function( comment )
+			{
+				if( ! comment || comment.length == 0 )
+					return;
+				
+				this.chatWindow.value += comment + "\n";
+			},
+			
+			// Removes a comment from the chat window
+			removeCommentFromDisplay: function( comment )
+			{
+				if( ! comment || comment.length == 0 )
+					return;
+				
+				this.chatWindow.value = this.chatWindow.value.replace( comment, '' );
+				this.chatWindow.value = $.trim( this.chatWindow.value );
 			}
-		} );
+		} );// End goBoard object definition
 		
 		return goBoard;
 	}// End function createBoard

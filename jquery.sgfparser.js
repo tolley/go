@@ -323,6 +323,10 @@ $.extend( {
 										goStone.y = this.gameTree[node][property].charAt( 1 );
 										goStone.color = 'b';
 										goStone.action = 'place';
+										
+										// Translate the go stone coordinates from alpha to numeric
+										goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 97;
+										goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 97;
 									}// End if
 									else
 										alert( 'Two stones placed in node '  + node );
@@ -337,6 +341,10 @@ $.extend( {
 										goStone.y = this.gameTree[node][property].charAt( 1 );
 										goStone.color = 'w';
 										goStone.action = 'place';
+										
+										// Translate the go stone coordinates from alpha to numeric
+										goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 97;
+										goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 97;
 									}// End if
 									else
 										alert( 'Two stones placed in node '  + node );
@@ -366,91 +374,10 @@ $.extend( {
 								this.board.calculateTurnDelta( node, goStone, {} );
 						}// End if
 					}// End for each node
-					this.board.render();				
-				},
-				
-				setBoard: function( board )
-				{
-					alert( 'still calling setboard?' );
-				},
-				
-/*				// Reads in the properties of current node in the game and updates
-				// the board object accordingly.  You can use first, next, last, previous, and goto
-				// to move from one node to another and then call updateBoard.
-				updateBoard: function()
-				{
-					// If we have a board
-					if( this.board )
-					{
-						// If we have a valid node
-						if( this.currentNode > -1 && this.currentNode <= this.gameTree.length )
-						{
-							// Loop over each property in the current node
-							for( var property in this.gameTree[ this.currentNode ] )
-							{
-								// Switch based on the property name
-								switch( property )
-								{
-									// Black makes a move
-									case 'B':
-										// Get the coordinates of the move and send them to the board
-										this.board.playBlackStone( this.gameTree[this.currentNode][property] );
-										break;
-										
-									// White makes a move
-									case 'W':
-										// Get the coordinates of the move and send them to the board
-										this.board.playWhiteStone( this.gameTree[this.currentNode][property] );
-										break;
-
-									// A player made a comment
-									case 'C':
-										this.board.addComment( this.gameTree[this.currentNode][property] );
-										break;
-
-									// Game property, the size of the board.
-									case 'SZ':
-										this.board.setBoardSize( this.gameTree[this.currentNode][property] );
-										break;
-
-									default:
-										console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[ this.currentNode ][property] );
-								}// End switch property name
-							}// End for n
-						}// End if
-					}// End if
-				},// End updateBoard
-*/
-				
-				// Advances the loaded game to the next move
-				next: function()
-				{
-					this.currentNode++;
-					
-					// If we can't actually move forward, don't update the board
-					if( this.currentNode > this.gameTree.length )
-						this.currentNode = this.gameTree.length;
-					else
-					{
-						this.updateBoard();
-						this.board.render();
-					}// End else
-				},// End this.next
-				
-				// Backs the loaded game up to the previous move
-				previous: function()
-				{
-					this.currentNode--;
-					// Don't let the editor go back to the first info node.  If we
-					// can't move back, don't update the board
-					if( this.currentNode < 1 )
-						this.currentNode = 1;
-					else
-					{
-						this.updateBoard();
-						this.board.render();
-					}// End else
-				}// End this.previous
+								
+					// Let the board know we are finished calculating the turn delta's
+					this.board.onDeltasFinished();
+				}
 			} );
 
 			// Pass the sgf file to the callback function

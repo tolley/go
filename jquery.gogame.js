@@ -41,15 +41,15 @@
 		// Advances the loaded game to the next move
 		$.fn.goGameNext = function()
 		{
-			if( gameFile )
-				gameFile.next();
+			if( goBoard )
+				goBoard.nextTurn();
 		}// End this.next
 		
 		// Backs the loaded game up to the previous move
 		$.fn.goGamePrevious = function()
 		{
-			if( gameFile )
-				gameFile.previous();
+			if( goBoard )
+				goBoard.previousTurn();
 		}// End this.previous
 		
 		return this;
