@@ -367,11 +367,11 @@ $.extend( {
 						}// End for property
 						
 						// If we have a stone, add it to the board
-						if( goStone.x && goStone.y && goStone.action )
+						if( goStone.action )
 						{
 							// If this is a legal move
 							if( this.board.isLegalPlay( goStone ) )
-								this.board.calculateTurnDelta( node, goStone, {} );
+								this.board.calculateTurnDelta( node, goStone );
 						}// End if
 					}// End for each node
 								

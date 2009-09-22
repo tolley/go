@@ -342,6 +342,8 @@ $.extend( {
 					return;
 				}// End if
 				
+				console.log( 'deltaIndex = ' + this.deltaIndex );
+				
 				// Apply the deltas for the current turn
 				var currentDeltas = this.turnDeltas[ this.deltaIndex ];
 				var currentStone = currentDeltas.stone;
@@ -372,7 +374,11 @@ $.extend( {
 			
 			// Moves the delta index back one and applies the changes to the board display
 			previousTurn: function()
-			{				
+			{
+				// If we are already on the first move, return
+				if( this.deltaIndex == 0 )
+					return;
+	
 				// Apply the changes for the current delta
 				var currentDeltas = this.turnDeltas[ this.deltaIndex ];
 				var currentStone = currentDeltas.stone;
@@ -404,8 +410,8 @@ $.extend( {
 				this.deltaIndex--;
 
 				// If the index went out of range, put it back in range and return
-				if( this.deltaIndex < 1 )
-					this.deltaIndex = 1;
+				if( this.deltaIndex < 0 )
+					this.deltaIndex = 0;
 			},
 			
 			// Adds a stone to the board's display elements. Note: This function simply displays
