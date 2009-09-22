@@ -301,18 +301,18 @@ $.extend( {
 						}// End switch
 						
 						// Create the liberty image
-//						var libertyImageElem = document.createElement( 'img' );
-//						libertyImageElem.src = options.imageBase + options[ libertyImage + '_image' ];
-//						libertyImageElem.height = options.cellDim;
-//						libertyImageElem.width = options.cellDim;
+						var libertyImageElem = document.createElement( 'img' );
+						libertyImageElem.src = options.imageBase + options[ libertyImage + '_image' ];
+						libertyImageElem.height = options.cellDim;
+						libertyImageElem.width = options.cellDim;
 
 						// Add the liberty to the table cell
-//						liberty.appendChild( libertyImageElem );
+						liberty.appendChild( libertyImageElem );
 
-						var libertyElem = document.createElement( 'span' );
-						libertyElem.innerHTML = libertyText;
-						liberty.vAlign = 'center';
-						liberty.appendChild( libertyElem );
+//						var libertyElem = document.createElement( 'span' );
+//						libertyElem.innerHTML = libertyText;
+//						liberty.vAlign = 'center';
+//						liberty.appendChild( libertyElem );
 					}// End for y
 				}// End for x
 				
@@ -341,8 +341,6 @@ $.extend( {
 					this.deltaIndex = this.turnDeltas.length - 1;
 					return;
 				}// End if
-				
-				console.log( 'deltaIndex = ' + this.deltaIndex );
 				
 				// Apply the deltas for the current turn
 				var currentDeltas = this.turnDeltas[ this.deltaIndex ];
@@ -429,8 +427,11 @@ $.extend( {
 						var cell = cells[x];
 						
 						// Set the inner html of the display to the approiate color
-						var display = cell.getElementsByTagName( 'span' )[0];
-						display.innerHTML = color.toUpperCase();
+						var display = cell.getElementsByTagName( 'img' )[0];
+						if( color == 'b' )
+							display.src = options.black_image;
+						else
+							display.src = options.white_image;
 					}// End if
 				}// End if
 			},
@@ -450,8 +451,8 @@ $.extend( {
 						var cell = cells[x];
 						
 						// Set the inner html of the display to the approiate color
-						var display = cell.getElementsByTagName( 'span' )[0];
-						display.innerHTML = '.';
+						var display = cell.getElementsByTagName( 'img' )[0];
+						display.src = this.getLibertyImage( x, y );
 					}// End if
 				}// End if
 			},
@@ -473,6 +474,13 @@ $.extend( {
 				
 				this.chatWindow.value = this.chatWindow.value.replace( comment, '' );
 				this.chatWindow.value = $.trim( this.chatWindow.value );
+			},
+			
+			// Returns the value of the image file to use as the liberty image for an empty liberty
+			// Note: It uses the board's size, and the image paths passed in from the options
+			getLibertyImage: function( x, y )
+			{
+				return options.c_image;
 			}
 		} );// End goBoard object definition
 		
