@@ -353,16 +353,20 @@ $.extend( {
 									break;
 
 								default:
-									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
+//									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
+									break;
 							}// End switch property name
 						}// End for property
 						
 						// If we have a stone, add it to the board
 						if( goStone.x && goStone.y && goStone.action )
 						{
-							this.board.setTurnDelta( node, goStone, {} );
+							// If this is a legal move
+							if( this.board.isLegalPlay( goStone ) )
+								this.board.calculateTurnDelta( node, goStone, {} );
 						}// End if
-					}// End for each node					
+					}// End for each node
+					this.board.render();				
 				},
 				
 				setBoard: function( board )

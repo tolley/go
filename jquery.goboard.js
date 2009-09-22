@@ -68,6 +68,9 @@ $.extend( {
 			// An queue of stones to place on the board.  This variable is emptied
 			// during an update.
 			stoneQueue: new Array(),
+			
+			// An array to hold the delta's between turns
+			turnDeltas: new Array(),
 
 			// Sets the size of the board
 			setBoardSize: function( size )
@@ -129,7 +132,7 @@ $.extend( {
 				var y = parseInt( coords.charCodeAt( 1 ) ) - 97;
 				
 				// If this is a valid play 
-				if( this.isValidPlay( 'b', x, y ) )
+				if( this.isLegalPlay( {color: 'w', x: x, y: y, action: 'place' } ) )
 				{
 					// Correct spot in the games internal memory
 					this.internalBoard[y][x] = 'w';
@@ -150,7 +153,7 @@ $.extend( {
 				var y = parseInt( coords.charCodeAt( 1 ) ) - 97;
 				
 				// If this is a valid play 
-				if( this.isValidPlay( 'b', x, y ) )
+				if( this.isLegalPlay( {color: 'b', x: x, y: y, action: 'place' } ) )
 				{
 					// Correct spot in the games internal memory
 					this.internalBoard[y][x] = 'b';
@@ -167,7 +170,7 @@ $.extend( {
 			},
 
 			// Returns true if x/y is a valid play for color(w,b)
-			isValidPlay: function( color, x, y )
+			isLegalPlay: function( stone )
 			{
 				// Return true for now
 				return true;
@@ -179,12 +182,44 @@ $.extend( {
 			{
 			},
 			
-			// Called by the parser object, in order of moves, to set the turn deltas
-			setTurnDelta: function( turn, stone, removeList )
+			// Called by the parser object, in order of moves, to set the turn deltas.
+			// Note: This function uses the internal board to determine if we have a legal play
+			// or if stones where captured.  If you don't call this function in turn order, it won't work
+			calculateTurnDelta: function( turn, stone )
 			{
-			},			
+				// If the turn delta's have already been set for the given turn,
+				// let the user know
+				if( this.turnDeltas[turn] )
+				{
+					alert( 'Turn Deltas already set for turn ' + turn );
+					return;
+				}// End if
+				
+				// Translate the alpha coordinates into numeric coordinates
+				var x = parseInt( stone.x.charCodeAt( 0 ) ) - 97;
+				var y = parseInt( stone.y.charCodeAt( 0 ) ) - 97;
+				
+				// Keeps track of the removed stones list
+				var removedList = new Array();
 
-			// A dummy function to draw the board
+				// Switch based on the action of the stone
+				switch( stone.action )
+				{
+					case 'place':
+						// Place the stone on the board and see if any stones where captured
+						if( x >= 0 && x < this.size && y >= 0 && y < this.size )
+							this.internalBoard[y][x] = stone.color;
+						break;
+					case 'pass':
+						// If the user is passing, do nothing.
+						break;
+					default:
+						alert( "Unrecognized action " + stone.action );
+						break;
+				}// End switch
+			},
+
+			// A function to draw the board
 			render: function()
 			{
 				// If the internal board isn't set, let the user know
