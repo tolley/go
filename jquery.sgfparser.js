@@ -297,11 +297,16 @@ $.extend( {
 					
 					// Loop over each node and each node's properties, applying any static board
 					// properties to the board, and generating delta's between each move
-					for( var node = 0; node < this.gameTree.length; ++node )
+					for( var node = 0; node <= this.gameTree.length; ++node )
 					{
 						// Create the properties for a go stone
-						var goStone = { x: false, y: false, color: false, action: false, comments: '', action: false };
-						
+						var goStone = { x: 	  false, 
+								y: 	  false, 
+								color:    false, 
+								comments: '',
+								action:   false, 
+								number:   node };
+
 						// Make sure the board size was set in the first node
 						if( node == 1 && ! this.board.size )
 						{
@@ -352,7 +357,10 @@ $.extend( {
 
 								// A player made a comment
 								case 'C':
-									goStone.comments += this.gameTree[node][property];
+									if( goStone.comments && goStone.comments.length > 0 )
+										goStone.comments = goStone.comments + "\n" + this.gameTree[node][property];
+									else
+										goStone.comments = this.gameTree[node][property];
 									break;
 
 								// Game property, the size of the board.
@@ -361,6 +369,7 @@ $.extend( {
 									break;
 
 								default:
+									// Uncomment this to see all the properties I still have to implement
 //									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
 									break;
 							}// End switch property name

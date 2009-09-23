@@ -218,101 +218,30 @@ $.extend( {
 						{
 							// The current x/y'th liberty is empty
 							case 'e':
-								// Determine which liberty graphic to show
-								var libertyImage = 'c';
-								var libertyText = '.';
-								
-								// The series of if else if statements basically handle the edges of the board.
-								// If the final else condition is executed it will check for star points.  The
-								// default return value is a center open liberty
-								if( x == 1 )
-								{
-									if( y == 1 )
-										libertyImage = 'tl';
-									else if( y == this.size )
-										libertyImage = 'tr';
-									else
-										libertyImage = 't';
-								}// End if
-								else if( x == this.size )
-								{
-									if( y == 1 )
-										libertyImage = 'bl';
-									else if( y == this.size )
-										libertyImage = 'br';
-									else
-										libertyImage = 'b';				
-								}// End else if
-								else if( y == 1 )
-								{
-									libertyImage = 'l';
-								}// End else if
-								else if( y == this.size )
-								{
-									libertyImage = 'r';
-								}// End else if
-								else
-								{
-									// Here we check for star points
-									// Calculate the center of the board
-									var center = Math.ceil( ( this.size ) / 2 );
-									
-									if( x == 4 )
-									{
-										if( y == 4 )
-											libertyImage = 'cs';
-										else if( y == ( this.size - 3 ) )
-											libertyImage = 'cs';
-										else if( y == center && this.size >= 17 )
-											libertyImage = 'cs';
-									}// End else if
-									else if( x == center )
-									{
-										if( y == 4 && this.size >= 17 )
-											libertyImage = 'cs';
-										else if( y == ( this.size - 3 ) && this.size >= 17 )
-											libertyImage = 'cs';
-										else if( y == center )
-											libertyImage = 'cs';
-									}// End else if
-									else if( x == ( this.size - 3 ) )
-									{
-										if( y == 4 )
-											libertyImage = 'cs';
-										else if( y == ( this.size - 3 ) )
-											libertyImage = 'cs';
-										else if( y == center && this.size >= 17 )
-											libertyImage = 'cs';
-									}// End else if
-								}// End else
+								var libertyImage = this.calculateLibertyImage( x, y );
 								break;
 							
 							// The x/y'th liberty has a black stone on it
 							case 'b':
-								var libertyImage = 'black';
-								var libertyText = 'B';
+								var libertyImage = 'black_image';
 								break;
 							
 							// The x/y'th liberty has a white stone on it
 							case 'w':
-								var libertyImage = 'white';
-								var libertyText = 'W';
+								var libertyImage = 'white_image';
 								break;
 						}// End switch
 						
+						
+						
 						// Create the liberty image
 						var libertyImageElem = document.createElement( 'img' );
-						libertyImageElem.src = options.imageBase + options[ libertyImage + '_image' ];
+						libertyImageElem.src = options.imageBase + options[ libertyImage ];
 						libertyImageElem.height = options.cellDim;
 						libertyImageElem.width = options.cellDim;
 
 						// Add the liberty to the table cell
 						liberty.appendChild( libertyImageElem );
-
-//						var libertyElem = document.createElement( 'span' );
-//						libertyElem.innerHTML = libertyText;
-//						liberty.vAlign = 'center';
-//						liberty.appendChild( libertyElem );
 					}// End for y
 				}// End for x
 				
@@ -452,7 +381,7 @@ $.extend( {
 						
 						// Set the inner html of the display to the approiate color
 						var display = cell.getElementsByTagName( 'img' )[0];
-						display.src = this.getLibertyImage( x, y );
+						display.src = options.imageBase + options[ this.calculateLibertyImage( y + 1, x + 1 ) ];
 					}// End if
 				}// End if
 			},
@@ -478,9 +407,77 @@ $.extend( {
 			
 			// Returns the value of the image file to use as the liberty image for an empty liberty
 			// Note: It uses the board's size, and the image paths passed in from the options
-			getLibertyImage: function( x, y )
+			calculateLibertyImage: function( x, y )
 			{
-				return options.c_image;
+				// Determine which liberty graphic to show
+				var libertyImage = 'c';
+				var libertyText = '.';
+				
+				// The series of if else if statements basically handle the edges of the board.
+				// If the final else condition is executed it will check for star points.  The
+				// default return value is a center open liberty
+				if( x == 1 )
+				{
+					if( y == 1 )
+						libertyImage = 'tl';
+					else if( y == this.size )
+						libertyImage = 'tr';
+					else
+						libertyImage = 't';
+				}// End if
+				else if( x == this.size )
+				{
+					if( y == 1 )
+						libertyImage = 'bl';
+					else if( y == this.size )
+						libertyImage = 'br';
+					else
+						libertyImage = 'b';				
+				}// End else if
+				else if( y == 1 )
+				{
+					libertyImage = 'l';
+				}// End else if
+				else if( y == this.size )
+				{
+					libertyImage = 'r';
+				}// End else if
+				else
+				{
+					// Here we check for star points
+					// Calculate the center of the board
+					var center = Math.ceil( ( this.size ) / 2 );
+					
+					if( x == 4 )
+					{
+						if( y == 4 )
+							libertyImage = 'cs';
+						else if( y == ( this.size - 3 ) )
+							libertyImage = 'cs';
+						else if( y == center && this.size >= 17 )
+							libertyImage = 'cs';
+					}// End else if
+					else if( x == center )
+					{
+						if( y == 4 && this.size >= 17 )
+							libertyImage = 'cs';
+						else if( y == ( this.size - 3 ) && this.size >= 17 )
+							libertyImage = 'cs';
+						else if( y == center )
+							libertyImage = 'cs';
+					}// End else if
+					else if( x == ( this.size - 3 ) )
+					{
+						if( y == 4 )
+							libertyImage = 'cs';
+						else if( y == ( this.size - 3 ) )
+							libertyImage = 'cs';
+						else if( y == center && this.size >= 17 )
+							libertyImage = 'cs';
+					}// End else if
+				}// End else
+
+				return libertyImage + '_image';
 			}
 		} );// End goBoard object definition
 		
