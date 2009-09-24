@@ -31,25 +31,6 @@ $.extend( {
 			white_image: '/images/white-20x20.png',
 			black_image: '/images/black-20x20.png'
 		}, options );
-		
-		// A go stone object.  Used to hold data for the update queue
-		// action can be either "place" or "remove"
-		function goStone( x, y, color, action, comments )
-		{
-			// Set the defaults
-			this.x = false;
-			this.y = false;
-			this.color = false;
-			this.action = 'place';
-			this.comments = '';
-			
-			// If the user override any of the values, us it.
-			if( x && x.length == 1 ) this.x = x;
-			if( y && y.length == 1 ) this.y = y;
-			if( color && color.length == 1 ) this.color = color;
-			if( this.action && this.action.length > 0 ) this.action = action;
-			if( this.comments && this.comments.length > 0 ) this.comments = comments;
-		}// End goStone
 
 		// The go board object definition
 		var goBoard = new Object( {
@@ -101,12 +82,6 @@ $.extend( {
 			{
 				// Return true for now
 				return true;
-			},
-			
-			// Determines if a play at x/y by whatever color is there now captured
-			// any stones.  If so, it removes the captured stones on the internal board.
-			cleanUpPrisoners: function( x, y )
-			{
 			},
 			
 			// Called by the parser object, in order of moves, to set the turn deltas.
