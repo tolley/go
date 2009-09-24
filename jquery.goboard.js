@@ -80,8 +80,16 @@ $.extend( {
 			// Returns true if x/y is a valid play for color(w,b)
 			isLegalPlay: function( stone )
 			{
-				// Return true for now
-				return true;
+				// If the stone is in bounds
+				if( stone.x >= 0 && stone.x < this.size && stone.y >= 0 && stone.y < this.size )
+				{
+					// If there isn't already a stone where this stone sound be
+//					if( typeof this.internalBoard[stone.y][stone.x] != 'object' )
+						return true;
+				}// End if
+				
+				// If we got this far, return false
+				return false;
 			},
 			
 			// Called by the parser object, in order of moves, to set the turn deltas.
@@ -97,10 +105,6 @@ $.extend( {
 					return;
 				}// End if
 				
-				// Get shortcuts to the stone's coordinates
-				var x = stone.x;
-				var y = stone.y;
-				
 				// Keeps track of the removed stones list
 				var removedList = new Array();
 
@@ -109,13 +113,15 @@ $.extend( {
 				{
 					case 'place':
 						// Place the stone on the board and see if any stones where captured
-						if( x >= 0 && x < this.size && y >= 0 && y < this.size )
+						if( this.isLegalPlay( stone ) )
 						{
-							this.internalBoard[y][x] = stone;
+							this.internalBoard[stone.y][stone.x] = stone;
 							
 							// Remove any captured stones and store the list
 							// in the list of delta's
-							this.turnDeltas[turn] = { stone: stone, removeList: {} }
+							var removeList = this.removeStonesCapturedBy( stone.x, stone.y );
+
+							this.turnDeltas[turn] = { stone: stone, removeList: removeList }
 						}// End if
 						break;
 					case 'pass':
@@ -127,6 +133,161 @@ $.extend( {
 				}// End switch
 			},
 			
+			// Called during the generation of the turn deltas.  It takes in the coordinates of stone
+			// after it was just played.  This function returns a list of all captured stones and removes
+			// those stones from the internal memory.  This function calls getCapturedStones
+			removeStonesCapturedBy: function( x, y )
+			{
+				// The return value
+				var captured = {};
+
+				// Get the stone at x/y
+				var currentStone = this.internalBoard[y][x];
+
+				// Create a list of all neighboring stones
+				var neighbors = new Array();
+				if( this.internalBoard[y] && this.internalBoard[y][x + 1] )
+				{
+					if( typeof this.internalBoard[y][x + 1] == 'object' )
+						neighbors.push( this.internalBoard[y][x + 1] );
+				}// End if
+				
+				if( this.internalBoard[y] && this.internalBoard[y][x - 1] )
+				{
+					if( typeof this.internalBoard[y][x - 1] == 'object' )
+						neighbors.push( this.internalBoard[y][x - 1] );
+				}// End if
+				
+				if( this.internalBoard[y + 1] && this.internalBoard[y + 1][x] )
+				{
+					if( typeof this.internalBoard[y + 1][x] == 'object' )
+						neighbors.push( this.internalBoard[y + 1][x] );
+				}// End if
+				
+				if( this.internalBoard[y - 1] && this.internalBoard[y - 1][x] )
+				{
+					if( typeof this.internalBoard[y - 1][x] == 'object' )
+						neighbors.push( this.internalBoard[y - 1][x] );
+				}// End if
+				
+				// Foreach neighbor, if it's an enemy, check to see if it was captured
+				while( neighbors.length > 0 )
+				{
+					var currentNeighbor = neighbors.pop();
+					
+					// If this stone hasn't already been captured
+					if( ! captured[ currentNeighbor.number ] )
+					{
+						var capturedList = this.isCaptured( currentNeighbor.x, currentNeighbor.y );
+
+						for( var number in capturedList )
+							captured[number] = capturedList[number];
+					}// End if
+				}// End while
+
+				// Foreach stone that needs to be removed, remove it from the internal board
+				for( var number in captured )
+				{
+					var tempStone = captured[number];
+					this.internalBoard[tempStone.y][tempStone.x] = 'e';					
+				}// End for each captured stone
+
+				return captured;
+			},
+			
+			// Called during the generation of the turn deltas.  Returns a list of all stones connected 
+			// to the stone at x/y that are captured.  This list should include x/y.  It returns false
+			// if no stones are captured.  This function is called by removeCapturedStones
+			isCaptured: function( x, y )
+			{
+				// If there is no stone at x/y, return false
+				if( typeof this.internalBoard[y][x] != 'object' )
+					return false;
+
+				// Create a queue to hold the stones connected to our target stone
+				var queue = new Array();
+				
+				// Create a list to hold the stones that have been checked.
+				var checkedList = {};
+				
+				// A variable to keep track of the number of open liberties
+				var openLibertyCount = 0;
+				
+				// Add our first node onto the queue and onto the checked list
+				queue.push( this.internalBoard[y][x] );
+				checkedList[ this.internalBoard[y][x].number ] = this.internalBoard[y][x];
+				
+				// While the queue isn't empty and we still haven't found any open liberties
+				while( queue.length > 0 && openLibertyCount == 0 )
+				{
+					// Get the next stone off the queue
+					var currentStone = queue.shift();
+					
+					// An array to store any adjacent stones for checking
+					var neighbors = new Array();
+					
+					// Determine if any of the adjacent liberties are open.  If so, add them to 
+					// the count, if not, if they are a friendly stone and we haven't checked it 
+					// for open liberties, add it to the queue
+					var x = currentStone.x;
+					var y = currentStone.y;
+
+					if( this.internalBoard[y] && this.internalBoard[y][x + 1] )
+					{
+						if( typeof this.internalBoard[y][x + 1] == 'object' )
+							neighbors.push( this.internalBoard[y][x + 1] );
+						else
+							openLibertyCount++;
+					}// End if
+					
+					if( this.internalBoard[y] && this.internalBoard[y][x - 1] )
+					{
+						if( typeof this.internalBoard[y][x - 1] == 'object' )
+							neighbors.push( this.internalBoard[y][x - 1] );
+						else
+							openLibertyCount++;
+					}// End if
+					
+					if( this.internalBoard[y + 1] && this.internalBoard[y + 1][x] )
+					{
+						if( typeof this.internalBoard[y + 1][x] == 'object' )
+							neighbors.push( this.internalBoard[y + 1][x] );
+						else
+							openLibertyCount++;
+					}// End if
+					
+					if( this.internalBoard[y - 1] && this.internalBoard[y - 1][x] )
+					{
+						if( typeof this.internalBoard[y - 1][x] == 'object' )
+							neighbors.push( this.internalBoard[y - 1][x] );
+						else
+							openLibertyCount++;
+					}// End if
+					
+					// Foreach neighbor stone, add any friendly neighbors that haven't been
+					// checked for liberties to the queue, ignore all other stones
+					while( neighbors.length > 0 )
+					{
+						var currentNeighbor = neighbors.shift();
+						if( currentNeighbor.color == currentStone.color )
+						{
+							if( ! checkedList[ currentNeighbor.number ] )
+							{
+								checkedList[ currentNeighbor.number ] = currentNeighbor;
+								queue.push( currentNeighbor );
+							}// End if
+						}// End if
+					}// End while
+				}// End while
+				
+				// If we found an open liberty, return false, otherwise, return the
+				// list of stones
+				if( openLibertyCount > 0 )
+					return false;
+				else
+					return checkedList;
+			},
+
 			// To be called after the turn delta's have been calculated.  It generates the html elements
 			// used to display the board.
 			onDeltasFinished: function()
@@ -254,6 +415,11 @@ $.extend( {
 									currentStone.color );
 						
 						// Foreach stone in the remove list, remove it from the board
+						for( var number in currentDeltas.removeList )
+						{
+							var tempStone = currentDeltas.removeList[number];
+							this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
+						}// End for each removed stone
 						
 						// If we have a comment, add it to the board
 						if( currentStone.comments && currentStone.comments.length > 0 )
@@ -289,6 +455,11 @@ $.extend( {
 									     currentStone.color );
 						
 						// Foreach stone in the remove list, put it back on the board
+						for( var number in currentDeltas.removeList )
+						{
+							var tempStone = currentDeltas.removeList[number];
+							this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
+						}// End for each removed stone
 						
 						// If we have a comment, remove it from the board
 						if( currentStone.comments && currentStone.comments.length > 0 )
