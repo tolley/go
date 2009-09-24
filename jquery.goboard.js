@@ -330,11 +330,16 @@ $.extend( {
 				var self = $( elem ).empty().addClass( 'goban' );
 				
 				// Create the table that we will use to hold our board
-				this.boardElem = document.createElement( 'table' );
-				this.boardElem.border = 0;
-				this.boardElem.cellPadding = 0;
-				this.boardElem.cellSpacing = 0;
-				elem.appendChild( this.boardElem );
+				var table = document.createElement( 'table' );
+				table.border = 0;
+				table.cellPadding = 0;
+				table.cellSpacing = 0;
+				this.boardElem = document.createElement( 'tbody' );
+				table.appendChild( this.boardElem );
+
+				elem.appendChild( table );
+				
+				var console = document.getElementById( 'console' );
 				
 				// Create each liberty
 				for( var x = 1; x <= this.size; ++x )
@@ -366,7 +371,7 @@ $.extend( {
 						
 						// Create the liberty image
 						var libertyImageElem = document.createElement( 'img' );
-						libertyImageElem.src = options.imageBase + options[ libertyImage ];
+						libertyImageElem.src = options.imageBase + options[ libertyImage ];						
 						libertyImageElem.height = options.cellDim;
 						libertyImageElem.width = options.cellDim;
 
