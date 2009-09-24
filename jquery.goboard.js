@@ -136,7 +136,7 @@ $.extend( {
 						// Place the stone on the board and see if any stones where captured
 						if( x >= 0 && x < this.size && y >= 0 && y < this.size )
 						{
-							this.internalBoard[y][x] = stone.color;
+							this.internalBoard[y][x] = stone;
 							
 							// Remove any captured stones and store the list
 							// in the list of delta's
@@ -213,26 +213,20 @@ $.extend( {
 						var liberty = document.createElement( 'td' );
 						row.appendChild( liberty );
 
-						// Switch based on the value in the internal board
-						switch( this.internalBoard[ x - 1 ][ y - 1 ] )
+						// If the liberty has a stone on it
+						if( typeof this.internalBoard[ x - 1 ][ y - 1 ] == 'object' )
 						{
-							// The current x/y'th liberty is empty
-							case 'e':
-								var libertyImage = this.calculateLibertyImage( x, y );
-								break;
-							
-							// The x/y'th liberty has a black stone on it
-							case 'b':
+							if( this.internalBoard[ x - 1 ][ y - 1 ].color == 'b' )
 								var libertyImage = 'black_image';
-								break;
-							
-							// The x/y'th liberty has a white stone on it
-							case 'w':
+							else
 								var libertyImage = 'white_image';
-								break;
-						}// End switch
-						
-						
+						}// End if
+						else if( this.internalBoard[ x - 1 ][ y - 1 ] == 'e' )
+						{
+							// Otherwise, the liberty is open and we need to figure out 
+							// which image to use.
+							var libertyImage = this.calculateLibertyImage( x, y );
+						}// End else if
 						
 						// Create the liberty image
 						var libertyImageElem = document.createElement( 'img' );
