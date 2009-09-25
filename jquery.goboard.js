@@ -539,6 +539,7 @@ $.extend( {
 					return;
 				
 				this.chatWindow.value += comment + "\n";
+				this.chatWindow.scrollTop = this.chatWindow.scrollHeight;
 			},
 			
 			// Removes a comment from the chat window
@@ -549,7 +550,9 @@ $.extend( {
 					return;
 				
 				this.chatWindow.value = this.chatWindow.value.replace( comment, '' );
-				this.chatWindow.value = $.trim( this.chatWindow.value );
+				this.chatWindow.value = $.trim( this.chatWindow.value ) + "\n";
+				var self = this;
+				setTimeout( function(){ self.chatWindow.scrollTop = self.chatWindow.scrollHeight }, 1 );
 			},
 			
 			// Returns the value of the image file to use as the liberty image for an empty liberty

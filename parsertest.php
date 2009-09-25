@@ -42,7 +42,8 @@ $( document ).ready( function()
 
 <br />
 
-<textarea id="chatWindow" style="width:300px; height:150px;"></textarea>
+<textarea id="chatWindow" style="width:400px; height:150px;"></textarea>
+<br />
 
 <button id="next">Next</button>
 <button id="previous">Previous</button>
