@@ -299,7 +299,8 @@ $.extend( {
 					// properties to the board, and generating delta's between each move
 					for( var node = 0; node <= this.gameTree.length; ++node )
 					{
-						// Create the properties for a go stone
+						// Create the properties for a go stone.  
+						// NOTE: Any parsers must create go stones with the properties listed.
 						var goStone = { x: 	  false, 
 								y: 	  false, 
 								color:    false, 
@@ -370,7 +371,7 @@ $.extend( {
 
 								default:
 									// Uncomment this to see all the properties I still have to implement
-//									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
+									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
 									break;
 							}// End switch property name
 						}// End for property

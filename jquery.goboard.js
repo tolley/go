@@ -80,16 +80,14 @@ $.extend( {
 			// Returns true if x/y is a valid play for color(w,b)
 			isLegalPlay: function( stone )
 			{
-				// If the stone is in bounds
-				if( stone.x >= 0 && stone.x < this.size && stone.y >= 0 && stone.y < this.size )
-				{
-					// If there isn't already a stone where this stone sound be
-//					if( typeof this.internalBoard[stone.y][stone.x] != 'object' )
-						return true;
-				}// End if
+				// According to this: http://www.red-bean.com/sgf/properties.html
+				// when the file tells you to play a stone, you play regardless of the board state.
 				
-				// If we got this far, return false
-				return false;
+				// If the stone has valid coordinates
+				if( stone.x >= 0 && stone.x < this.size && stone.y >= 0 && stone.y < this.size )
+					return true;
+				else
+					return false;
 			},
 			
 			// Called by the parser object, in order of moves, to set the turn deltas.
