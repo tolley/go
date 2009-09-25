@@ -1,9 +1,12 @@
 // Author : Chris Tolley
 // Date   : 09/09/2009
 // Desc   : Contains the definition of a go board and the logic needed to 
-//	    determine legal plays, ko, and removing captured stones.  After the boards
-//	    have been returned from createGoBoard, they must either have the properties
-//	    manually set or pass it to a parser object that will fill in the details
+//	    remove captured stones.  The board is created by the main jquery plugin.
+//	    That plugin will also create the appropiate parser object, which will then
+//	    set any static game properties, and call board.calculateTurnDelta, for each turn, in order.
+//	    Once the turn delta's have been set up, the parser must call board.onDeltasFinished 
+//	    to let the board know that all available properties have been set and it can go ahead
+//	    and generate the display
 
 ( function( $ ){
 
@@ -381,19 +384,14 @@ $.extend( {
 						liberty.appendChild( libertyImageElem );
 					}// End for y
 				}// End for x
-				
-				// Create the chat window
-				this.chatWindow = document.createElement( 'textarea' );
-				this.chatWindow.id = 'gogameChat';
-				this.chatWindow.style.width = '100%';
 
-				// Add the chat window to the board html element
-				var row = document.createElement( 'tr' );
-				var col = document.createElement( 'td' );
-				col.colSpan = options.size;
-				col.appendChild( this.chatWindow );
-				row.appendChild( col );
-				this.boardElem.appendChild( row );
+				// Set the reference to the chat window, if one is set
+				if( options.chatWindow && options.chatWindow.length > 0 )
+				{
+					var temp = $( options.chatWindow );
+					if( temp.length > 0 )
+						this.chatWindow = temp[0];
+				}// End if
 			},
 			
 			// Moves the delta index forward one and applies the changes to the board display
@@ -536,7 +534,8 @@ $.extend( {
 			// Adds a comment to the chat window
 			addCommentToDisplay: function( comment )
 			{
-				if( ! comment || comment.length == 0 )
+				// If the comment isn't set, or if the user didn't supply a chat window
+				if( ! comment || comment.length == 0 || ! this.chatWindow )
 					return;
 				
 				this.chatWindow.value += comment + "\n";
@@ -545,7 +544,8 @@ $.extend( {
 			// Removes a comment from the chat window
 			removeCommentFromDisplay: function( comment )
 			{
-				if( ! comment || comment.length == 0 )
+				// If the comment isn't set, or if the user didn't supply a chat window
+				if( ! comment || comment.length == 0 || ! this.chatWindow )
 					return;
 				
 				this.chatWindow.value = this.chatWindow.value.replace( comment, '' );

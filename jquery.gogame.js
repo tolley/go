@@ -1,3 +1,13 @@
+// Author : Chris Tolley
+// Date   : 09/09/2009
+// Desc   : A jquery plugin that will allow users to simply and flexible 
+// 	    display saved go game files on a website, provided the file
+//	    is available on their domain.
+//
+// Ex: var goban = $( '#goban' ).gogame( { 'chatWindow': '#chatWindow', 
+//					    'url': url, 
+//					    'format': 'sgf' } );
+
 (function($)
 {
 	$.fn.gogame = function( options )

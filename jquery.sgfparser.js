@@ -1,7 +1,10 @@
 // Author : Chris Tolley
 // Date   : 09/07/2009
 // Desc   : This file contains a jquery plugin that makes it possible to fetch and parse
-//	    an sgf file from a given url on the server.
+//	    an sgf file from a given url on the server.  It is also responsible for generating
+//	    go stone objects, passing those objects to the board to generate deltas between turns,
+//	    and setting any static game properties avaiable.  It must then let the board know 
+//	    when all game info has been entered.
 
 // Requirements: jQuery (ajax calls)
 

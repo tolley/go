@@ -16,13 +16,19 @@
 $( document ).ready( function()
 {
 	// The url of the sgf file data
-	var url = '/tolley.sgf';
+	var url = '/tolley2.sgf';
 
 	// Create the board image
-	var goban = $( '#goban' ).gogame( { 'url': url, 'format': 'sgf' } );
+	var goban = $( '#goban' ).gogame( { 'chatWindow': '#chatWindow', 
+					    'url': url, 
+					    'format': 'sgf' } );
 	
 	// Plug into the UI hooks
-	$( '#next' ).click( function(){ goban.goGameNext(); } );
+	$( '#next' ).click( function()
+	{
+		goban.goGameNext();
+	} );
+	
 	$( '#previous' ).click( function(){ goban.goGamePrevious(); } );
 } );
 </script>
@@ -35,6 +41,8 @@ $( document ).ready( function()
 </div>
 
 <br />
+
+<textarea id="chatWindow" style="width:300px; height:150px;"></textarea>
 
 <button id="next">Next</button>
 <button id="previous">Previous</button>
