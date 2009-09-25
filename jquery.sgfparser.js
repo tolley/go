@@ -374,7 +374,8 @@ $.extend( {
 
 								default:
 									// Uncomment this to see all the properties I still have to implement
-									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
+									if( console && console.log )
+										console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
 									break;
 							}// End switch property name
 						}// End for property
