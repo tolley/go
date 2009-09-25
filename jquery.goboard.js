@@ -148,23 +148,27 @@ $.extend( {
 				var neighbors = new Array();
 				if( this.internalBoard[y] && this.internalBoard[y][x + 1] )
 				{
-					if( typeof this.internalBoard[y][x + 1] == 'object' )
+					if( typeof this.internalBoard[y][x + 1] == 'object' && 
+						this.internalBoard[y][x + 1].color != currentStone.color )
 						neighbors.push( this.internalBoard[y][x + 1] );
 				}// End if
 				
 				if( this.internalBoard[y] && this.internalBoard[y][x - 1] )
 				{
-					if( typeof this.internalBoard[y][x - 1] == 'object' )
+					if( typeof this.internalBoard[y][x - 1] == 'object' &&
+						this.internalBoard[y][x - 1].color != currentStone.color )
 						neighbors.push( this.internalBoard[y][x - 1] );
 				}// End if
 				
 				if( this.internalBoard[y + 1] && this.internalBoard[y + 1][x] )
 				{
-					if( typeof this.internalBoard[y + 1][x] == 'object' )
+					if( typeof this.internalBoard[y + 1][x] == 'object' && 
+						this.internalBoard[y + 1][x].color != currentStone.color )
 						neighbors.push( this.internalBoard[y + 1][x] );
 				}// End if
 				
-				if( this.internalBoard[y - 1] && this.internalBoard[y - 1][x] )
+				if( this.internalBoard[y - 1] && this.internalBoard[y - 1][x] &&
+					this.internalBoard[y - 1][x].color != currentStone.color )
 				{
 					if( typeof this.internalBoard[y - 1][x] == 'object' )
 						neighbors.push( this.internalBoard[y - 1][x] );
