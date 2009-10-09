@@ -280,6 +280,9 @@ $.extend( {
 				// A place holder that keeps track of which node in the game tree we are on.
 				currentNode: 0,
 				
+				// The number of handicap stones in this game files
+				numHandicapStones: 0,
+				
 				// Sets the gameTree data
 				setGameTreeData: function( gameTree ){ this.gameTree = gameTree; },
 				
@@ -302,14 +305,9 @@ $.extend( {
 					// properties to the board, and generating delta's between each move
 					for( var node = 0; node <= this.gameTree.length; ++node )
 					{
-						// Create the properties for a go stone.  
-						// NOTE: Any parsers must create go stones with the properties listed.
-						var goStone = { x: 	  false, 
-								y: 	  false, 
-								color:    false, 
-								comments: '',
-								action:   false, 
-								number:   node };
+						// Create a blank stone, so we can set the properties here
+						var goStone = this.board.getBlankStone();
+						goStone.number = node + this.numHandicapStones;
 
 						// Make sure the board size was set in the first node
 						if( node == 1 && ! this.board.size )
@@ -362,20 +360,61 @@ $.extend( {
 								// A player made a comment
 								case 'C':
 									if( goStone.comments && goStone.comments.length > 0 )
-										goStone.comments = goStone.comments + "\n" + this.gameTree[node][property];
+										goStone.comments = goStone.comments + "\n" + $.trim( this.gameTree[node][property] );
 									else
-										goStone.comments = this.gameTree[node][property];
+										goStone.comments = $.trim( this.gameTree[node][property] );
 									break;
 
 								// Game property, the size of the board.
 								case 'SZ':
 									this.board.setBoardSize( this.gameTree[node][property] );
 									break;
+								
+								// Game board property, the number of handicap stones
+								case 'HA':
+									break;
+								
+								// Game board property, the position of the handicap stones
+								case 'AB':
+									// If the handicap stones are not in the first node of the tree
+									if( node != 0 )
+									{
+										alert( 'Found handicap stones in node ' + node + '. Exiting');
+										return;
+									}// End if
+									// Get a short cut to the list of handicap stones
+									var handicapList = this.gameTree[node][property];
+									
+									// Set the number of handicap stones
+									// The number of handicap stones in this game files
+									this.numHandicapStones = handicapList.length;
+									
+									// Foreach handicap stone, create a stone object
+									var stoneObjects = new Array();
+									for( var n in handicapList )
+									{
+										// Get a blank stone and fill in the details
+										var handicapStone = this.board.getBlankStone();
+										handicapStone.color = 'b';
+										handicapStone.action = 'place';
+										handicapStone.x = handicapList[n].charAt( 0 );
+										handicapStone.y = handicapList[n].charAt( 1 );
+										handicapStone.number = n;
+										
+										// Translate the go stone coordinates from alpha to numeric
+										handicapStone.x = parseInt( handicapStone.x.charCodeAt( 0 ) ) - 97;
+										handicapStone.y = parseInt( handicapStone.y.charCodeAt( 0 ) ) - 97;
+										
+										stoneObjects.push( handicapStone );
+									}// End for n
+									
+									// Give the handicap stones to the board
+									this.board.setHandicapStones( stoneObjects );
+									break;
 
 								default:
 									// Uncomment this to see all the properties I still have to implement
-									if( console && console.log )
-										console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
+//									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
 									break;
 							}// End switch property name
 						}// End for property

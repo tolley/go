@@ -54,6 +54,9 @@ $.extend( {
 			
 			// An array to hold the delta's between turns
 			turnDeltas: new Array(),
+			
+			// Stores the handicap stone coordinates
+			handicapStones: new Array(),
 
 			// Sets the size of the board
 			setBoardSize: function( size )
@@ -79,6 +82,33 @@ $.extend( {
 					}// End for x
 				}// End if
 			},
+			
+			// Lets the parser set the position of all handicap stones on the board
+			setHandicapStones: function( stones )
+			{
+				if( stones && stones.length > 0 )
+				{
+					this.handicapStones = stones;
+
+					for( var n = 0; n < this.handicapStones.length; ++n )
+					{
+						var stone = this.handicapStones[n];
+						this.internalBoard[stone.y][stone.x] = stone;
+					}// End for n
+				}// End if
+			},
+			
+			// Called by the parser to get blank stone objects.  These are the stones
+			// that will be passed back to the board, with values, to calculate turn deltas
+			getBlankStone: function()
+			{
+				return { x: 	  false, 
+					 y: 	  false, 
+					 color:    false, 
+					 comments: '',
+					 action:   false, 
+					 number:   false };
+			},
 
 			// Returns true if x/y is a valid play for color(w,b)
 			isLegalPlay: function( stone )
@@ -97,7 +127,7 @@ $.extend( {
 			// Note: This function uses the internal board to determine if we have a legal play
 			// or if stones where captured.  If you don't call this function in turn order, it won't work
 			calculateTurnDelta: function( turn, stone )
-			{
+			{				
 				// If the turn delta's have already been set for the given turn,
 				// let the user know
 				if( this.turnDeltas[turn] )
@@ -329,6 +359,14 @@ $.extend( {
 				this.deltaIndex = 0;
 
 				// Add any handicapped stones to the internal memory
+				if( this.handicapStones.length > 0 )
+				{
+					for( var n = 0; n < this.handicapStones.length; ++n )
+					{
+						var stone = this.handicapStones[n];
+						this.internalBoard[stone.y][stone.x] = stone;
+					}// End for n
+				}// End if
 
 				// Draw the board using the internal representation
 				// Create a names reference to this element and prepare it for the goban

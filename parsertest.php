@@ -16,7 +16,7 @@
 $( document ).ready( function()
 {
 	// The url of the sgf file data
-	var url = '/tolley2.sgf';
+	var url = '/handicap.sgf';
 
 	// Create the board image
 	var goban = $( '#goban' ).gogame( { 'chatWindow': '#chatWindow', 
