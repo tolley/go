@@ -21,15 +21,17 @@ $( document ).ready( function()
 	// Create the board image
 	var goban = $( '#goban' ).gogame( { 'chatWindow': '#chatWindow', 
 					    'url': url, 
-					    'format': 'sgf' } );
+					    'format': 'sgf',
+					    'nextBtn': '#next',
+					    'previousBtn': '#previous' } );
 	
-	// Plug into the UI hooks
-	$( '#next' ).click( function()
-	{
-		goban.goGameNext();
-	} );
+//	// Plug into the UI hooks
+//	$( '#next' ).click( function()
+//	{
+//		goban.goGameNext();
+//	} );
 	
-	$( '#previous' ).click( function(){ goban.goGamePrevious(); } );
+//	$( '#previous' ).click( function(){ goban.goGamePrevious(); } );
 } );
 </script>
 

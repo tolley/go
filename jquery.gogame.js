@@ -62,6 +62,25 @@
 				goBoard.previousTurn();
 		}// End this.previous
 		
+		// If the next and previous button's are specified, plug into their click events
+		if( options.nextBtn && options.nextBtn.length > 0 )
+		{
+			$( options.nextBtn ).click( function()
+			{
+				if( goBoard )
+					goBoard.nextTurn();
+			} );
+		}// End if
+
+		if( options.previousBtn && options.previousBtn.length > 0 )
+		{
+			$( options.previousBtn ).click( function()
+			{
+				if( goBoard )
+					goBoard.previousTurn();
+			} );
+		}// End if
+		
 		return this;
 	};
 } )( jQuery );
