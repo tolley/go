@@ -67,8 +67,7 @@
 		{
 			$( options.nextBtn ).click( function()
 			{
-				if( goBoard )
-					goBoard.nextTurn();
+				$.fn.goGameNext();
 			} );
 		}// End if
 
@@ -76,8 +75,7 @@
 		{
 			$( options.previousBtn ).click( function()
 			{
-				if( goBoard )
-					goBoard.previousTurn();
+				$.fn.goGamePrevious()
 			} );
 		}// End if
 		
