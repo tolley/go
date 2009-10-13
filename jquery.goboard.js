@@ -19,20 +19,7 @@ $.extend( {
 			dim: 20,
 			format: 'sgf',
 			gameUrl: '',
-			imageBase: '',
-			cellDim: 20,
-			c_image: '/images/c-20x20.png',
-			cs_image: '/images/cs-20x20.png',
-			tl_image: '/images/tl-20x20.png',
-			tr_image: '/images/tr-20x20.png',
-			bl_image: '/images/bl-20x20.png',
-			br_image: '/images/br-20x20.png',
-			t_image: '/images/t-20x20.png',
-			b_image: '/images/b-20x20.png',
-			l_image: '/images/l-20x20.png',
-			r_image: '/images/r-20x20.png',
-			white_image: '/images/white-20x20.png',
-			black_image: '/images/black-20x20.png'
+			cellDim: 20
 		}, options );
 
 		// The go board object definition
@@ -391,7 +378,7 @@ $.extend( {
 					var row = document.createElement( 'tr' );
 					this.boardElem.appendChild( row );
 
-					// Create each table cell
+					// Create each table cell (liberty)
 					for( var y = 1; y <= this.size; ++y )
 					{
 						var liberty = document.createElement( 'td' );
@@ -401,25 +388,18 @@ $.extend( {
 						if( typeof this.internalBoard[ x - 1 ][ y - 1 ] == 'object' )
 						{
 							if( this.internalBoard[ x - 1 ][ y - 1 ].color == 'b' )
-								var libertyImage = 'black_image';
+								var libertyClass = 'black';
 							else
-								var libertyImage = 'white_image';
+								var libertyClass = 'white';
 						}// End if
 						else if( this.internalBoard[ x - 1 ][ y - 1 ] == 'e' )
 						{
 							// Otherwise, the liberty is open and we need to figure out 
 							// which image to use.
-							var libertyImage = this.calculateLibertyImage( x, y );
+							var libertyClass = this.calculateLibertyClass( x, y );
 						}// End else if
-						
-						// Create the liberty image
-						var libertyImageElem = document.createElement( 'img' );
-						libertyImageElem.src = options.imageBase + options[ libertyImage ];						
-						libertyImageElem.height = options.cellDim;
-						libertyImageElem.width = options.cellDim;
 
-						// Add the liberty to the table cell
-						liberty.appendChild( libertyImageElem );
+						liberty.className = libertyClass;
 					}// End for y
 				}// End for x
 
@@ -536,14 +516,11 @@ $.extend( {
 					var cells = row.getElementsByTagName( 'td' );
 					if( cells.length > x )
 					{
-						var cell = cells[x];
-						
-						// Set the inner html of the display to the approiate color
-						var display = cell.getElementsByTagName( 'img' )[0];
+						// Set the appropiate class name
 						if( color == 'b' )
-							display.src = options.black_image;
+							cells[x].className = 'black';
 						else
-							display.src = options.white_image;
+							cells[x].className = 'white';
 					}// End if
 				}// End if
 			},
@@ -560,11 +537,8 @@ $.extend( {
 					var cells = row.getElementsByTagName( 'td' );
 					if( cells.length > x )
 					{
-						var cell = cells[x];
-						
-						// Set the inner html of the display to the approiate color
-						var display = cell.getElementsByTagName( 'img' )[0];
-						display.src = options.imageBase + options[ this.calculateLibertyImage( y + 1, x + 1 ) ];
+						// Set the className of the cell to an open liberty 
+						cells[x].className = this.calculateLibertyClass( y + 1, x + 1 );
 					}// End if
 				}// End if
 			},
@@ -595,10 +569,10 @@ $.extend( {
 			
 			// Returns the value of the image file to use as the liberty image for an empty liberty
 			// Note: It uses the board's size, and the image paths passed in from the options
-			calculateLibertyImage: function( x, y )
+			calculateLibertyClass: function( x, y )
 			{
 				// Determine which liberty graphic to show
-				var libertyImage = 'c';
+				var libertyClass = 'c';
 				var libertyText = '.';
 				
 				// The series of if else if statements basically handle the edges of the board.
@@ -607,28 +581,28 @@ $.extend( {
 				if( x == 1 )
 				{
 					if( y == 1 )
-						libertyImage = 'tl';
+						libertyClass = 'tl';
 					else if( y == this.size )
-						libertyImage = 'tr';
+						libertyClass = 'tr';
 					else
-						libertyImage = 't';
+						libertyClass = 't';
 				}// End if
 				else if( x == this.size )
 				{
 					if( y == 1 )
-						libertyImage = 'bl';
+						libertyClass = 'bl';
 					else if( y == this.size )
-						libertyImage = 'br';
+						libertyClass = 'br';
 					else
-						libertyImage = 'b';				
+						libertyClass = 'b';				
 				}// End else if
 				else if( y == 1 )
 				{
-					libertyImage = 'l';
+					libertyClass = 'l';
 				}// End else if
 				else if( y == this.size )
 				{
-					libertyImage = 'r';
+					libertyClass = 'r';
 				}// End else if
 				else
 				{
@@ -639,33 +613,33 @@ $.extend( {
 					if( x == 4 )
 					{
 						if( y == 4 )
-							libertyImage = 'cs';
+							libertyClass = 'cs';
 						else if( y == ( this.size - 3 ) )
-							libertyImage = 'cs';
+							libertyClass = 'cs';
 						else if( y == center && this.size >= 17 )
-							libertyImage = 'cs';
+							libertyClass = 'cs';
 					}// End else if
 					else if( x == center )
 					{
 						if( y == 4 && this.size >= 17 )
-							libertyImage = 'cs';
+							libertyClass = 'cs';
 						else if( y == ( this.size - 3 ) && this.size >= 17 )
-							libertyImage = 'cs';
+							libertyClass = 'cs';
 						else if( y == center )
-							libertyImage = 'cs';
+							libertyClass = 'cs';
 					}// End else if
 					else if( x == ( this.size - 3 ) )
 					{
 						if( y == 4 )
-							libertyImage = 'cs';
+							libertyClass = 'cs';
 						else if( y == ( this.size - 3 ) )
-							libertyImage = 'cs';
+							libertyClass = 'cs';
 						else if( y == center && this.size >= 17 )
-							libertyImage = 'cs';
+							libertyClass = 'cs';
 					}// End else if
 				}// End else
 
-				return libertyImage + '_image';
+				return libertyClass;
 			}
 		} );// End goBoard object definition
 		

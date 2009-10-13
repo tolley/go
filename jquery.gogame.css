@@ -8,7 +8,45 @@
 	text-align:center;
 }
 
-.goban.img {
+.goban .img {
 	margin: 0px;
 	padding: 0px;
+}
+
+/* The liberty and stone images */
+.goban .b {
+	background: url(/images/b-20x20.png) no-repeat;	
+}
+.goban .bl {
+	background: url(/images/bl-20x20.png) no-repeat;	
+}
+.goban .black {
+	background: url(/images/black-20x20.png) no-repeat;	
+}
+.goban .br {
+	background: url(/images/br-20x20.png) no-repeat;	
+}
+.goban .c {
+	background: url(/images/c-20x20.png) no-repeat;	
+}
+.goban .cs {
+	background: url(/images/cs-20x20.png) no-repeat;	
+}
+.goban .l {
+	background: url(/images/l-20x20.png) no-repeat;	
+}
+.goban .r {
+	background: url(/images/r-20x20.png) no-repeat;	
+}
+.goban .t {
+	background: url(/images/t-20x20.png) no-repeat;	
+}
+.goban .tl {
+	background: url(/images/tl-20x20.png) no-repeat;	
+}
+.goban .tr {
+	background: url(/images/tr-20x20.png) no-repeat;	
+}
+.goban .white {
+	background: url(/images/white-20x20.png) no-repeat;	
 }

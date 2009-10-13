@@ -24,15 +24,8 @@ $( document ).ready( function()
 					    'format': 'sgf',
 					    'nextBtn': '#next',
 					    'previousBtn': '#previous' } );
-	
-//	// Plug into the UI hooks
-//	$( '#next' ).click( function()
-//	{
-//		goban.goGameNext();
-//	} );
-	
-//	$( '#previous' ).click( function(){ goban.goGamePrevious(); } );
 } );
+
 </script>
 
 </head>
