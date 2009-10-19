@@ -33,10 +33,10 @@ $( document ).ready( function()
 	<h2>What am I looking at?</h2>
 	
 	<p style="width:400px;">
-	This is a demo page for a go board plugin for jQuery.  This plugin will let users
-	specify a saved game file on the server, and a flag to indicate the file format.
-	It will fetch the file from the server, parse it into javascript objects, and provide 
-	input options that will allow the user to step back and forth through the game.
+	This is a demo page for a <a href="http://en.wikipedia.org/wiki/Go_(game)">go board</a> plugin for jQuery.  
+	This plugin will let users specify a saved game file on the server, and a flag to indicate the file format.
+	It will fetch the file from the server, parse it into javascript objects, and provide input options that 
+	will let the user step back and forth through the game.
 	</p>
 
 	<div style="">Here's what the page javascript looks like:</div>
