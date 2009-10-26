@@ -49,6 +49,8 @@ $( document ).ready( function()
 				'format': 'sgf',
 				'nextBtn': '#next',
 				'previousBtn': '#previous',
+				'lastBtn': '#last',
+				'firstBtn': '#first',
 				'chatWindow': '#chatWindow' } );
 } );
 	</pre>
