@@ -53,16 +53,30 @@
 		{
 			if( goBoard )
 				goBoard.nextTurn();
-		}// End this.next
+		}// End this.goGameNext
 		
 		// Backs the loaded game up to the previous move
 		$.fn.goGamePrevious = function()
 		{
 			if( goBoard )
 				goBoard.previousTurn();
-		}// End this.previous
+		}// End this.goGamePrevious
 		
-		// If the next and previous button's are specified, plug into their click events
+		// Resets the view to the first move of the game
+		$.fn.goGameFirst = function()
+		{
+			if( goBoard )
+				goBoard.firstTurn();
+		}// End this.goGameFirst
+		
+		// Advantances the game to the final move
+		$.fn.goGameLast = function()
+		{
+			if( goBoard )
+				goBoard.lastTurn();
+		}// End this.goGameLast
+		
+		// If the next button options are set, plug into it's click event
 		if( options.nextBtn && options.nextBtn.length > 0 )
 		{
 			$( options.nextBtn ).click( function()
@@ -71,6 +85,7 @@
 			} );
 		}// End if
 
+		// If the previous button options are set, plug into it's click event
 		if( options.previousBtn && options.previousBtn.length > 0 )
 		{
 			$( options.previousBtn ).click( function()
@@ -79,6 +94,24 @@
 			} );
 		}// End if
 		
+		// If the first button options are set, plug into it's click event
+		if( options.firstBtn && options.firstBtn.length > 0 )
+		{
+			$( options.firstBtn ).click( function()
+			{
+				$.fn.goGameFirst();
+			} );
+		}// End if
+
+		// If the last button options are set, plug into it's click event
+		if( options.lastBtn && options.lastBtn.length > 0 )
+		{
+			$( options.lastBtn ).click( function()
+			{
+				$.fn.goGameLast();
+			} );
+		}// End if
+
 		return this;
 	};
 } )( jQuery );

@@ -421,7 +421,7 @@ $.extend( {
 				if( this.deltaIndex >= this.turnDeltas.length )
 				{
 					this.deltaIndex = this.turnDeltas.length - 1;
-					return;
+					return false;
 				}// End if
 				
 				// Apply the deltas for the current turn
@@ -453,8 +453,11 @@ $.extend( {
 						break;
 					default:
 						alert( 'Error: Unrecognized action in turn delta: ' + currentStone.action );
+						return false;
 						break;
 				}// End switch action
+				
+				return true;
 			},
 			
 			// Moves the delta index back one and applies the changes to the board display
@@ -462,7 +465,7 @@ $.extend( {
 			{
 				// If we are already on the first move, return
 				if( this.deltaIndex == 0 )
-					return;
+					return false;
 	
 				// Apply the changes for the current delta
 				var currentDeltas = this.turnDeltas[ this.deltaIndex ];
@@ -502,6 +505,24 @@ $.extend( {
 				// If the index went out of range, put it back in range and return
 				if( this.deltaIndex < 0 )
 					this.deltaIndex = 0;
+
+				return true;
+			},
+			
+			// Moves the delta index to the first node and updates the view
+			firstTurn: function()
+			{
+				// While the delta index isn't at the first turn, call previousTurn.
+				// Note: previousTurn deincrements the deltaIndex
+				while( this.previousTurn() );
+			},
+			
+			// Moves the delta index to the final node and updates the view
+			lastTurn: function()
+			{
+				// While the delta index isn't at the last turn, call nextTurn.
+				// Note: nextTurn increments deltaIndex
+				while( this.nextTurn() );
 			},
 			
 			// Adds a stone to the board's display elements. Note: This function simply displays

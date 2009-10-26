@@ -19,6 +19,8 @@ $( document ).ready( function()
 				'format': 'sgf',
 				'nextBtn': '#next',
 				'previousBtn': '#previous',
+				'lastBtn': '#last',
+				'firstBtn': '#first',
 				'chatWindow': '#chatWindow' } );
 } );
 </script>
@@ -59,8 +61,10 @@ $( document ).ready( function()
 	<textarea id="chatWindow" style="width:382px; height:100px;"></textarea>
 	<br />
 	
+	<button id="first">First</button>
 	<button id="previous">Previous</button>
 	<button id="next">Next</button>
+	<button id="last">Last</button>
 	<br />
 </div>
 
