@@ -24,6 +24,9 @@ $.extend( {
 
 		// The go board object definition
 		var goBoard = new Object( {
+			// Set to true when the game file has been loaded, and is ready for commands
+			loaded: false,
+
 			// The internal representation of the state of the board
 			internalBoard: false,
 			
@@ -410,11 +413,18 @@ $.extend( {
 					if( temp.length > 0 )
 						this.chatWindow = temp[0];
 				}// End if
+				
+				// Tell the world we have loaded
+				this.loaded = true;
 			},
 			
 			// Moves the delta index forward one and applies the changes to the board display
 			nextTurn: function()
 			{
+				// If this object isn't fully loaded, return false
+				if( ! this.loaded )
+					return false;
+
 				this.deltaIndex++;
 
 				// If the index went out of range, put it back in range and return
@@ -463,6 +473,10 @@ $.extend( {
 			// Moves the delta index back one and applies the changes to the board display
 			previousTurn: function()
 			{
+				// If this object isn't fully loaded, return false
+				if( ! this.loaded )
+					return false;
+
 				// If we are already on the first move, return
 				if( this.deltaIndex == 0 )
 					return false;
@@ -512,6 +526,10 @@ $.extend( {
 			// Moves the delta index to the first node and updates the view
 			firstTurn: function()
 			{
+				// If this object isn't fully loaded, return false
+				if( ! this.loaded )
+					return false;
+
 				// While the delta index isn't at the first turn, call previousTurn.
 				// Note: previousTurn deincrements the deltaIndex
 				while( this.previousTurn() );
@@ -520,9 +538,41 @@ $.extend( {
 			// Moves the delta index to the final node and updates the view
 			lastTurn: function()
 			{
+				// If this object isn't fully loaded, return false
+				if( ! this.loaded )
+					return false;
+
 				// While the delta index isn't at the last turn, call nextTurn.
 				// Note: nextTurn increments deltaIndex
 				while( this.nextTurn() );
+			},
+			
+			// Updates the view so that it will shows the n'th move
+			jumpToTurn: function( n )
+			{
+				// If this object isn't fully loaded, return false
+				if( ! this.loaded )
+					return false;
+
+				// If n is in the range of moves
+				if( parseInt( n ) != 'NaN' || n >= 0  || n <= this.turnDeltas.length )
+				{
+					// Figure out whether we need to move forwards or backwards and do so.
+					if( n < this.deltaIndex )
+					{
+						while( n < this.deltaIndex )
+							this.previousTurn();
+					}// End if
+					else if( n > this.deltaIndex )
+					{
+						while( n > this.deltaIndex )
+							this.nextTurn();
+					}// End else
+					
+					return true;
+				}// End if
+				else
+					return false;
 			},
 			
 			// Adds a stone to the board's display elements. Note: This function simply displays
