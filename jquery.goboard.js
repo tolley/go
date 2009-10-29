@@ -375,7 +375,32 @@ $.extend( {
 
 				elem.appendChild( table );
 				
-				var console = document.getElementById( 'console' );
+				// Create the first row, which is alpha character
+				var row = document.createElement( 'tr' );
+				this.boardElem.appendChild( row );
+				
+				// Create a blank cell so that the table will line up correctly
+				var blankLabel = document.createElement( 'td' );
+				blankLabel.className = 'blank';
+				row.appendChild( blankLabel );
+				
+				// Create the cells labeled A through x that appear at the top of the board
+				for( var x = 1; x <= this.size; ++x )
+				{
+					var labelCell = document.createElement( 'td' );
+					labelCell.className = 'blank';
+					
+					var label = document.createElement( 'span' );
+					label.className = 'blank';
+					label.innerHTML = String.fromCharCode( x + 64 );
+					labelCell.appendChild( label );
+					row.appendChild( labelCell );
+				}// End for x
+				
+				// Create a blank cell so that the table will line up correctly
+				var blankLabel = document.createElement( 'td' );
+				blankLabel.className = 'blank';
+				row.appendChild( blankLabel );
 				
 				// Create each liberty
 				for( var x = 1; x <= this.size; ++x )
@@ -383,6 +408,16 @@ $.extend( {
 					// Create the current row and append it to the table
 					var row = document.createElement( 'tr' );
 					this.boardElem.appendChild( row );
+					
+					// Create the number that resides besides the board on the left
+					var labelCell = document.createElement( 'td' );
+					labelCell.className = 'blank';
+					
+					var label = document.createElement( 'span' );
+					label.className = 'blank';
+					label.innerHTML = Math.abs( ( this.size - x ) * -1 ) + 1;
+					labelCell.appendChild( label );
+					row.appendChild( labelCell );
 
 					// Create each table cell (liberty)
 					for( var y = 1; y <= this.size; ++y )
@@ -407,7 +442,44 @@ $.extend( {
 
 						liberty.className = libertyClass;
 					}// End for y
+
+					// Create the number that resides besides the board on the right
+					var labelCell = document.createElement( 'td' );
+					labelCell.className = 'blank';
+					
+					var label = document.createElement( 'span' );
+					label.className = 'blank';
+					label.innerHTML = Math.abs( ( this.size - x ) * -1 ) + 1;
+					labelCell.appendChild( label );
+					row.appendChild( labelCell );
 				}// End for x
+				
+				// Create the last row, which is alpha character
+				var row = document.createElement( 'tr' );
+				this.boardElem.appendChild( row );
+				
+				// Create a blank cell so that the table will line up correctly
+				var blankLabel = document.createElement( 'td' );
+				blankLabel.className = 'blank';
+				row.appendChild( blankLabel );
+				
+				// Create the cells labeled A through x that appear at the top of the board
+				for( var x = 1; x <= this.size; ++x )
+				{
+					var labelCell = document.createElement( 'td' );
+					labelCell.className = 'blank';
+					
+					var label = document.createElement( 'span' );
+					label.className = 'blank';
+					label.innerHTML = String.fromCharCode( x + 64 );
+					labelCell.appendChild( label );
+					row.appendChild( labelCell );
+				}// End for x
+				
+				// Create a blank cell so that the table will line up correctly
+				var blankLabel = document.createElement( 'td' );
+				blankLabel.className = 'blank';
+				row.appendChild( blankLabel );
 
 				// Set the reference to the chat window, if one is set
 				if( options.chatWindow && options.chatWindow.length > 0 )
@@ -640,7 +712,6 @@ $.extend( {
 			{
 				// Get a reference to the actual html element that will be used to display this stone
 				var cell = this.getBoardCellAt( x, y );
-				
 				if( cell )
 				{
 					// Set the appropiate class name to display the stone image
@@ -656,16 +727,10 @@ $.extend( {
 			removeStoneFromDisplay: function( x, y, color )
 			{
 				// Get a reference to the actual html element that will be used to display this stone
-				var rows = this.boardElem.getElementsByTagName( 'tr' );
-				if( rows.length > y )
+				var cell = this.getBoardCellAt( x, y );
+				if( cell )
 				{
-					var row = rows[y];
-					var cells = row.getElementsByTagName( 'td' );
-					if( cells.length > x )
-					{
-						// Set the className of the cell to an open liberty 
-						cells[x].className = this.calculateLibertyClass( y + 1, x + 1 );
-					}// End if
+					cell.className = this.calculateLibertyClass( y + 1, x + 1 );
 				}// End if
 			},
 			
@@ -696,6 +761,9 @@ $.extend( {
 			// Returns the table cell element stored in the board at x,y
 			getBoardCellAt: function( x, y )
 			{
+				// Increment x and y so we will ignore the guide rows
+				x++; y++;
+
 				// Get a reference to the actual html td element
 				var rows = this.boardElem.getElementsByTagName( 'tr' );
 				if( rows.length > y )
@@ -710,42 +778,6 @@ $.extend( {
 				}// End if
 
 				return false;
-			},
-			
-			// Adds a marker to the display at x,y.  Color is the color that the marker
-			// should be.   Mark is what will be put into the marker
-			addMarker: function( x, y, color, mark )
-			{
-/*				// Get a reference to the actual html element that will be used to display this stone
-				var rows = this.boardElem.getElementsByTagName( 'tr' );
-				if( rows.length > y )
-				{
-					var row = rows[y];
-					var cells = row.getElementsByTagName( 'td' );
-					if( cells.length > x )
-					{
-						// Set the appropiate class name
-						if( color == 'black' )
-							cells[x].className = 'black';
-						else
-							cells[x].className = 'white';
-
-						// Find and remove any current stone markers
-						$( '#current_play' ).each( function()
-						{
-							this.parentNode.removeChild( this );
-						} );
-
-						// Create the new marker
-						var marker = document.createElement( 'span' );
-						marker.id = 'current_play';
-						marker.innerHTML = '0';
-						marker.className = ( color == 'b' )? 'marker_blackstone': 'marker_whitestone';
-						
-						cells[x].appendChild( marker );
-					}// End if
-				}// End if
-*/
 			},
 			
 			// Returns the value of the image file to use as the liberty image for an empty liberty

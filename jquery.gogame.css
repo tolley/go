@@ -1,5 +1,5 @@
 .goban {
-	width: 380px;
+/*	width: 420px; */
 }
 
 .goban table {
@@ -31,40 +31,48 @@
 	color: #FFFFFF;
 }
 
+/* The image that goes around the actual board */
+.goban .blank {
+	background: url(/images/blank-20x20.png) no-repeat;
+	color: #000;
+	font-size: 12px;
+	font-family: helvetica;
+}
+
 /* The liberty and stone images */
 .goban .b {
 	background: url(/images/b-20x20.png) no-repeat;	
 }
 .goban .bl {
-	background: url(/images/bl-20x20.png) no-repeat;	
+	background: url(/images/bl-20x20.png) no-repeat;
 }
 .goban .black {
-	background: url(/images/black-20x20.png) no-repeat;	
+	background: url(/images/black-20x20.png) no-repeat;
 }
 .goban .br {
-	background: url(/images/br-20x20.png) no-repeat;	
+	background: url(/images/br-20x20.png) no-repeat;
 }
 .goban .c {
-	background: url(/images/c-20x20.png) no-repeat;	
+	background: url(/images/c-20x20.png) no-repeat;
 }
 .goban .cs {
-	background: url(/images/cs-20x20.png) no-repeat;	
+	background: url(/images/cs-20x20.png) no-repeat;
 }
 .goban .l {
-	background: url(/images/l-20x20.png) no-repeat;	
+	background: url(/images/l-20x20.png) no-repeat;
 }
 .goban .r {
-	background: url(/images/r-20x20.png) no-repeat;	
+	background: url(/images/r-20x20.png) no-repeat;
 }
 .goban .t {
-	background: url(/images/t-20x20.png) no-repeat;	
+	background: url(/images/t-20x20.png) no-repeat;
 }
 .goban .tl {
-	background: url(/images/tl-20x20.png) no-repeat;	
+	background: url(/images/tl-20x20.png) no-repeat;
 }
 .goban .tr {
-	background: url(/images/tr-20x20.png) no-repeat;	
+	background: url(/images/tr-20x20.png) no-repeat;
 }
 .goban .white {
-	background: url(/images/white-20x20.png) no-repeat;	
+	background: url(/images/white-20x20.png) no-repeat;
 }

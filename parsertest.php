@@ -15,7 +15,7 @@
 
 $( document ).ready( function()
 {
-	$( '#goban' ).gogame( { 'url': '/handicap.sgf', 
+	$( '#goban' ).gogame( { 'url': '/tolley.sgf', 
 				'format': 'sgf',
 				'nextBtn': '#next',
 				'previousBtn': '#previous',
@@ -60,7 +60,7 @@ $( document ).ready( function()
 	<div id="goban">
 	</div>
 	
-	<textarea id="chatWindow" style="width:382px; height:100px;"></textarea>
+	<textarea id="chatWindow" style="width:420px; height:100px;"></textarea>
 	<br />
 	
 	<button id="first">First</button>
