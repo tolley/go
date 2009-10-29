@@ -55,7 +55,20 @@ $.extend( {
 				var properties = new Array();
 				for( var n in nodes )
 				{
-					properties.push( extractNodeProperties( nodes[n] ) );
+					var nodeProperties = extractNodeProperties( nodes[n] );
+					
+					// If we have subtrees, pull the first subtree out and add it to the
+					// main branch
+					if( nodeProperties['subtrees'] && nodeProperties['subtrees'].length > 0 )
+					{
+						var firstTree = nodeProperties['subtrees'].pop();
+						properties.push( nodeProperties );
+						
+						for( var node = 0; node <= firstTree.length; ++node )
+							properties.push( firstTree[node] );	
+					}// End if
+					else
+						properties.push( nodeProperties );
 				}// End for each node
 				
 				game = properties;
@@ -129,7 +142,7 @@ $.extend( {
 						
 						// Parse the subtree data into javascript structures
 						subTree = parseSGFTree( subTreeData );
-						
+
 						// Add the sub tree to the properties
 						if( ! properties['subtrees'] )
 							properties['subtrees'] = new Array();
