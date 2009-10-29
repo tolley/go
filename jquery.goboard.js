@@ -47,6 +47,9 @@ $.extend( {
 			
 			// Stores the handicap stone coordinates
 			handicapStones: new Array(),
+			
+			// A flag set to true when we are to mark the most recently played stone
+			markCurrentStone: true,			
 
 			// Sets the size of the board
 			setBoardSize: function( size )
@@ -454,6 +457,31 @@ $.extend( {
 							this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
 						}// End for each removed stone
 						
+						// If we are to mark the most recently played stone
+						if( this.markCurrentStone )
+						{
+							// Find and remove any current stone markers
+							$( '#current_play' ).each( function()
+							{
+								this.parentNode.removeChild( this );
+							} );
+
+							// Get a reference to the board cell at x,y
+							var cell = this.getBoardCellAt( currentStone.x, currentStone.y );
+
+							if( cell )
+							{			
+								// Create the new marker
+								var marker = document.createElement( 'span' );
+								marker.id = 'current_play';
+								marker.innerHTML = '0';
+								marker.className = ( currentStone.color == 'b' )? 'marker_blackstone': 'marker_whitestone';
+
+								// Add the marker element to the cell
+								cell.appendChild( marker );
+							}// End if
+						}// End if
+						
 						// If we have a comment, add it to the board
 						if( currentStone.comments && currentStone.comments.length > 0 )
 							this.addCommentToDisplay( currentStone.comments );
@@ -500,6 +528,37 @@ $.extend( {
 							var tempStone = currentDeltas.removeList[number];
 							this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
 						}// End for each removed stone
+						
+						// If we are to mark the most recently played stone
+						if( this.markCurrentStone )
+						{
+							// Find and remove any current stone markers
+							$( '#current_play' ).each( function()
+							{
+								this.parentNode.removeChild( this );
+							} );
+
+							// Get the previously played stone, if there is one
+							if( this.deltaIndex > 1 )
+							{
+								var previousStone = this.turnDeltas[ this.deltaIndex - 1 ].stone;
+
+								// Get a reference to the board cell at x,y
+								var cell = this.getBoardCellAt( previousStone.x, previousStone.y );
+	
+								if( cell )
+								{			
+									// Create the new marker
+									var marker = document.createElement( 'span' );
+									marker.id = 'current_play';
+									marker.innerHTML = '0';
+									marker.className = ( previousStone.color == 'b' )? 'marker_blackstone': 'marker_whitestone';
+	
+									// Add the marker element to the cell
+									cell.appendChild( marker );
+								}// End if
+							}// End if
+						}// End if
 						
 						// If we have a comment, remove it from the board
 						if( currentStone.comments && currentStone.comments.length > 0 )
@@ -580,19 +639,15 @@ $.extend( {
 			addStoneToDisplay: function( x, y, color )
 			{
 				// Get a reference to the actual html element that will be used to display this stone
-				var rows = this.boardElem.getElementsByTagName( 'tr' );
-				if( rows.length > y )
+				var cell = this.getBoardCellAt( x, y );
+				
+				if( cell )
 				{
-					var row = rows[y];
-					var cells = row.getElementsByTagName( 'td' );
-					if( cells.length > x )
-					{
-						// Set the appropiate class name
-						if( color == 'b' )
-							cells[x].className = 'black';
-						else
-							cells[x].className = 'white';
-					}// End if
+					// Set the appropiate class name to display the stone image
+					if( color == 'b' )
+						cell.className = 'black';
+					else
+						cell.className = 'white';
 				}// End if
 			},
 			
@@ -636,6 +691,61 @@ $.extend( {
 				this.chatWindow.value = $.trim( this.chatWindow.value ) + "\n";
 				var self = this;
 				setTimeout( function(){ self.chatWindow.scrollTop = self.chatWindow.scrollHeight }, 1 );
+			},
+			
+			// Returns the table cell element stored in the board at x,y
+			getBoardCellAt: function( x, y )
+			{
+				// Get a reference to the actual html td element
+				var rows = this.boardElem.getElementsByTagName( 'tr' );
+				if( rows.length > y )
+				{
+					var row = rows[y];
+					var cells = row.getElementsByTagName( 'td' );
+					if( cells.length > x )
+					{
+						// Set the className of the cell to an open liberty 
+						return cells[x];
+					}// End if
+				}// End if
+
+				return false;
+			},
+			
+			// Adds a marker to the display at x,y.  Color is the color that the marker
+			// should be.   Mark is what will be put into the marker
+			addMarker: function( x, y, color, mark )
+			{
+/*				// Get a reference to the actual html element that will be used to display this stone
+				var rows = this.boardElem.getElementsByTagName( 'tr' );
+				if( rows.length > y )
+				{
+					var row = rows[y];
+					var cells = row.getElementsByTagName( 'td' );
+					if( cells.length > x )
+					{
+						// Set the appropiate class name
+						if( color == 'black' )
+							cells[x].className = 'black';
+						else
+							cells[x].className = 'white';
+
+						// Find and remove any current stone markers
+						$( '#current_play' ).each( function()
+						{
+							this.parentNode.removeChild( this );
+						} );
+
+						// Create the new marker
+						var marker = document.createElement( 'span' );
+						marker.id = 'current_play';
+						marker.innerHTML = '0';
+						marker.className = ( color == 'b' )? 'marker_blackstone': 'marker_whitestone';
+						
+						cells[x].appendChild( marker );
+					}// End if
+				}// End if
+*/
 			},
 			
 			// Returns the value of the image file to use as the liberty image for an empty liberty

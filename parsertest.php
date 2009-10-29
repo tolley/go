@@ -15,7 +15,7 @@
 
 $( document ).ready( function()
 {
-	var goban = $( '#goban' ).gogame( { 'url': '/handicap.sgf', 
+	$( '#goban' ).gogame( { 'url': '/handicap.sgf', 
 				'format': 'sgf',
 				'nextBtn': '#next',
 				'previousBtn': '#previous',

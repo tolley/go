@@ -17,6 +17,20 @@
 	padding: 0px;
 }
 
+.goban #current_play {
+	font-size: 14px;
+	font-weight: bold;
+	font-family: helvetica;
+}
+
+.goban .marker_whitestone {
+	color: #000000;
+}
+
+.goban .marker_blackstone {
+	color: #FFFFFF;
+}
+
 /* The liberty and stone images */
 .goban .b {
 	background: url(/images/b-20x20.png) no-repeat;	
