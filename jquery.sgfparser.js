@@ -314,6 +314,10 @@ $.extend( {
 
 					this.board = board;
 					
+					// Create our player objects
+					var playerWhite = this.board.getBlankPlayerObj( 'white' );
+					var playerBlack = this.board.getBlankPlayerObj( 'black' );
+					
 					// Loop over each node and each node's properties, applying any static board
 					// properties to the board, and generating delta's between each move
 					for( var node = 0; node <= this.gameTree.length; ++node )
@@ -334,6 +338,7 @@ $.extend( {
 							// Switch based on the property name
 							switch( property )
 							{
+								// Begin move related properties ////////////////////////////////////////
 								// Black makes a move
 								case 'B':
 									if( ! goStone.x && ! goStone.y && ! goStone.action )
@@ -377,17 +382,20 @@ $.extend( {
 									else
 										goStone.comments = $.trim( this.gameTree[node][property] );
 									break;
+								// End move related properties ////////////////////////////////////////
 
-								// Game property, the size of the board.
+
+								// Begin game related properties ////////////////////////////////////////
+								// The size of the board.
 								case 'SZ':
 									this.board.setBoardSize( this.gameTree[node][property] );
 									break;
 								
-								// Game board property, the number of handicap stones
+								// The number of handicap stones.  We use the AB property to set the actual handicap stones
 								case 'HA':
 									break;
 								
-								// Game board property, the position of the handicap stones
+								// The position of the handicap stones
 								case 'AB':
 									// If the handicap stones are not in the first node of the tree
 									if( node != 0 )
@@ -425,6 +433,104 @@ $.extend( {
 									this.board.setHandicapStones( stoneObjects );
 									break;
 
+								// The copyright info related to the game
+								case 'CP':
+								case 'CoPyright':
+								case 'COPYRIGHT':
+								case 'copyright':
+									this.board.copyrightInfo = this.gameTree[node][property];
+									break;
+
+								// The date / time that this game was played
+								case 'DT':
+									// this.board.dateTime = dateFormat(  );
+									this.board.dateTime = this.gameTree[node][property];
+									break;
+
+								// The event/venue where this game was played
+								case 'EV':
+									this.board.event = this.gameTree[node][property];
+									break;
+
+								// The location/server where this game was played
+								case 'PC':
+									this.board.location = this.gameTree[node][property];
+									break;
+								
+								// The round number and type (final, semifinal) of this game
+								case 'RO':
+									this.board.roundInfo = this.gameTree[node][property];
+									break;
+								
+								// The rules set this game was played under
+								case 'RU':
+									this.board.rulesSet = this.gameTree[node][property];
+									break;
+								
+								// The source of the this game (book, journal, etc)
+								case 'SO':
+									this.board.source = this.gameTree[node][property];
+									break;
+
+								// The name of the game
+								case 'GN':
+									this.board.gameName = this.gameTree[node][property];
+									break;
+								
+								// The final result of the game
+								case 'RE':
+									this.board.result = this.gameTree[node][property];
+									break;
+
+								// Extra info about this game
+								case 'GC':
+									this.board.gameInfo = this.gameTree[node][property];
+									break;
+								
+								// The time limit for this game
+								case 'TM':
+									this.board.timeLimit = this.gameTree[node][property];
+									break;
+								
+								// The person or server that created the game file
+								case 'US':
+									this.board.author = this.gameTree[node][property];
+									break;
+								// End game related properties ////////////////////////////////////////
+
+
+								// Begin player related properties ////////////////////////////////////
+								// The black player's name
+								case 'PB':
+									playerBlack.name = this.board.event = this.gameTree[node][property];
+									break;
+
+								// The black player's rank
+								case 'BR':
+									playerBlack.rank = this.gameTree[node][property];
+									break;
+
+								// The black player's team's name
+								case 'BT':
+									playerBlack.teamName = this.gameTree[node][property];
+									break;
+								
+								// The white player's name
+								case 'PW':
+									playerWhite.rank = this.gameTree[node][property];
+									break;
+								
+								// The white player's rank
+								case 'WR':
+									playerWhite.rank = this.gameTree[node][property];
+									break;
+								
+								// The white player's team's name
+								case 'WT':
+									playerWhite.teamName = this.gameTree[node][property];
+									break;
+
+								// End player related properties //////////////////////////////////////
 								default:
 									// Uncomment this to see all the properties I still have to implement
 //									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
@@ -440,7 +546,11 @@ $.extend( {
 								this.board.calculateTurnDelta( node, goStone );
 						}// End if
 					}// End for each node
-								
+					
+					// Send the player information to the board
+					this.board.playerBlack = playerBlack;
+					this.board.playerWhite = playerWhite;
+
 					// Let the board know we are finished calculating the turn delta's
 					this.board.onDeltasFinished();
 				}

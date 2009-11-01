@@ -15,7 +15,7 @@
 
 $( document ).ready( function()
 {
-	$( '#goban' ).gogame( { 'url': '/games/branch.sgf', 
+	var goban = $( '#goban' ).gogame( { 'url': '/games/tolley.sgf', 
 				'format': 'sgf',
 				'nextBtn': '#next',
 				'previousBtn': '#previous',
@@ -33,6 +33,11 @@ $( document ).ready( function()
 	<div style="float:right;">
 	
 	<h2>What am I looking at?</h2>
+	<button id="first">First</button>
+	<button id="previous">Previous</button>
+	<button id="next">Next</button>
+	<button id="last">Last</button>
+	<br />
 	
 	<p style="width:400px;">
 	This is a demo page for a <a href="http://en.wikipedia.org/wiki/Go_(game)">go board</a> plugin for jQuery.  

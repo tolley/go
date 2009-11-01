@@ -48,6 +48,48 @@ $.extend( {
 			// Stores the handicap stone coordinates
 			handicapStones: new Array(),
 			
+			// Stores any copyright related information found in the game file
+			copyrightInfo: '',
+			
+			// The date/time that this game was played
+			dateTime: '',
+			
+			// The event/venue where this game was played
+			event: '',
+			
+			// The name of the game
+			gameName: '',
+			
+			// The final result of the game
+			result: '',
+			
+			// The round number and type (final, semifinal) of this game
+			roundInfo: '',
+			
+			// The rules set this game was played under
+			rulesSet: '',
+			
+			// The source of this game (book, journal)
+			source: '',
+			
+			// Extra information about this game
+			gameInfo: '',
+			
+			// The location/server where this game was played
+			location: '',
+			
+			// The time limit for this game
+			timeLimit: '',
+			
+			// The person or server that created this game file
+			author: '',
+			
+			// The object that holds the black player's information
+			playerBlack: false,
+			
+			// The object that holds the white player's information
+			playerWhite: false,
+			
 			// A flag set to true when we are to mark the most recently played stone
 			markCurrentStone: true,			
 
@@ -101,6 +143,18 @@ $.extend( {
 					 comments: '',
 					 action:   false, 
 					 number:   false };
+			},
+   
+   			// Creates an empty player object.  These objects are used by the parser to set the 
+   			// player properties.
+   			getBlankPlayerObj: function( color )
+			{
+				return { 
+					color: color,
+					name: 'N/A',
+					rank: 'N/A',
+					teamName: 'N/A'
+				};
 			},
 
 			// Returns true if x/y is a valid play for color(w,b)
