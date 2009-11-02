@@ -39,6 +39,9 @@ $.extend( {
 			// A reference to the chat window
 			chatWindow: false,
 			
+			// A reference to the game info panel
+			gameInfoPanel: false,
+			
 			// A reference to the html elements that make up the board display
 			boardElem: false,
 			
@@ -541,6 +544,17 @@ $.extend( {
 					var temp = $( options.chatWindow );
 					if( temp.length > 0 )
 						this.chatWindow = temp[0];
+				}// End if
+				
+				// If the game info element selector is set in the options
+				if( options.gameInfo && options.gameInfo.length > 0 )
+				{
+					// Build the game info panel content
+					var gameInfoContent = 'Game: ' + this.gameName +
+							' played on ' + this.dateTime;
+
+					this.gameInfoPanel = $( options.gameInfo ).html( gameInfoContent ).
+									addClass( 'gameInfoPanel' );
 				}// End if
 				
 				// Tell the world we have loaded

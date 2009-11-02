@@ -15,13 +15,14 @@
 
 $( document ).ready( function()
 {
-	var goban = $( '#goban' ).gogame( { 'url': '/games/tolley.sgf', 
+	$( '#goban' ).gogame( { 'url': '/games/tolley.sgf', 
 				'format': 'sgf',
 				'nextBtn': '#next',
 				'previousBtn': '#previous',
 				'lastBtn': '#last',
 				'firstBtn': '#first',
-				'chatWindow': '#chatWindow' } );
+				'chatWindow': '#chatWindow',
+				'gameInfo': '#gameinfo' } );
 } );
 </script>
 
@@ -33,11 +34,6 @@ $( document ).ready( function()
 	<div style="float:right;">
 	
 	<h2>What am I looking at?</h2>
-	<button id="first">First</button>
-	<button id="previous">Previous</button>
-	<button id="next">Next</button>
-	<button id="last">Last</button>
-	<br />
 	
 	<p style="width:400px;">
 	This is a demo page for a <a href="http://en.wikipedia.org/wiki/Go_(game)">go board</a> plugin for jQuery.  
@@ -56,23 +52,30 @@ $( document ).ready( function()
 				'previousBtn': '#previous',
 				'lastBtn': '#last',
 				'firstBtn': '#first',
-				'chatWindow': '#chatWindow' } );
+				'chatWindow': '#chatWindow',
+				'gameInfo': '#gameinfo' } );
 } );
 	</pre>
 	
 	</div>
 	
-	<div id="goban">
+	<div style="border:solid 1px #000; width: 420px;">
+		<div id="gameinfo" style="width: 419px;">
+		</div>
+		
+		<div id="goban">
+		</div>
+		
+		<textarea id="chatWindow" style="width:420px; height:75px;"></textarea>
+		<br />
+		
+		<div style="text-align: center;">
+			<button id="first">First</button>
+			<button id="previous">Previous</button>
+			<button id="next">Next</button>
+			<button id="last">Last</button>
+		</div>
 	</div>
-	
-	<textarea id="chatWindow" style="width:420px; height:100px;"></textarea>
-	<br />
-	
-	<button id="first">First</button>
-	<button id="previous">Previous</button>
-	<button id="next">Next</button>
-	<button id="last">Last</button>
-	<br />
 </div>
 
 </body>
