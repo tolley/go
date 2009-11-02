@@ -517,7 +517,7 @@ $.extend( {
 								
 								// The white player's name
 								case 'PW':
-									playerWhite.rank = this.gameTree[node][property];
+									playerWhite.name = this.gameTree[node][property];
 									break;
 								
 								// The white player's rank
