@@ -90,11 +90,17 @@ $.extend( {
 			// The object that holds the black player's information
 			playerBlack: false,
 			
+			// The element that holds the black player's information
+			playerBlackPanel: false,
+			
 			// The object that holds the white player's information
 			playerWhite: false,
 			
+			// The element that holds the white player's information
+			playerWhitePanel: false,
+			
 			// A flag set to true when we are to mark the most recently played stone
-			markCurrentStone: true,			
+			markCurrentStone: true,	
 
 			// Sets the size of the board
 			setBoardSize: function( size )
@@ -156,7 +162,8 @@ $.extend( {
 					color: color,
 					name: 'N/A',
 					rank: 'N/A',
-					teamName: 'N/A'
+					teamName: 'N/A',
+					captures: 0
 				};
 			},
 
@@ -557,6 +564,28 @@ $.extend( {
 									addClass( 'gameInfoPanel' );
 				}// End if
 				
+				// If the black player info panel selector is set in the options
+				if( options.blackInfo && options.blackInfo.length > 0 )
+				{
+					var blackInfoContent = 'Black: ' + this.playerBlack.name + 
+							' (' + this.playerBlack.rank + ') <br />' +
+							'Captures: <span class="black_captures">0</span>';
+
+					this.playerBlackPanel = $( options.blackInfo ).html( blackInfoContent ).
+									addClass( 'playerInfoPanel' );
+				}// End if
+				
+				// If the white player info panel selector is set in the options
+				if( options.whiteInfo && options.whiteInfo.length > 0 )
+				{
+					var whiteInfoContent = 'White: ' + this.playerWhite.name + 
+							' (' + this.playerWhite.rank + ') <br />' +
+							'Captures: <span class="white_captures">0</span>';
+
+					this.playerWhitePanel = $( options.whiteInfo ).html( whiteInfoContent ).
+									addClass( 'playerInfoPanel' );
+				}// End if
+				
 				// Tell the world we have loaded
 				this.loaded = true;
 			},
@@ -589,13 +618,21 @@ $.extend( {
 						this.addStoneToDisplay( currentStone.x,
 									currentStone.y,
 									currentStone.color );
-						
+
+						// Keep track of the number of stones captured
+						var numCaptured = 0;
+
 						// Foreach stone in the remove list, remove it from the board
 						for( var number in currentDeltas.removeList )
 						{
 							var tempStone = currentDeltas.removeList[number];
 							this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
+							numCaptured++;
 						}// End for each removed stone
+							
+						// Update the number of captured stones if we need to
+						if( numCaptured > 0 )
+							this.updateCaptureDisplay( currentStone.color, numCaptured );
 						
 						// If we are to mark the most recently played stone
 						if( this.markCurrentStone )
@@ -662,12 +699,20 @@ $.extend( {
 									     currentStone.y,
 									     currentStone.color );
 						
+						// Keep track of the number of stones captured
+						var numCaptured = 0;
+
 						// Foreach stone in the remove list, put it back on the board
 						for( var number in currentDeltas.removeList )
 						{
 							var tempStone = currentDeltas.removeList[number];
 							this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
+							numCaptured++;
 						}// End for each removed stone
+						
+						// Update the number of captured stones if we need to
+						if( numCaptured > 0 )
+							this.updateCaptureDisplay( currentStone.color, ( numCaptured * -1 ) );
 						
 						// If we are to mark the most recently played stone
 						if( this.markCurrentStone )
@@ -824,6 +869,51 @@ $.extend( {
 				this.chatWindow.value = $.trim( this.chatWindow.value ) + "\n";
 				var self = this;
 				setTimeout( function(){ self.chatWindow.scrollTop = self.chatWindow.scrollHeight }, 1 );
+			},
+			
+			// If the player info panel element is set, this function updates the number
+			// of captures displayed for that player
+			updateCaptureDisplay: function( color, numCaptures )
+			{
+				if( numCaptures == 0 )
+					return;
+
+				// Get the proper elements based on the color
+				var captureDisplay = false;
+				var playerObj = false;
+
+				if( color == 'w' && this.playerWhitePanel )
+				{
+					captureDisplay = this.playerWhitePanel.find( '.white_captures' );
+					playerObj = this.playerWhite;
+				}// End if
+				else if( color == 'b' && this.playerBlackPanel )
+				{
+					captureDisplay = this.playerBlackPanel.find( '.black_captures' );
+					playerObj = this.playerBlack;
+				}// End else
+				
+				// If we have the capture display element, update it
+				if( captureDisplay )
+				{
+					var currentCaptureCount = parseInt( captureDisplay.html() );
+					if( currentCaptureCount == NaN )
+						currentCaptureCount = 0;
+					
+					currentCaptureCount += numCaptures;
+					if( currentCaptureCount < 0 )
+						currentCaptureCount = 0;
+					
+					captureDisplay.html( currentCaptureCount );
+				}// End if
+				
+				// If we have a player object, update the number of captures
+				if( playerObj )
+				{
+					playerObj.captures += numCaptures;
+					if( playerObj.captures < 0 )
+						playerObj.captures = 0;
+				}// End if
 			},
 			
 			// Returns the table cell element stored in the board at x,y

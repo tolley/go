@@ -22,7 +22,9 @@ $( document ).ready( function()
 				'lastBtn': '#last',
 				'firstBtn': '#first',
 				'chatWindow': '#chatWindow',
-				'gameInfo': '#gameinfo' } );
+				'gameInfo': '#gameinfo',
+				'whiteInfo': '#player_whilte_info',
+				'blackInfo': '#player_black_info' } );
 } );
 </script>
 
@@ -46,14 +48,16 @@ $( document ).ready( function()
 	<pre>
 $( document ).ready( function()
 {
-	$( '#goban' ).gogame( { 'url': '/handicap.sgf', 
+	$( '#goban' ).gogame( { 'url': '/games/tolley.sgf', 
 				'format': 'sgf',
 				'nextBtn': '#next',
 				'previousBtn': '#previous',
 				'lastBtn': '#last',
 				'firstBtn': '#first',
 				'chatWindow': '#chatWindow',
-				'gameInfo': '#gameinfo' } );
+				'gameInfo': '#gameinfo',
+				'whiteInfo': '#player_whilte_info',
+				'blackInfo': '#player_black_info' } );
 } );
 	</pre>
 	
@@ -64,6 +68,13 @@ $( document ).ready( function()
 		</div>
 		
 		<div id="goban">
+		</div>
+		
+		<div>
+			<div id="player_whilte_info" style="width: 50%; float: left;">
+			</div>
+			<div id="player_black_info" style="width: 49%; float: right;">
+			</div>
 		</div>
 		
 		<textarea id="chatWindow" style="width:420px; height:75px;"></textarea>
