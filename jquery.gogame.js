@@ -44,8 +44,6 @@
 			}// End switch file format
 		}// End if
 		
-		console.log( goBoard );
-		
 		// Returns true if the game file has been loaded and is ready for interaction
 		$.fn.isGameLoaded = function()
 		{
