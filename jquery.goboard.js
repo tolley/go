@@ -72,6 +72,9 @@ $.extend( {
 			// The rules set this game was played under
 			rulesSet: '',
 			
+			// The komi set for this game
+			komi: '',
+			
 			// The source of this game (book, journal)
 			source: '',
 			
@@ -84,8 +87,17 @@ $.extend( {
 			// The time limit for this game
 			timeLimit: '',
 			
+			// The overtime method used in this game
+			overtime: '',
+			
+			// Information about the opening moves of this game
+			openingType: '',
+			
 			// The person or server that created this game file
 			author: '',
+			
+			// Holds any comments that should be displayed when the game is loaded
+			startingComment: '',
 			
 			// The object that holds the black player's information
 			playerBlack: false,
@@ -551,6 +563,10 @@ $.extend( {
 					var temp = $( options.chatWindow );
 					if( temp.length > 0 )
 						this.chatWindow = temp[0];
+					
+					// If we have a comment to display from the beginning, show it now.
+					if( this.startingComment.length > 0 )
+						this.addCommentToDisplay( this.startingComment );
 				}// End if
 				
 				// If the game info element selector is set in the options
@@ -846,7 +862,7 @@ $.extend( {
 					cell.className = this.calculateLibertyClass( y + 1, x + 1 );
 				}// End if
 			},
-			
+
 			// Adds a comment to the chat window
 			addCommentToDisplay: function( comment )
 			{

@@ -338,7 +338,20 @@ $.extend( {
 							// Switch based on the property name
 							switch( property )
 							{
-								// Begin move related properties ////////////////////////////////////////
+								// For a list of properties see: http://www.red-bean.com/sgf/properties.html
+								
+								// Begin MOVE properties //////////////////////////////////////////////
+								case 'KO':
+									// This value tells the viewer to play a given stone even if it's illegal
+									// but we don't need to do that cause we already allow illegal moves
+									break;
+								
+								// Sets the move number, used for printing
+								case 'MN':
+									if( parseInt( gameTree[node][property] ) != NaN )
+										goStone.number = parseInt( gameTree[node][property] );
+									break;
+
 								// Black makes a move
 								case 'B':
 									if( ! goStone.x && ! goStone.y && ! goStone.action )
@@ -375,6 +388,71 @@ $.extend( {
 										alert( 'Two stones placed in node '  + node );
 									break;
 
+								// End MOVE properties //////////////////////////////////////////////////
+								
+								// Begin SETUP properties ///////////////////////////////////////////////
+								// The position of the handicap stones
+								case 'AB':
+									// AB means Add Black stone.  In the first node, these are the handicap stones, if any
+									// If the handicap stones are not in the first node of the tree
+									if( node != 0 )
+									{
+										// Get a short cut to the list of handicap stones
+										var handicapList = this.gameTree[node][property];
+										
+										// Set the number of handicap stones
+										// The number of handicap stones in this game files
+										this.numHandicapStones = handicapList.length;
+										
+										// Foreach handicap stone, create a stone object
+										var stoneObjects = new Array();
+										for( var n in handicapList )
+										{
+											// Get a blank stone and fill in the details
+											var handicapStone = this.board.getBlankStone();
+											handicapStone.color = 'b';
+											handicapStone.action = 'place';
+											handicapStone.x = handicapList[n].charAt( 0 );
+											handicapStone.y = handicapList[n].charAt( 1 );
+											handicapStone.number = n;
+											
+											// Translate the go stone coordinates from alpha to numeric
+											handicapStone.x = parseInt( handicapStone.x.charCodeAt( 0 ) ) - 97;
+											handicapStone.y = parseInt( handicapStone.y.charCodeAt( 0 ) ) - 97;
+											
+											stoneObjects.push( handicapStone );
+										}// End for n
+										
+										// Give the handicap stones to the board
+										this.board.setHandicapStones( stoneObjects );
+									}// End if
+									else
+									{
+										// Otherwise, we need to add the stones to the board
+									}// End else
+									break;
+								
+								// Clears the given point on the board
+								case 'AE':
+									break;
+								
+								// Adds a list of white stones to the board
+								case 'AW':
+									break;
+								
+								// Tells the user who's turn it is to play, used in problems and such
+								case 'PL':
+									if( this.gameTree[node][property] == 'B' )
+										var message = '\nBlack to play';
+									else
+										var message = '\nWhite to play';
+
+									this.board.startingComment = this.board.startingComment + message;
+									break;
+								// End SETUP properties ///////////////////////////////////////////////
+								
+								// Begin NODE ANNOTATION properties ///////////////////////////////////
+								
 								// A player made a comment
 								case 'C':
 									if( goStone.comments && goStone.comments.length > 0 )
@@ -382,55 +460,106 @@ $.extend( {
 									else
 										goStone.comments = $.trim( this.gameTree[node][property] );
 									break;
-								// End move related properties ////////////////////////////////////////
+								
+								
+								// End NODE ANNOTATION properties /////////////////////////////////////
+								
+								// Begin MOVE ANNOTATION properties ///////////////////////////////////
+								
+								// The move played is bad
+								case 'BM':
+									if( goStone.color == 'w' )
+										var message = '/nThis is a bad move for white.';
+									else
+										var message = '/nThis is a bad move for black.';
 
+									goStone.comments = goStone.comments + message;
+									break;
+								
+								// The move is doubtful
+								case 'DO':
+									if( goStone.color == 'w' )
+										var message = '/nThis is a doubtful move for white.';
+									else
+										var message = '/nThis is a doubtful move for black.';
 
-								// Begin game related properties ////////////////////////////////////////
+									goStone.comments = goStone.comments + message;
+									break;
+								
+								// The move is an interesting one
+								case 'IT':
+									if( goStone.color == 'w' )
+										var message = '/nThis is an interesting move by white.';
+									else
+										var message = '/nThis is an interesting move by black.';
+
+									goStone.comments = goStone.comments + message;
+									break;
+								
+								// The move is a tesuji
+								case 'TE':
+									if( goStone.color == 'w' )
+										var message = '/nThis is a tesuji for white.';
+									else
+										var message = '/nThis is a tesuji for black.';
+
+									goStone.comments = goStone.comments + message;
+									break;
+								
+								// End MOVE ANNOTATION properties /////////////////////////////////////
+								
+/*								// Begin MARKUP properties ////////////////////////////////////////////
+
+								// Marks the current stone with a circle
+								case 'CR':
+									break;
+
+								// Dims out the current stone
+								case 'DD':
+									break;
+
+								// Writes the given text to the board around the current stone
+								case 'LB':
+									// Foreach point, split by : and add the markup
+									break;								
+
+								// Marks the given points with an X
+								case 'X':
+									break;
+
+								// End MARKUP properties //////////////////////////////////////////////
+*/
+								
+								// Begin ROOT properties //////////////////////////////////////////////
+								
+								// Defines the game type.  If it's not a go game, exit
+								case 'GM':
+									if( this.gameTree[node][property] != 1 )
+									{
+										alert( 'Unable to parse game file: Not a go game' );
+										return false;
+									}// End if
+									break;
+
 								// The size of the board.
 								case 'SZ':
-									this.board.setBoardSize( this.gameTree[node][property] );
+									if( parseInt( this.gameTree[node][property] ) != NaN && node == 0 )
+										this.board.setBoardSize( this.gameTree[node][property] );
 									break;
 								
-								// The number of handicap stones.  We use the AB property to set the actual handicap stones
-								case 'HA':
+								// End ROOT properties ////////////////////////////////////////////////
+
+
+								// Begin GAMEINFO properties ////////////////////////////////////////
+
+								// The black player's rank
+								case 'BR':
+									playerBlack.rank = this.gameTree[node][property];
 									break;
-								
-								// The position of the handicap stones
-								case 'AB':
-									// If the handicap stones are not in the first node of the tree
-									if( node != 0 )
-									{
-										alert( 'Found handicap stones in node ' + node + '. Exiting');
-										return;
-									}// End if
-									// Get a short cut to the list of handicap stones
-									var handicapList = this.gameTree[node][property];
-									
-									// Set the number of handicap stones
-									// The number of handicap stones in this game files
-									this.numHandicapStones = handicapList.length;
-									
-									// Foreach handicap stone, create a stone object
-									var stoneObjects = new Array();
-									for( var n in handicapList )
-									{
-										// Get a blank stone and fill in the details
-										var handicapStone = this.board.getBlankStone();
-										handicapStone.color = 'b';
-										handicapStone.action = 'place';
-										handicapStone.x = handicapList[n].charAt( 0 );
-										handicapStone.y = handicapList[n].charAt( 1 );
-										handicapStone.number = n;
-										
-										// Translate the go stone coordinates from alpha to numeric
-										handicapStone.x = parseInt( handicapStone.x.charCodeAt( 0 ) ) - 97;
-										handicapStone.y = parseInt( handicapStone.y.charCodeAt( 0 ) ) - 97;
-										
-										stoneObjects.push( handicapStone );
-									}// End for n
-									
-									// Give the handicap stones to the board
-									this.board.setHandicapStones( stoneObjects );
+
+								// The black player's team's name
+								case 'BT':
+									playerBlack.teamName = this.gameTree[node][property];
 									break;
 
 								// The copyright info related to the game
@@ -452,9 +581,44 @@ $.extend( {
 									this.board.event = this.gameTree[node][property];
 									break;
 
+								// The name of the game
+								case 'GN':
+									this.board.gameName = this.gameTree[node][property];
+									break;
+
+								// Extra info about this game
+								case 'GC':
+									this.board.gameInfo = this.gameTree[node][property];
+									break;
+								
+								// Some information about the opening of this game
+								case 'ON':
+									this.board.openingType = this.gameTree[node][property];
+									break;
+								
+								// The overtime method used in this game
+								case 'OT':
+									this.board.overtime = this.gameTree[node][property];
+									break;
+								
+								// The black player's name
+								case 'PB':
+									playerBlack.name = this.board.event = this.gameTree[node][property];
+									break;
+								
 								// The location/server where this game was played
 								case 'PC':
 									this.board.location = this.gameTree[node][property];
+									break;
+
+								// The white player's name
+								case 'PW':
+									playerWhite.name = this.gameTree[node][property];
+									break;
+
+								// The final result of the game
+								case 'RE':
+									this.board.result = this.gameTree[node][property];
 									break;
 								
 								// The round number and type (final, semifinal) of this game
@@ -471,21 +635,6 @@ $.extend( {
 								case 'SO':
 									this.board.source = this.gameTree[node][property];
 									break;
-
-								// The name of the game
-								case 'GN':
-									this.board.gameName = this.gameTree[node][property];
-									break;
-								
-								// The final result of the game
-								case 'RE':
-									this.board.result = this.gameTree[node][property];
-									break;
-
-								// Extra info about this game
-								case 'GC':
-									this.board.gameInfo = this.gameTree[node][property];
-									break;
 								
 								// The time limit for this game
 								case 'TM':
@@ -495,29 +644,6 @@ $.extend( {
 								// The person or server that created the game file
 								case 'US':
 									this.board.author = this.gameTree[node][property];
-									break;
-								// End game related properties ////////////////////////////////////////
-
-
-								// Begin player related properties ////////////////////////////////////
-								// The black player's name
-								case 'PB':
-									playerBlack.name = this.board.event = this.gameTree[node][property];
-									break;
-
-								// The black player's rank
-								case 'BR':
-									playerBlack.rank = this.gameTree[node][property];
-									break;
-
-								// The black player's team's name
-								case 'BT':
-									playerBlack.teamName = this.gameTree[node][property];
-									break;
-								
-								// The white player's name
-								case 'PW':
-									playerWhite.name = this.gameTree[node][property];
 									break;
 								
 								// The white player's rank
@@ -529,8 +655,26 @@ $.extend( {
 								case 'WT':
 									playerWhite.teamName = this.gameTree[node][property];
 									break;
+								// End GAME properties ////////////////////////////////////////
 
-								// End player related properties //////////////////////////////////////
+
+								// Begin TIMING properties ////////////////////////////////////////
+								
+								// End TIMGING properties //////////////////////////////////////////
+								
+								// Begin GM[1] properties /////////////////////////////////////////
+								
+								// The number of handicap stones.  We use the AB property to set the actual handicap stones
+								case 'HA':
+									break;
+								
+								// Defines the komi for this game
+								case 'KM':
+									this.board.komi = this.gameTree[node][property];
+									break;
+
+								// End GM[1] properties ///////////////////////////////////////////
+
 								default:
 									// Uncomment this to see all the properties I still have to implement
 //									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
