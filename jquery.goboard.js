@@ -34,7 +34,7 @@ $.extend( {
 			size: false,
 			
 			// Keeps track of the turn we are on
-			deltaIndex: 0,
+			deltaIndex: -1,
 
 			// A reference to the chat window
 			chatWindow: false,
@@ -48,8 +48,8 @@ $.extend( {
 			// An array to hold the delta's between turns
 			turnDeltas: new Array(),
 			
-			// Stores the handicap stone coordinates
-			handicapStones: new Array(),
+			// Stores the number of handicap stones
+			numHandicapStones: 0,
 			
 			// Stores any copyright related information found in the game file
 			copyrightInfo: '',
@@ -113,6 +113,10 @@ $.extend( {
 			
 			// A flag set to true when we are to mark the most recently played stone
 			markCurrentStone: true,	
+			
+			// Used to keep track of the stone numbers.  Each stone gets a number when it is
+			// used in calculateTurnDelta.  Those numbers are used in the capturing logic
+			stoneId: 0,
 
 			// Sets the size of the board
 			setBoardSize: function( size )
@@ -139,21 +143,6 @@ $.extend( {
 				}// End if
 			},
 			
-			// Lets the parser set the position of all handicap stones on the board
-			setHandicapStones: function( stones )
-			{
-				if( stones && stones.length > 0 )
-				{
-					this.handicapStones = stones;
-
-					for( var n = 0; n < this.handicapStones.length; ++n )
-					{
-						var stone = this.handicapStones[n];
-						this.internalBoard[stone.y][stone.x] = stone;
-					}// End for n
-				}// End if
-			},
-			
 			// Called by the parser to get blank stone objects.  These are the stones
 			// that will be passed back to the board, with values, to calculate turn deltas
 			getBlankStone: function()
@@ -161,9 +150,27 @@ $.extend( {
 				return { x: 	  false, 
 					 y: 	  false, 
 					 color:    false, 
-					 comments: '',
 					 action:   false, 
 					 number:   false };
+			},
+			
+			// Called by the parser to get an empty "turn" object.  These objects will
+			// be populated by the parser and passed to the board object to help calculate the turn deltats
+			getBlankTurnObject: function()
+			{
+				return {
+					// The stone played on the turn
+					stone: false,
+					
+					// A list of stones, used to help set up problems and such
+					additionalWhiteStones: false,
+					additionalBlackStones: false,
+					
+					// Comments made this turn
+					comments: false,
+						
+					// A list of stones to remove, this is calculated by the parser
+					removeList: false };
 			},
    
    			// Creates an empty player object.  These objects are used by the parser to set the 
@@ -195,7 +202,7 @@ $.extend( {
 			// Called by the parser object, in order of moves, to set the turn deltas.
 			// Note: This function uses the internal board to determine if we have a legal play
 			// or if stones where captured.  If you don't call this function in turn order, it won't work
-			calculateTurnDelta: function( turn, stone )
+			calculateTurnDelta: function( turn, turnObj )
 			{				
 				// If the turn delta's have already been set for the given turn,
 				// let the user know
@@ -207,30 +214,59 @@ $.extend( {
 				
 				// Keeps track of the removed stones list
 				var removedList = new Array();
-
-				// Switch based on the action of the stone
-				switch( stone.action )
+				
+				// If there are any white stones to add, number them and add them to the board
+				if( turnObj.additionalWhiteStones )
 				{
-					case 'place':
-						// Place the stone on the board and see if any stones where captured
-						if( this.isLegalPlay( stone ) )
-						{
-							this.internalBoard[stone.y][stone.x] = stone;
-							
-							// Remove any captured stones and store the list
-							// in the list of delta's
-							var removeList = this.removeStonesCapturedBy( stone.x, stone.y );
+					for( var n in turnObj.additionalWhiteStones )
+					{
+						var stone = turnObj.additionalWhiteStones[n];
+						stone.number = this.stoneId++;
+						this.internalBoard[stone.y][stone.x] = stone;
+					}// End for n
+				}// End if
+				
+				// If there are any black stones to add, number them and add them to the board
+				if( turnObj.additionalBlackStones )
+				{
+					for( var n in turnObj.additionalBlackStones )
+					{
+						var stone = turnObj.additionalBlackStones[n];
+						stone.number = this.stoneId++;
+						this.internalBoard[stone.y][stone.x] = stone;
+					}// End for n
+				}// End if
 
-							this.turnDeltas[turn] = { stone: stone, removeList: removeList }
-						}// End if
-						break;
-					case 'pass':
-						// If the user is passing, do nothing.
-						break;
-					default:
-						alert( "Unrecognized action " + stone.action );
-						break;
-				}// End switch
+				// If there was a stone played this turn, add it to the board
+				if( turnObj.stone )
+				{
+					// Switch based on the action of the stone
+					var stone = turnObj.stone;
+					stone.number = this.stoneId++;
+					switch( stone.action )
+					{
+						case 'place':
+							// Place the stone on the board and see if any stones where captured
+							if( this.isLegalPlay( stone ) )
+							{
+								this.internalBoard[stone.y][stone.x] = stone;
+								
+								// Remove any captured stones and store the list
+								// in the list of delta's
+								turnObj.removeList = this.removeStonesCapturedBy( stone.x, stone.y );
+							}// End if
+							break;
+						case 'pass':
+							// If the user is passing, do nothing.
+							break;
+						default:
+							alert( "Unrecognized action " + stone.action );
+							break;
+					}// End switch
+				}// End if
+				
+				// Store the completed deltas for this turn
+				this.turnDeltas[turn] = turnObj;
 			},
 			
 			// Called during the generation of the turn deltas.  It takes in the coordinates of stone
@@ -425,17 +461,7 @@ $.extend( {
 				}// End else
 				
 				// Make sure we are on the first set of turn delta's
-				this.deltaIndex = 0;
-
-				// Add any handicapped stones to the internal memory
-				if( this.handicapStones.length > 0 )
-				{
-					for( var n = 0; n < this.handicapStones.length; ++n )
-					{
-						var stone = this.handicapStones[n];
-						this.internalBoard[stone.y][stone.x] = stone;
-					}// End for n
-				}// End if
+				this.deltaIndex = -1;
 
 				// Draw the board using the internal representation
 				// Create a names reference to this element and prepare it for the goban
@@ -624,69 +650,94 @@ $.extend( {
 				
 				// Apply the deltas for the current turn
 				var currentDeltas = this.turnDeltas[ this.deltaIndex ];
-				var currentStone = currentDeltas.stone;
 				
-				// Switch based on the stones action
-				switch( currentStone.action )
+				// If there are white stones to add, add them
+				if( currentDeltas.additionalWhiteStones && currentDeltas.additionalBlackStones.length > 0 )
 				{
-					case 'place':
-						// Add the stone to the board
-						this.addStoneToDisplay( currentStone.x,
-									currentStone.y,
-									currentStone.color );
+					for( var n in currentDeltas.additionalWhiteStones )
+					{
+						var tempStone = currentDeltas.additionalWhiteStones[n];
+						this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
+					}// End for n
+				}// End if
+				
+				// If there are black stones to add, add them
+				if( currentDeltas.additionalBlackStones && currentDeltas.additionalBlackStones.length > 0 )
+				{
+					for( var n in currentDeltas.additionalBlackStones )
+					{
+						var tempStone = currentDeltas.additionalBlackStones[n];
+						this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
+					}// End for n
+				}// End if
+				
+				// If there was a stone played this turn, play it
+				if( currentDeltas.stone )
+				{
+					var currentStone = currentDeltas.stone;
 
-						// Keep track of the number of stones captured
-						var numCaptured = 0;
-
-						// Foreach stone in the remove list, remove it from the board
-						for( var number in currentDeltas.removeList )
-						{
-							var tempStone = currentDeltas.removeList[number];
-							this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
-							numCaptured++;
-						}// End for each removed stone
-							
-						// Update the number of captured stones if we need to
-						if( numCaptured > 0 )
-							this.updateCaptureDisplay( currentStone.color, numCaptured );
-						
-						// If we are to mark the most recently played stone
-						if( this.markCurrentStone )
-						{
-							// Find and remove any current stone markers
-							$( '#current_play' ).each( function()
+					// Switch based on the stones action
+					switch( currentStone.action )
+					{
+						case 'place':
+							// Add the stone to the board
+							this.addStoneToDisplay( currentStone.x,
+										currentStone.y,
+										currentStone.color );
+	
+							// Keep track of the number of stones captured
+							var numCaptured = 0;
+	
+							// Foreach stone in the remove list, remove it from the board
+							for( var number in currentDeltas.removeList )
 							{
-								this.parentNode.removeChild( this );
-							} );
-
-							// Get a reference to the board cell at x,y
-							var cell = this.getBoardCellAt( currentStone.x, currentStone.y );
-
-							if( cell )
-							{			
-								// Create the new marker
-								var marker = document.createElement( 'span' );
-								marker.id = 'current_play';
-								marker.innerHTML = '0';
-								marker.className = ( currentStone.color == 'b' )? 'marker_blackstone': 'marker_whitestone';
-
-								// Add the marker element to the cell
-								cell.appendChild( marker );
+								var tempStone = currentDeltas.removeList[number];
+								this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
+								numCaptured++;
+							}// End for each removed stone
+								
+							// Update the number of captured stones if we need to
+							if( numCaptured > 0 )
+								this.updateCaptureDisplay( currentStone.color, numCaptured );
+							
+							// If we are to mark the most recently played stone
+							if( this.markCurrentStone )
+							{
+								// Find and remove any current stone markers
+								$( '#current_play' ).each( function()
+								{
+									this.parentNode.removeChild( this );
+								} );
+	
+								// Get a reference to the board cell at x,y
+								var cell = this.getBoardCellAt( currentStone.x, currentStone.y );
+	
+								if( cell )
+								{			
+									// Create the new marker
+									var marker = document.createElement( 'span' );
+									marker.id = 'current_play';
+									marker.innerHTML = '0';
+									marker.className = ( currentStone.color == 'b' )? 'marker_blackstone': 'marker_whitestone';
+	
+									// Add the marker element to the cell
+									cell.appendChild( marker );
+								}// End if
 							}// End if
-						}// End if
-						
-						// If we have a comment, add it to the board
-						if( currentStone.comments && currentStone.comments.length > 0 )
-							this.addCommentToDisplay( currentStone.comments );
-						break;
-					case 'pass':
-						// Do nothing for a pass
-						break;
-					default:
-						alert( 'Error: Unrecognized action in turn delta: ' + currentStone.action );
-						return false;
-						break;
-				}// End switch action
+							break;
+						case 'pass':
+							// Do nothing for a pass
+							break;
+						default:
+							alert( 'Error: Unrecognized action in turn delta: ' + currentStone.action );
+							return false;
+							break;
+					}// End switch action
+				}// End if
+				
+				// If we have a comment, add it to the board
+				if( currentDeltas.comments && currentDeltas.comments.length > 0 )
+					this.addCommentToDisplay( currentDeltas.comments );
 				
 				return true;
 			},
@@ -699,86 +750,111 @@ $.extend( {
 					return false;
 
 				// If we are already on the first move, return
-				if( this.deltaIndex == 0 )
+				if( this.deltaIndex == -1 )
 					return false;
 	
 				// Apply the changes for the current delta
 				var currentDeltas = this.turnDeltas[ this.deltaIndex ];
-				var currentStone = currentDeltas.stone;
 				
-				// Switch based on the stones action
-				switch( currentStone.action )
+				// If there are white stones to add, remove them
+				if( currentDeltas.additionalWhiteStones && currentDeltas.additionalWhiteStones.length > 0 )
 				{
-					case 'place':
-						// Remove the stone from the board
-						this.removeStoneFromDisplay( currentStone.x,
-									     currentStone.y,
-									     currentStone.color );
-						
-						// Keep track of the number of stones captured
-						var numCaptured = 0;
+					for( var n in currentDeltas.additionalWhiteStones )
+					{
+						var tempStone = currentDeltas.additionalWhiteStones[n];
+						this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
+					}// End for n
+				}// End if
 
-						// Foreach stone in the remove list, put it back on the board
-						for( var number in currentDeltas.removeList )
-						{
-							var tempStone = currentDeltas.removeList[number];
-							this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
-							numCaptured++;
-						}// End for each removed stone
-						
-						// Update the number of captured stones if we need to
-						if( numCaptured > 0 )
-							this.updateCaptureDisplay( currentStone.color, ( numCaptured * -1 ) );
-						
-						// If we are to mark the most recently played stone
-						if( this.markCurrentStone )
-						{
-							// Find and remove any current stone markers
-							$( '#current_play' ).each( function()
-							{
-								this.parentNode.removeChild( this );
-							} );
+				// If there are black stones to add, remove them
+				if( currentDeltas.additionalBlackStones && currentDeltas.additionalBlackStones.length > 0 )
+				{
+					for( var n in currentDeltas.additionalBlackStones )
+					{
+						var tempStone = currentDeltas.additionalBlackStones[n];
+						this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
+					}// End for n
+				}// End if
 
-							// Get the previously played stone, if there is one
-							if( this.deltaIndex > 1 )
-							{
-								var previousStone = this.turnDeltas[ this.deltaIndex - 1 ].stone;
+				// If there was a stone played this turn, play it
+				if( currentDeltas.stone )
+				{
+					var currentStone = currentDeltas.stone;
 
-								// Get a reference to the board cell at x,y
-								var cell = this.getBoardCellAt( previousStone.x, previousStone.y );
+					// Switch based on the stones action
+					switch( currentStone.action )
+					{
+						case 'place':
+							// Remove the stone from the board
+							this.removeStoneFromDisplay( currentStone.x,
+										currentStone.y,
+										currentStone.color );
+							
+							// Keep track of the number of stones captured
+							var numCaptured = 0;
 	
-								if( cell )
-								{			
-									// Create the new marker
-									var marker = document.createElement( 'span' );
-									marker.id = 'current_play';
-									marker.innerHTML = '0';
-									marker.className = ( previousStone.color == 'b' )? 'marker_blackstone': 'marker_whitestone';
+							// Foreach stone in the remove list, put it back on the board
+							for( var number in currentDeltas.removeList )
+							{
+								var tempStone = currentDeltas.removeList[number];
+								this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
+								numCaptured++;
+							}// End for each removed stone
+							
+							// Update the number of captured stones if we need to
+							if( numCaptured > 0 )
+								this.updateCaptureDisplay( currentStone.color, ( numCaptured * -1 ) );
+							
+							// If we are to mark the most recently played stone
+							if( this.markCurrentStone )
+							{
+								// Find and remove any current stone markers
+								$( '#current_play' ).each( function()
+								{
+									this.parentNode.removeChild( this );
+								} );
 	
-									// Add the marker element to the cell
-									cell.appendChild( marker );
+								// Get the previously played stone, if there is one
+								if( this.deltaIndex > 1 )
+								{
+									var previousStone = this.turnDeltas[ this.deltaIndex - 1 ].stone;
+	
+									// Get a reference to the board cell at x,y
+									var cell = this.getBoardCellAt( previousStone.x, previousStone.y );
+		
+									if( cell )
+									{			
+										// Create the new marker
+										var marker = document.createElement( 'span' );
+										marker.id = 'current_play';
+										marker.innerHTML = '0';
+										marker.className = ( previousStone.color == 'b' )? 'marker_blackstone': 'marker_whitestone';
+		
+										// Add the marker element to the cell
+										cell.appendChild( marker );
+									}// End if
 								}// End if
 							}// End if
-						}// End if
-						
-						// If we have a comment, remove it from the board
-						if( currentStone.comments && currentStone.comments.length > 0 )
-							this.removeCommentFromDisplay( currentStone.comments );
-						break;
-					case 'pass':
-						// Do nothing for a pass
-						break;
-					default:
-						alert( 'Error: Unrecognized action in turn delta: ' + currentStone.action );
-						break;
-				}// End switch action
+							break;
+						case 'pass':
+							// Do nothing for a pass
+							break;
+						default:
+							alert( 'Error: Unrecognized action in turn delta: ' + currentStone.action );
+							break;
+					}// End switch action
+				}// End if
+				
+				// If we have a comment, remove it from the board
+				if( currentDeltas.comments && currentDeltas.comments.length > 0 )
+					this.removeCommentFromDisplay( currentDeltas.comments );
 				
 				// Now that we've reversed the current turn, move back to the previous turn
 				this.deltaIndex--;
 
 				// If the index went out of range, put it back in range and return
-				if( this.deltaIndex < 0 )
-					this.deltaIndex = 0;
+				if( this.deltaIndex < -1 )
+					this.deltaIndex = -1;
 
 				return true;
 			},

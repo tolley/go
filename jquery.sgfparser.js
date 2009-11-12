@@ -293,9 +293,6 @@ $.extend( {
 				// A place holder that keeps track of which node in the game tree we are on.
 				currentNode: 0,
 				
-				// The number of handicap stones in this game files
-				numHandicapStones: 0,
-				
 				// Sets the gameTree data
 				setGameTreeData: function( gameTree ){ this.gameTree = gameTree; },
 				
@@ -324,7 +321,9 @@ $.extend( {
 					{
 						// Create a blank stone, so we can set the properties here
 						var goStone = this.board.getBlankStone();
-						goStone.number = node + this.numHandicapStones;
+						
+						// Get a blank turn object to fill in and pass to the board to calculate the deltas
+						var turnObj = this.board.getBlankTurnObject();
 
 						// Make sure the board size was set in the first node
 						if( node == 1 && ! this.board.size )
@@ -391,45 +390,31 @@ $.extend( {
 								// End MOVE properties //////////////////////////////////////////////////
 								
 								// Begin SETUP properties ///////////////////////////////////////////////
-								// The position of the handicap stones
-								case 'AB':
-									// AB means Add Black stone.  In the first node, these are the handicap stones, if any
-									// If the handicap stones are not in the first node of the tree
-									if( node != 0 )
+								// Adds a list of black stones to the board
+								case 'AB':									
+									// Get a short cut to the list of stones
+									var stoneList = this.gameTree[node][property];
+									
+									// Foreach stone, create a stone object
+									var stoneObjects = new Array();
+									for( var n in stoneList )
 									{
-										// Get a short cut to the list of handicap stones
-										var handicapList = this.gameTree[node][property];
+										// Get a blank stone and fill in the details
+										var tempStone = this.board.getBlankStone();
+										tempStone.color = 'b';
+										tempStone.action = 'place';
+										tempStone.x = stoneList[n].charAt( 0 );
+										tempStone.y = stoneList[n].charAt( 1 );
 										
-										// Set the number of handicap stones
-										// The number of handicap stones in this game files
-										this.numHandicapStones = handicapList.length;
+										// Translate the go stone coordinates from alpha to numeric
+										tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 97;
+										tempStone.y = parseInt( tempStone.y.charCodeAt( 0 ) ) - 97;
 										
-										// Foreach handicap stone, create a stone object
-										var stoneObjects = new Array();
-										for( var n in handicapList )
-										{
-											// Get a blank stone and fill in the details
-											var handicapStone = this.board.getBlankStone();
-											handicapStone.color = 'b';
-											handicapStone.action = 'place';
-											handicapStone.x = handicapList[n].charAt( 0 );
-											handicapStone.y = handicapList[n].charAt( 1 );
-											handicapStone.number = n;
-											
-											// Translate the go stone coordinates from alpha to numeric
-											handicapStone.x = parseInt( handicapStone.x.charCodeAt( 0 ) ) - 97;
-											handicapStone.y = parseInt( handicapStone.y.charCodeAt( 0 ) ) - 97;
-											
-											stoneObjects.push( handicapStone );
-										}// End for n
-										
-										// Give the handicap stones to the board
-										this.board.setHandicapStones( stoneObjects );
-									}// End if
-									else
-									{
-										// Otherwise, we need to add the stones to the board
-									}// End else
+										stoneObjects.push( tempStone );
+									}// End for n
+									
+									// Add the list of black stones to the turn
+									turnObj.additionalBlackStones = stoneObjects;
 									break;
 								
 								// Clears the given point on the board
@@ -438,6 +423,29 @@ $.extend( {
 								
 								// Adds a list of white stones to the board
 								case 'AW':
+									// Get a short cut to the list of stones
+									var stoneList = this.gameTree[node][property];
+									
+									// Foreach stone, create a stone object
+									var stoneObjects = new Array();
+									for( var n in stoneList )
+									{
+										// Get a blank stone and fill in the details
+										var tempStone = this.board.getBlankStone();
+										tempStone.color = 'w';
+										tempStone.action = 'place';
+										tempStone.x = stoneList[n].charAt( 0 );
+										tempStone.y = stoneList[n].charAt( 1 );
+										
+										// Translate the go stone coordinates from alpha to numeric
+										tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 97;
+										tempStone.y = parseInt( tempStone.y.charCodeAt( 0 ) ) - 97;
+										
+										stoneObjects.push( tempStone );
+									}// End for n
+									
+									// Add the list of white stones to the turn
+									turnObj.additionalWhiteStones = stoneObjects;
 									break;
 								
 								// Tells the user who's turn it is to play, used in problems and such
@@ -455,10 +463,10 @@ $.extend( {
 								
 								// A player made a comment
 								case 'C':
-									if( goStone.comments && goStone.comments.length > 0 )
-										goStone.comments = goStone.comments + "\n" + $.trim( this.gameTree[node][property] );
+									if( turnObj.comments && turnObj.comments.length > 0 )
+										turnObj.comments = turnObj.comments + "\n" + $.trim( this.gameTree[node][property] );
 									else
-										goStone.comments = $.trim( this.gameTree[node][property] );
+										turnObj.comments = $.trim( this.gameTree[node][property] );
 									break;
 								
 								
@@ -473,7 +481,7 @@ $.extend( {
 									else
 										var message = '/nThis is a bad move for black.';
 
-									goStone.comments = goStone.comments + message;
+									turnObj.comments = turnObj.comments + message;
 									break;
 								
 								// The move is doubtful
@@ -483,7 +491,7 @@ $.extend( {
 									else
 										var message = '/nThis is a doubtful move for black.';
 
-									goStone.comments = goStone.comments + message;
+									turnObj.comments = turnObj.comments + message;
 									break;
 								
 								// The move is an interesting one
@@ -493,7 +501,7 @@ $.extend( {
 									else
 										var message = '/nThis is an interesting move by black.';
 
-									goStone.comments = goStone.comments + message;
+									turnObj.comments = turnObj.comments + message;
 									break;
 								
 								// The move is a tesuji
@@ -503,7 +511,7 @@ $.extend( {
 									else
 										var message = '/nThis is a tesuji for black.';
 
-									goStone.comments = goStone.comments + message;
+									turnObj.comments = turnObj.comments + message;
 									break;
 								
 								// End MOVE ANNOTATION properties /////////////////////////////////////
@@ -664,8 +672,9 @@ $.extend( {
 								
 								// Begin GM[1] properties /////////////////////////////////////////
 								
-								// The number of handicap stones.  We use the AB property to set the actual handicap stones
+								// The number of handicap stones.
 								case 'HA':
+									this.board.numHandicapStones = parseInt( this.gameTree[node][property] );
 									break;
 								
 								// Defines the komi for this game
@@ -682,13 +691,15 @@ $.extend( {
 							}// End switch property name
 						}// End for property
 						
-						// If we have a stone, add it to the board
+						// If we have a stone, add it to the turn
 						if( goStone.action )
 						{
-							// If this is a legal move
 							if( this.board.isLegalPlay( goStone ) )
-								this.board.calculateTurnDelta( node, goStone );
+								turnObj.stone = goStone;
 						}// End if
+						
+						// Tell the board to calculate the turn deltas
+						this.board.calculateTurnDelta( node, turnObj );
 					}// End for each node
 					
 					// Send the player information to the board

@@ -37,6 +37,7 @@
 						// game as been loaded, and pass the board to the parser
 						gameFile = gameTree;
 						gameFile.prepBoard( goBoard );
+						console.log( goBoard );
 					} );
 					break;
 				default:
