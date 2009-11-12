@@ -949,25 +949,14 @@ $.extend( {
 			// Adds a comment to the chat window
 			addCommentToDisplay: function( comment )
 			{
-				// If the comment isn't set, or if the user didn't supply a chat window
-				if( ! comment || comment.length == 0 || ! this.chatWindow )
-					return;
-				
-				this.chatWindow.value += comment + "\n";
+				this.chatWindow.value = comment;
 				this.chatWindow.scrollTop = this.chatWindow.scrollHeight;
 			},
 			
 			// Removes a comment from the chat window
 			removeCommentFromDisplay: function( comment )
 			{
-				// If the comment isn't set, or if the user didn't supply a chat window
-				if( ! comment || comment.length == 0 || ! this.chatWindow )
-					return;
-				
-				this.chatWindow.value = this.chatWindow.value.replace( comment, '' );
-				this.chatWindow.value = $.trim( this.chatWindow.value ) + "\n";
-				var self = this;
-				setTimeout( function(){ self.chatWindow.scrollTop = self.chatWindow.scrollHeight }, 1 );
+				this.chatWindow.value = '';
 			},
 			
 			// If the player info panel element is set, this function updates the number
