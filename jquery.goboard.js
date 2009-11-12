@@ -486,17 +486,21 @@ $.extend( {
 				blankLabel.className = 'blank';
 				row.appendChild( blankLabel );
 				
-				// Create the cells labeled A through x that appear at the top of the board
-				for( var x = 1; x <= this.size; ++x )
+				// Create the cells labeled A through T (skipping I) that appear at the top of the board
+				var tempSize = parseInt( this.size ) + 1;
+				for( var x = 1; x <= tempSize; ++x )
 				{
-					var labelCell = document.createElement( 'td' );
-					labelCell.className = 'blank';
-					
-					var label = document.createElement( 'span' );
-					label.className = 'blank';
-					label.innerHTML = String.fromCharCode( x + 64 );
-					labelCell.appendChild( label );
-					row.appendChild( labelCell );
+					if( x != 9 )
+					{
+						var labelCell = document.createElement( 'td' );
+						labelCell.className = 'blank';
+						
+						var label = document.createElement( 'span' );
+						label.className = 'blank';
+						label.innerHTML = String.fromCharCode( x + 64 );
+						labelCell.appendChild( label );
+						row.appendChild( labelCell );
+					}// End if
 				}// End for x
 				
 				// Create a blank cell so that the table will line up correctly
@@ -565,17 +569,20 @@ $.extend( {
 				blankLabel.className = 'blank';
 				row.appendChild( blankLabel );
 				
-				// Create the cells labeled A through x that appear at the top of the board
-				for( var x = 1; x <= this.size; ++x )
+				// Create the cells labeled A through T (skipping I) that appear at the top of the board
+				for( var x = 1; x <= tempSize; ++x )
 				{
-					var labelCell = document.createElement( 'td' );
-					labelCell.className = 'blank';
-					
-					var label = document.createElement( 'span' );
-					label.className = 'blank';
-					label.innerHTML = String.fromCharCode( x + 64 );
-					labelCell.appendChild( label );
-					row.appendChild( labelCell );
+					if( x != 9 )
+					{
+						var labelCell = document.createElement( 'td' );
+						labelCell.className = 'blank';
+						
+						var label = document.createElement( 'span' );
+						label.className = 'blank';
+						label.innerHTML = String.fromCharCode( x + 64 );
+						labelCell.appendChild( label );
+						row.appendChild( labelCell );
+					}// End if
 				}// End for x
 				
 				// Create a blank cell so that the table will line up correctly
