@@ -96,9 +96,6 @@ $.extend( {
 			// The person or server that created this game file
 			author: '',
 			
-			// Holds any comments that should be displayed when the game is loaded
-			startingComment: '',
-			
 			// The object that holds the black player's information
 			playerBlack: false,
 			
@@ -170,7 +167,20 @@ $.extend( {
 					comments: false,
 						
 					// A list of stones to remove, this is calculated by the parser
-					removeList: false };
+					removeList: false,
+					 
+					// Adds a comment to this turn object
+					addComment: function( msg )
+					{
+						if( ! msg || msg.length == 0 )
+							return;
+
+						if( this.comments && this.comments.length > 0 )
+							this.comments = this.comments + "\n" + $.trim( msg );
+						else
+							this.comments = $.trim( msg );
+					}
+					};
 			},
    
    			// Creates an empty player object.  These objects are used by the parser to set the 
@@ -596,10 +606,6 @@ $.extend( {
 					var temp = $( options.chatWindow );
 					if( temp.length > 0 )
 						this.chatWindow = temp[0];
-					
-					// If we have a comment to display from the beginning, show it now.
-					if( this.startingComment.length > 0 )
-						this.addCommentToDisplay( this.startingComment );
 				}// End if
 				
 				// If the game info element selector is set in the options

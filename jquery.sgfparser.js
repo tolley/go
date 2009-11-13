@@ -451,11 +451,9 @@ $.extend( {
 								// Tells the user who's turn it is to play, used in problems and such
 								case 'PL':
 									if( this.gameTree[node][property] == 'B' )
-										var message = '\nBlack to play';
+										turnObj.addComment( 'Black to play' );
 									else
-										var message = '\nWhite to play';
-
-									this.board.startingComment = this.board.startingComment + message;
+										turnObj.addComment( 'White to play' );
 									break;
 								// End SETUP properties ///////////////////////////////////////////////
 								
@@ -463,13 +461,44 @@ $.extend( {
 								
 								// A player made a comment
 								case 'C':
-									if( turnObj.comments && turnObj.comments.length > 0 )
-										turnObj.comments = turnObj.comments + "\n" + $.trim( this.gameTree[node][property] );
-									else
-										turnObj.comments = $.trim( this.gameTree[node][property] );
+									turnObj.addComment( this.gameTree[node][property] );
 									break;
 								
+								// Designates this node as an even position
+								case 'DM':
+									turnObj.addComment( 'The position is even.' );
+									break;
 								
+								// Designates this node as good for black
+								case 'GB':
+									turnObj.addComment( 'This is good for black.' );
+									break;
+								
+								// Designages this node as good for white
+								case 'GW':
+									turnObj.addComment( 'This is good for white.' );
+									break;
+								
+								// Designates this node as a hotspot
+								case 'HO':
+									turnObj.addComment( 'This is a hotspot for both white and black.' );
+									break;
+								
+								// Designates a name for this node
+								case 'N':
+									turnObj.addComment( 'Node: ' + this.gameTree[node][property] );
+									break;								
+								
+								// Designates that this position is unclear
+								case 'UC':
+									turnObj.addComment( 'This position is unclear.' );
+									break;
+								
+								// Designates a value for this node
+								case 'V':
+									turnObj.addComment( 'This is worth ' + this.gameTree[node][property] );
+									break;
+
 								// End NODE ANNOTATION properties /////////////////////////////////////
 								
 								// Begin MOVE ANNOTATION properties ///////////////////////////////////
@@ -477,41 +506,33 @@ $.extend( {
 								// The move played is bad
 								case 'BM':
 									if( goStone.color == 'w' )
-										var message = '/nThis is a bad move for white.';
+										turnObj.addComment( 'This is a bad move for white.' );
 									else
-										var message = '/nThis is a bad move for black.';
-
-									turnObj.comments = turnObj.comments + message;
+										turnObj.addComment( 'This is a bad move for black.' );
 									break;
 								
 								// The move is doubtful
 								case 'DO':
 									if( goStone.color == 'w' )
-										var message = '/nThis is a doubtful move for white.';
+										turnObj.addComment( 'This is a doubtful move for white.' );
 									else
-										var message = '/nThis is a doubtful move for black.';
-
-									turnObj.comments = turnObj.comments + message;
+										turnObj.addComment( 'This is a doubtful move for black.' );
 									break;
 								
 								// The move is an interesting one
 								case 'IT':
 									if( goStone.color == 'w' )
-										var message = '/nThis is an interesting move by white.';
+										turnObj.addComment( 'This is an interesting move by white.' );
 									else
-										var message = '/nThis is an interesting move by black.';
-
-									turnObj.comments = turnObj.comments + message;
+										turnObj.addComment( 'This is an interesting move by black.' );
 									break;
 								
 								// The move is a tesuji
 								case 'TE':
 									if( goStone.color == 'w' )
-										var message = '/nThis is a tesuji for white.';
+										turnObj.addComment( 'This is a tesuji for white.' );
 									else
-										var message = '/nThis is a tesuji for black.';
-
-									turnObj.comments = turnObj.comments + message;
+										turnObj.addComment( 'This is a tesuji for black.' );
 									break;
 								
 								// End MOVE ANNOTATION properties /////////////////////////////////////
