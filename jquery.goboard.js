@@ -1075,15 +1075,20 @@ $.extend( {
 					// Calculate the center of the board
 					var center = Math.ceil( ( this.size ) / 2 );
 					
-					if( x == 4 )
+					// The value for corner star points
+					var cornerStar = ( this.size >= 13 )? 4: 3;
+					
+					// Top star points
+					if( x == cornerStar )
 					{
-						if( y == 4 )
+						if( y == cornerStar )
 							libertyClass = 'cs';
-						else if( y == ( this.size - 3 ) )
+						else if( y == ( this.size - ( cornerStar - 1 ) ) )
 							libertyClass = 'cs';
 						else if( y == center && this.size >= 17 )
 							libertyClass = 'cs';
 					}// End else if
+					// Middle star points
 					else if( x == center )
 					{
 						if( y == 4 && this.size >= 17 )
@@ -1093,11 +1098,12 @@ $.extend( {
 						else if( y == center )
 							libertyClass = 'cs';
 					}// End else if
-					else if( x == ( this.size - 3 ) )
+					// Bottom star points
+					else if( x == ( this.size - ( cornerStar - 1 ) ) )
 					{
-						if( y == 4 )
+						if( y == cornerStar )
 							libertyClass = 'cs';
-						else if( y == ( this.size - 3 ) )
+						else if( y == ( this.size - ( cornerStar - 1 ) ) )
 							libertyClass = 'cs';
 						else if( y == center && this.size >= 17 )
 							libertyClass = 'cs';

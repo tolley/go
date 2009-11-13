@@ -67,9 +67,11 @@ $( document ).ready( function()
 		<div id="gameinfo" style="width: 419px;">
 		</div>
 		
+		<center>
 		<div id="goban">
 		</div>
-		
+		</center>
+
 		<div>
 			<div id="player_whilte_info" style="width: 50%; float: left;">
 			</div>

@@ -539,11 +539,11 @@ $.extend( {
 								
 /*								// Begin MARKUP properties ////////////////////////////////////////////
 
-								// Marks the current stone with a circle
+								// Marks the given points with a circle
 								case 'CR':
 									break;
 
-								// Dims out the current stone
+								// Dims out the given points
 								case 'DD':
 									break;
 
