@@ -34,9 +34,6 @@ $.extend( {
 			size: false,
 			
 			// Keeps track of the turn we are on
-			deltaIndex: -1,
-			
-			// Keeps track of the turn we are on
 			turnIndex: -1,
 
 			// A reference to the chat window
@@ -144,7 +141,7 @@ $.extend( {
 			},
 			
 			// Called by the parser to get blank stone objects.  These are the stones
-			// that will be passed back to the board, with values, to calculate turn deltas
+			// that will be passed back to the board attached to a turn object
 			getBlankStone: function()
 			{
 				return { x: 	  false, 
@@ -155,7 +152,7 @@ $.extend( {
 			},
 			
 			// Called by the parser to get an empty "turn" object.  These objects will
-			// be populated by the parser and passed to the board object to help calculate the turn deltats
+			// be populated by the parser and passed to the board object
 			getBlankTurnObject: function()
 			{
 				return {
@@ -299,7 +296,7 @@ $.extend( {
 				return captured;
 			},
 			
-			// Called during the generation of the turn deltas.  Returns a list of all stones connected 
+			// Called while stepping through the game.  Returns a list of all stones connected 
 			// to the stone at x/y that are captured.  This list should include x/y.  It returns false
 			// if no stones are captured.  This function is called by removeCapturedStones
 			isCaptured: function( x, y )
@@ -424,7 +421,7 @@ $.extend( {
 					return;
 				}// End else
 				
-				// Make sure we are on the first set of turn delta's
+				// Make sure we are on the first turn
 				this.turnIndex = -1;
 
 				// Draw the board using the internal representation
@@ -615,7 +612,7 @@ $.extend( {
 					return false;
 				}// End if
 				
-				// Apply the deltas for the current turn
+				// Apply the current turn
 				var currentTurn = this.turnObjects[ this.turnIndex ];
 				
 				// If there are white stones to add, add them
@@ -704,7 +701,7 @@ $.extend( {
 				return true;
 			},
 			
-			// Moves the delta index back one and applies the changes to the board display
+			// Moves the turn index back one and applies the changes to the board display
 			previousTurn: function()
 			{
 				// If this object isn't fully loaded, return false
@@ -715,7 +712,7 @@ $.extend( {
 				if( this.turnIndex == -1 )
 					return false;
 	
-				// Apply the changes for the current delta
+				// Apply the changes for the current turn
 				var currentTurn = this.turnObjects[ this.turnIndex ];
 				
 				// If there was a stone played this turn, remove it
@@ -753,9 +750,9 @@ $.extend( {
 						} );
 
 						// Get the previously played stone, if there is one
-						if( this.deltaIndex > 1 )
+						if( this.turnIndex > 1 )
 						{
-							var previousStone = this.turnDeltas[ this.deltaIndex - 1 ].stone;
+							var previousStone = this.turnObjects[ this.turnIndex - 1 ].stone;
 
 							// Get a reference to the board cell at x,y
 							var cell = this.getBoardCellAt( previousStone.x, previousStone.y );
@@ -811,27 +808,27 @@ $.extend( {
 				return true;
 			},
 			
-			// Moves the delta index to the first node and updates the view
+			// Moves the turn index to the first node and updates the view
 			firstTurn: function()
 			{
 				// If this object isn't fully loaded, return false
 				if( ! this.loaded )
 					return false;
 
-				// While the delta index isn't at the first turn, call previousTurn.
-				// Note: previousTurn deincrements the deltaIndex
+				// While the turn index isn't at the first turn, call previousTurn.
+				// Note: previousTurn deincrements the turnIndex
 				while( this.previousTurn() );
 			},
 			
-			// Moves the delta index to the final node and updates the view
+			// Moves the turn index to the final node and updates the view
 			lastTurn: function()
 			{
 				// If this object isn't fully loaded, return false
 				if( ! this.loaded )
 					return false;
 
-				// While the delta index isn't at the last turn, call nextTurn.
-				// Note: nextTurn increments deltaIndex
+				// While the turn index isn't at the last turn, call nextTurn.
+				// Note: nextTurn increments turnIndex
 				while( this.nextTurn() );
 			},
 			
@@ -843,7 +840,7 @@ $.extend( {
 					return false;
 
 				// If n is in the range of moves
-				if( parseInt( n ) != 'NaN' || n >= 0  || n <= this.turnDeltas.length )
+				if( parseInt( n ) != 'NaN' || n >= 0  || n <= this.turnObjects.length )
 				{
 					// Figure out whether we need to move forwards or backwards and do so.
 					if( n < this.turnIndex )
@@ -853,7 +850,7 @@ $.extend( {
 					}// End if
 					else if( n > this.turnIndex )
 					{
-						while( n > this.deltaIndex )
+						while( n > this.turnIndex )
 							this.nextTurn();
 					}// End else
 					
