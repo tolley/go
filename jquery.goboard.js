@@ -35,6 +35,9 @@ $.extend( {
 			
 			// Keeps track of the turn we are on
 			deltaIndex: -1,
+			
+			// Keeps track of the turn we are on
+			turnIndex: -1,
 
 			// A reference to the chat window
 			chatWindow: false,
@@ -46,7 +49,10 @@ $.extend( {
 			boardElem: false,
 			
 			// An array to hold the delta's between turns
-			turnDeltas: new Array(),
+//			turnDeltas: new Array(),
+			
+			// An array to hold the turn objects passed in from the parser
+			turnObjects: new Array(),
 			
 			// Stores the number of handicap stones
 			numHandicapStones: 0,
@@ -180,7 +186,7 @@ $.extend( {
 						else
 							this.comments = $.trim( msg );
 					}
-					};
+				};
 			},
    
    			// Creates an empty player object.  These objects are used by the parser to set the 
@@ -209,76 +215,23 @@ $.extend( {
 					return false;
 			},
 			
-			// Called by the parser object, in order of moves, to set the turn deltas.
-			// Note: This function uses the internal board to determine if we have a legal play
-			// or if stones where captured.  If you don't call this function in turn order, it won't work
-			calculateTurnDelta: function( turn, turnObj )
-			{				
-				// If the turn delta's have already been set for the given turn,
-				// let the user know
-				if( this.turnDeltas[turn] )
+			// Called by the parser object, in order of moves, to set the data for each move.
+			// This is done in an effort to abstract the details between the loading of the data
+			// and the usage of that data.
+			setTurnObj: function ( turn, turnObj )
+			{
+				// If there is already a turn object for this turn, let the user know
+				if( this.turnObjects[turn] )
 				{
-					alert( 'Turn Deltas already set for turn ' + turn );
+					alert( 'Duplicate turns set for turn ' + turn );
 					return;
 				}// End if
 				
-				// Keeps track of the removed stones list
-				var removedList = new Array();
-				
-				// If there are any white stones to add, number them and add them to the board
-				if( turnObj.additionalWhiteStones )
-				{
-					for( var n in turnObj.additionalWhiteStones )
-					{
-						var stone = turnObj.additionalWhiteStones[n];
-						stone.number = this.stoneId++;
-						this.internalBoard[stone.y][stone.x] = stone;
-					}// End for n
-				}// End if
-				
-				// If there are any black stones to add, number them and add them to the board
-				if( turnObj.additionalBlackStones )
-				{
-					for( var n in turnObj.additionalBlackStones )
-					{
-						var stone = turnObj.additionalBlackStones[n];
-						stone.number = this.stoneId++;
-						this.internalBoard[stone.y][stone.x] = stone;
-					}// End for n
-				}// End if
-
-				// If there was a stone played this turn, add it to the board
-				if( turnObj.stone )
-				{
-					// Switch based on the action of the stone
-					var stone = turnObj.stone;
-					stone.number = this.stoneId++;
-					switch( stone.action )
-					{
-						case 'place':
-							// Place the stone on the board and see if any stones where captured
-							if( this.isLegalPlay( stone ) )
-							{
-								this.internalBoard[stone.y][stone.x] = stone;
-								
-								// Remove any captured stones and store the list
-								// in the list of delta's
-								turnObj.removeList = this.removeStonesCapturedBy( stone.x, stone.y );
-							}// End if
-							break;
-						case 'pass':
-							// If the user is passing, do nothing.
-							break;
-						default:
-							alert( "Unrecognized action " + stone.action );
-							break;
-					}// End switch
-				}// End if
-				
-				// Store the completed deltas for this turn
-				this.turnDeltas[turn] = turnObj;
+				// Set the turn object on the list of turns
+				this.turnObjects[turn] = turnObj;
 			},
-			
+
+
 			// Called during the generation of the turn deltas.  It takes in the coordinates of stone
 			// after it was just played.  This function returns a list of all captured stones and removes
 			// those stones from the internal memory.  This function calls getCapturedStones
@@ -438,14 +391,14 @@ $.extend( {
 					return checkedList;
 			},
 
-			// To be called after the turn delta's have been calculated.  It generates the html elements
-			// used to display the board.
-			onDeltasFinished: function()
+			// To be called after the parser has finished setting all available game data, and 
+			// turn objects.  This will generate the html elements to display the game
+			onParserFinish: function()
 			{
-				// Make sure we actually have some delta's
-				if( this.turnDeltas.length == 0 )
+				// Make sure we actually have some turn objects
+				if( this.turnObjects.length == 0 )
 				{
-					alert( 'Unable to render game, turn delta have not been calculated' );
+					alert( 'Unable to render game: no nodes where set.' );
 					return;
 				}// End if
 				
@@ -466,12 +419,12 @@ $.extend( {
 				}// End if
 				else
 				{
-					alert( 'Unable to render board in onDeltasFinished: board size not set' );
+					alert( 'Unable to render board in onParserFinish: board size not set' );
 					return;
 				}// End else
 				
 				// Make sure we are on the first set of turn delta's
-				this.deltaIndex = -1;
+				this.turnIndex = -1;
 
 				// Draw the board using the internal representation
 				// Create a names reference to this element and prepare it for the goban
@@ -652,42 +605,42 @@ $.extend( {
 				if( ! this.loaded )
 					return false;
 
-				this.deltaIndex++;
+				this.turnIndex++;
 
 				// If the index went out of range, put it back in range and return
-				if( this.deltaIndex >= this.turnDeltas.length )
+				if( this.turnIndex >= this.turnObjects.length )
 				{
-					this.deltaIndex = this.turnDeltas.length - 1;
+					this.turnIndex = this.turnObjects.length - 1;
 					return false;
 				}// End if
 				
 				// Apply the deltas for the current turn
-				var currentDeltas = this.turnDeltas[ this.deltaIndex ];
+				var currentTurn = this.turnObjects[ this.turnIndex ];
 				
 				// If there are white stones to add, add them
-				if( currentDeltas.additionalWhiteStones && currentDeltas.additionalBlackStones.length > 0 )
+				if( currentTurn.additionalWhiteStones && currentTurn.additionalBlackStones.length > 0 )
 				{
-					for( var n in currentDeltas.additionalWhiteStones )
+					for( var n in currentTurn.additionalWhiteStones )
 					{
-						var tempStone = currentDeltas.additionalWhiteStones[n];
+						var tempStone = currentTurn.additionalWhiteStones[n];
 						this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
 					}// End for n
 				}// End if
 				
 				// If there are black stones to add, add them
-				if( currentDeltas.additionalBlackStones && currentDeltas.additionalBlackStones.length > 0 )
+				if( currentTurn.additionalBlackStones && currentTurn.additionalBlackStones.length > 0 )
 				{
-					for( var n in currentDeltas.additionalBlackStones )
+					for( var n in currentTurn.additionalBlackStones )
 					{
-						var tempStone = currentDeltas.additionalBlackStones[n];
+						var tempStone = currentTurn.additionalBlackStones[n];
 						this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
 					}// End for n
 				}// End if
 				
 				// If there was a stone played this turn, play it
-				if( currentDeltas.stone )
+				if( currentTurn.stone )
 				{
-					var currentStone = currentDeltas.stone;
+					var currentStone = currentTurn.stone;
 
 					// Switch based on the stones action
 					switch( currentStone.action )
@@ -702,9 +655,9 @@ $.extend( {
 							var numCaptured = 0;
 	
 							// Foreach stone in the remove list, remove it from the board
-							for( var number in currentDeltas.removeList )
+							for( var number in currentTurn.removeList )
 							{
-								var tempStone = currentDeltas.removeList[number];
+								var tempStone = currentTurn.removeList[number];
 								this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
 								numCaptured++;
 							}// End for each removed stone
@@ -749,8 +702,8 @@ $.extend( {
 				}// End if
 				
 				// If we have a comment, add it to the board
-				if( currentDeltas.comments && currentDeltas.comments.length > 0 )
-					this.addCommentToDisplay( currentDeltas.comments );
+				if( currentTurn.comments && currentTurn.comments.length > 0 )
+					this.addCommentToDisplay( currentTurn.comments );
 				
 				return true;
 			},
@@ -763,36 +716,36 @@ $.extend( {
 					return false;
 
 				// If we are already on the first move, return
-				if( this.deltaIndex == -1 )
+				if( this.turnIndex == -1 )
 					return false;
 	
 				// Apply the changes for the current delta
-				var currentDeltas = this.turnDeltas[ this.deltaIndex ];
+				var currentTurn = this.turnObjects[ this.turnIndex ];
 				
 				// If there are white stones to add, remove them
-				if( currentDeltas.additionalWhiteStones && currentDeltas.additionalWhiteStones.length > 0 )
+				if( currentTurn.additionalWhiteStones && currentTurn.additionalWhiteStones.length > 0 )
 				{
-					for( var n in currentDeltas.additionalWhiteStones )
+					for( var n in currentTurn.additionalWhiteStones )
 					{
-						var tempStone = currentDeltas.additionalWhiteStones[n];
+						var tempStone = currentTurn.additionalWhiteStones[n];
 						this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
 					}// End for n
 				}// End if
 
 				// If there are black stones to add, remove them
-				if( currentDeltas.additionalBlackStones && currentDeltas.additionalBlackStones.length > 0 )
+				if( currentTurn.additionalBlackStones && currentTurn.additionalBlackStones.length > 0 )
 				{
-					for( var n in currentDeltas.additionalBlackStones )
+					for( var n in currentTurn.additionalBlackStones )
 					{
-						var tempStone = currentDeltas.additionalBlackStones[n];
+						var tempStone = currentTurn.additionalBlackStones[n];
 						this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
 					}// End for n
 				}// End if
 
 				// If there was a stone played this turn, play it
-				if( currentDeltas.stone )
+				if( currentTurn.stone )
 				{
-					var currentStone = currentDeltas.stone;
+					var currentStone = currentTurn.stone;
 
 					// Switch based on the stones action
 					switch( currentStone.action )
@@ -807,9 +760,9 @@ $.extend( {
 							var numCaptured = 0;
 	
 							// Foreach stone in the remove list, put it back on the board
-							for( var number in currentDeltas.removeList )
+							for( var number in currentTurn.removeList )
 							{
-								var tempStone = currentDeltas.removeList[number];
+								var tempStone = currentTurn.removeList[number];
 								this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
 								numCaptured++;
 							}// End for each removed stone
@@ -859,15 +812,15 @@ $.extend( {
 				}// End if
 				
 				// If we have a comment, remove it from the board
-				if( currentDeltas.comments && currentDeltas.comments.length > 0 )
-					this.removeCommentFromDisplay( currentDeltas.comments );
+				if( currentTurn.comments && currentTurn.comments.length > 0 )
+					this.removeCommentFromDisplay( currentTurn.comments );
 				
 				// Now that we've reversed the current turn, move back to the previous turn
-				this.deltaIndex--;
+				this.turnIndex--;
 
 				// If the index went out of range, put it back in range and return
-				if( this.deltaIndex < -1 )
-					this.deltaIndex = -1;
+				if( this.turnIndex < -1 )
+					this.turnIndex = -1;
 
 				return true;
 			},
@@ -907,12 +860,12 @@ $.extend( {
 				if( parseInt( n ) != 'NaN' || n >= 0  || n <= this.turnDeltas.length )
 				{
 					// Figure out whether we need to move forwards or backwards and do so.
-					if( n < this.deltaIndex )
+					if( n < this.turnIndex )
 					{
-						while( n < this.deltaIndex )
+						while( n < this.turnIndex )
 							this.previousTurn();
 					}// End if
-					else if( n > this.deltaIndex )
+					else if( n > this.turnIndex )
 					{
 						while( n > this.deltaIndex )
 							this.nextTurn();

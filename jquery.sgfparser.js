@@ -719,16 +719,16 @@ $.extend( {
 								turnObj.stone = goStone;
 						}// End if
 						
-						// Tell the board to calculate the turn deltas
-						this.board.calculateTurnDelta( node, turnObj );
+						// Set the turn object in the board
+						this.board.setTurnObj( node, turnObj );
 					}// End for each node
 					
 					// Send the player information to the board
 					this.board.playerBlack = playerBlack;
 					this.board.playerWhite = playerWhite;
 
-					// Let the board know we are finished calculating the turn delta's
-					this.board.onDeltasFinished();
+					// Let the board know we are finished parsing
+					this.board.onParserFinish();
 				}
 			} );
 
