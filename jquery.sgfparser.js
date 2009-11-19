@@ -317,7 +317,7 @@ $.extend( {
 					
 					// Loop over each node and each node's properties, applying any static board
 					// properties to the board, and generating delta's between each move
-					for( var node = 0; node <= this.gameTree.length; ++node )
+					for( var node = 0; node <= this.gameTree.length - 1; ++node )
 					{
 						// Create a blank stone, so we can set the properties here
 						var goStone = this.board.getBlankStone();
@@ -359,11 +359,16 @@ $.extend( {
 										goStone.x = this.gameTree[node][property].charAt( 0 );
 										goStone.y = this.gameTree[node][property].charAt( 1 );
 										goStone.color = 'b';
-										goStone.action = 'place';
 										
 										// Translate the go stone coordinates from alpha to numeric
 										goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 97;
 										goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 97;
+										
+										// If the coordinates of the stone are out of range, treat it as a pass
+										if( goStone.x == this.board.size && goStone.y == this.board.size )
+											goStone.action = 'pass';
+										else
+											goStone.action = 'place';
 									}// End if
 									else
 										alert( 'Two stones placed in node '  + node );
@@ -377,11 +382,16 @@ $.extend( {
 										goStone.x = this.gameTree[node][property].charAt( 0 );
 										goStone.y = this.gameTree[node][property].charAt( 1 );
 										goStone.color = 'w';
-										goStone.action = 'place';
 										
 										// Translate the go stone coordinates from alpha to numeric
 										goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 97;
 										goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 97;
+										
+										// If the coordinates of the stone are out of range, treat it as a pass
+										if( goStone.x == this.board.size && goStone.y == this.board.size )
+											goStone.action = 'pass';
+										else
+											goStone.action = 'place';
 									}// End if
 									else
 										alert( 'Two stones placed in node '  + node );
@@ -391,7 +401,7 @@ $.extend( {
 								
 								// Begin SETUP properties ///////////////////////////////////////////////
 								// Adds a list of black stones to the board
-								case 'AB':									
+								case 'AB':								
 									// Get a short cut to the list of stones
 									var stoneList = this.gameTree[node][property];
 									
@@ -625,7 +635,7 @@ $.extend( {
 									this.board.openingType = this.gameTree[node][property];
 									break;
 								
-								// The overtime method used in this game
+								// The overtime (byo-yomi) method used in this game
 								case 'OT':
 									this.board.overtime = this.gameTree[node][property];
 									break;
@@ -667,7 +677,17 @@ $.extend( {
 								
 								// The time limit for this game
 								case 'TM':
-									this.board.timeLimit = this.gameTree[node][property];
+									var timeLimit = parseInt( this.gameTree[node][property] );
+									if( timeLimit != NaN )
+									{
+										var minutes = ( Math.floor( timeLimit / 60 ) ).toString();
+										var seconds = ( timeLimit % 60 ).toString();
+
+										if( seconds.length == 1 )
+											seconds = '0' + seconds;
+										
+										this.board.timeLimit = minutes + ':' + seconds;
+									}// End if
 									break;
 								
 								// The person or server that created the game file
@@ -688,19 +708,70 @@ $.extend( {
 
 
 								// Begin TIMING properties ////////////////////////////////////////
-								
+
+								// The time left for black after this move was played, in seconds
+								case 'BL':
+									var timeRemaining = parseInt( this.gameTree[node][property] );
+									if( timeRemaining != NaN )
+									{
+										// Parse the int into a nice looking string and set it in the turn object
+										var minutes = ( Math.floor( timeRemaining / 60 ) ).toString();
+										var seconds = ( timeRemaining % 60 ).toString();
+
+										if( seconds.length == 1 )
+											seconds = '0' + seconds;
+										
+										turnObj.timeRemaining = minutes + ':' + seconds;
+									}// End if
+									break;
+
+								// The number of moves left for black in this byo-yomi period
+								case 'OB':
+									turnObj.stonesRemaining = parseInt( this.gameTree[node][property] );
+									break;
+
+								// The number of moves left for white in this byo-yomi perioid
+								case 'OW':
+									turnObj.stonesRemaining = parseInt( this.gameTree[node][property] );
+									break;
+
+								// The time left for white after this move was played, in seconds
+								case 'WL':
+									var timeRemaining = parseInt( this.gameTree[node][property] );
+									if( timeRemaining != NaN )
+									{
+										// Parse the int into a nice looking string and set it in the turn object
+										var minutes = ( Math.floor( timeRemaining / 60 ) ).toString();
+										var seconds = ( timeRemaining % 60 ).toString();
+
+										if( seconds.length == 1 )
+											seconds = '0' + seconds;
+										
+										turnObj.timeRemaining = minutes + ':' + seconds;
+									}// End if
+									break;								
 								// End TIMGING properties //////////////////////////////////////////
 								
 								// Begin GM[1] properties /////////////////////////////////////////
 								
 								// The number of handicap stones.
 								case 'HA':
-									this.board.numHandicapStones = parseInt( this.gameTree[node][property] );
+									this.board.numHandicapStones = this.gameTree[node][property];
 									break;
 								
 								// Defines the komi for this game
 								case 'KM':
-									this.board.komi = this.gameTree[node][property];
+									komi = this.gameTree[node][property];
+									
+									// Remove any trailing zeros from the komi value
+									if( komi.length > 0 )
+									{
+										while( komi.charAt( komi.length - 1 ) == '0' && komi.length > 1 )
+											komi = komi.substr( 0, komi.length - 1 );
+										
+										if( komi.length > 0 )
+											this.board.komi = komi;
+									}// End if
 									break;
 
 								// End GM[1] properties ///////////////////////////////////////////
@@ -715,7 +786,7 @@ $.extend( {
 						// If we have a stone, add it to the turn
 						if( goStone.action )
 						{
-							if( this.board.isLegalPlay( goStone ) )
+							if( this.board.isLegalPlay( goStone ) || goStone.action == 'pass' )
 								turnObj.stone = goStone;
 						}// End if
 						

@@ -49,7 +49,7 @@ $.extend( {
 			turnObjects: new Array(),
 			
 			// Stores the number of handicap stones
-			numHandicapStones: 0,
+			numHandicapStones: '0',
 			
 			// Stores any copyright related information found in the game file
 			copyrightInfo: '',
@@ -107,6 +107,9 @@ $.extend( {
 			
 			// The element that holds the white player's information
 			playerWhitePanel: false,
+			
+			// The element that will hold the information about the most recently played stone
+//			turnInfoPanel: false,
 			
 			// A flag set to true when we are to mark the most recently played stone
 			markCurrentStone: true,	
@@ -168,6 +171,12 @@ $.extend( {
 						
 					// A list of stones to remove, this is calculated by the parser
 					removeList: false,
+					
+					// The time left for the player that played a stone this turn
+					timeRemaining: false,
+					
+					// The number of stones left in the current byo-yomi period fo rthe player that played a stone this turn
+					stonesRemaining: false,
 					 
 					// Adds a comment to this turn object
 					addComment: function( msg )
@@ -565,6 +574,26 @@ $.extend( {
 					// Build the game info panel content
 					var gameInfoContent = 'Game: ' + this.gameName +
 							' played on ' + this.dateTime;
+					
+					
+					if( this.timeLimit || this.komi || this.numHandicapStones )
+					{
+						gameInfoContent += '<br />';
+
+						// If the time limit is set, display them it in the info panel
+						if( this.timeLimit )
+							gameInfoContent += 'Time Limit: ' + this.timeLimit
+						
+						// If the komi is set, display it
+						if( this.komi )
+						{
+							gameInfoContent += ' Komi: ' + this.komi;
+						}// end if
+						
+						// If there are handicap stones, display it
+						if( this.numHandicapStones )
+							gameInfoContent += ' Handicap: ' + this.numHandicapStones;
+					}// End if
 
 					this.gameInfoPanel = $( options.gameInfo ).html( gameInfoContent ).
 									addClass( 'gameInfoPanel' );
@@ -575,7 +604,10 @@ $.extend( {
 				{
 					var blackInfoContent = 'Black: ' + this.playerBlack.name + 
 							' (' + this.playerBlack.rank + ') <br />' +
-							'Captures: <span class="black_captures">0</span>';
+							'Captures: <span class="black_captures">0</span><br />';
+					
+					// Set the initial time limit for the black player
+					blackInfoContent += 'Time Remaining: <span id="player_black_timeremaining">' + this.timeLimit + '</span>';
 
 					this.playerBlackPanel = $( options.blackInfo ).html( blackInfoContent ).
 									addClass( 'playerInfoPanel' );
@@ -586,11 +618,23 @@ $.extend( {
 				{
 					var whiteInfoContent = 'White: ' + this.playerWhite.name + 
 							' (' + this.playerWhite.rank + ') <br />' +
-							'Captures: <span class="white_captures">0</span>';
+							'Captures: <span class="white_captures">0</span><br />';
+					
+					// Set the initial time limit for the black player
+					whiteInfoContent += 'Time Remaining: <span id="player_white_timeremaining">' + this.timeLimit + '</span>';
 
 					this.playerWhitePanel = $( options.whiteInfo ).html( whiteInfoContent ).
 									addClass( 'playerInfoPanel' );
 				}// End if
+				
+/*				// If the turn info panel was specified
+				if( options.turnInfo && options.turnInfo.length > 0 )
+				{
+					var turnInfoContent = 'Move: N/A';
+					
+					this.turnInfoPanel = $( options.turnInfo ).html( turnInfoContent ).addClass( 'gameInfoPanel' );
+				}// End if
+*/
 				
 				// Tell the world we have loaded
 				this.loaded = true;
@@ -644,54 +688,92 @@ $.extend( {
 				{
 					var currentStone = currentTurn.stone;
 
-					// Add the stone to the internal board, and to the display
-					this.addStoneToInternalBoard( currentStone );
-					this.addStoneToDisplay( currentStone.x, currentStone.y, currentStone.color );
-					
-					// If the remove list hasn't been calculated, do it now
-					if( ! currentTurn.removeList )
-						currentTurn.removeList = this.removeStonesCapturedBy( currentStone.x, currentStone.y );
-
-					// Keep track of the number of stones captured
-					var numCaptured = 0;
-
-					// Foreach stone in the remove list, remove it from the board
-					for( var number in currentTurn.removeList )
+					// If the time remaining is set in the turn, update the correct player's time remaining
+					if( currentTurn.timeRemaining )
 					{
-						var tempStone = currentTurn.removeList[number];
-						this.removeStoneFromInternalBoard( tempStone );
-						this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
-						numCaptured++;
-					}// End for each removed stone
+						if( currentStone.color == 'b' )
+							var selector = '#player_black_timeremaining';
+						else
+							var selector = '#player_white_timeremaining';
 						
-					// Update the number of captured stones if we need to
-					if( numCaptured > 0 )
-						this.updateCaptureDisplay( currentStone.color, numCaptured );
-					
-					// If we are to mark the most recently played stone
-					if( this.markCurrentStone )
-					{
-						// Find and remove any current stone markers
-						$( '#current_play' ).each( function()
-						{
-							this.parentNode.removeChild( this );
-						} );
-
-						// Get a reference to the board cell at x,y
-						var cell = this.getBoardCellAt( currentStone.x, currentStone.y );
-
-						if( cell )
-						{			
-							// Create the new marker
-							var marker = document.createElement( 'span' );
-							marker.id = 'current_play';
-							marker.innerHTML = '0';
-							marker.className = ( currentStone.color == 'b' )? 'marker_blackstone': 'marker_whitestone';
-
-							// Add the marker element to the cell
-							cell.appendChild( marker );
-						}// End if
+						$( selector ).html( currentTurn.timeRemaining );
 					}// End if
+
+					// If the player didn't pass
+					if( currentStone.action != 'pass' )
+					{
+						// Add the stone to the internal board, and to the display
+						this.addStoneToInternalBoard( currentStone );
+						this.addStoneToDisplay( currentStone.x, currentStone.y, currentStone.color );
+						
+						// If the remove list hasn't been calculated, do it now
+						if( ! currentTurn.removeList )
+							currentTurn.removeList = this.removeStonesCapturedBy( currentStone.x, currentStone.y );
+	
+						// Keep track of the number of stones captured
+						var numCaptured = 0;
+	
+						// Foreach stone in the remove list, remove it from the board
+						for( var number in currentTurn.removeList )
+						{
+							var tempStone = currentTurn.removeList[number];
+							this.removeStoneFromInternalBoard( tempStone );
+							this.removeStoneFromDisplay( tempStone.x, tempStone.y, tempStone.color );
+							numCaptured++;
+						}// End for each removed stone
+							
+						// Update the number of captured stones if we need to
+						if( numCaptured > 0 )
+							this.updateCaptureDisplay( currentStone.color, numCaptured );
+						
+						// If we are to mark the most recently played stone
+						if( this.markCurrentStone )
+						{
+							// Find and remove any current stone markers
+							$( '#current_play' ).each( function()
+							{
+								this.parentNode.removeChild( this );
+							} );
+	
+							// Get a reference to the board cell at x,y
+							var cell = this.getBoardCellAt( currentStone.x, currentStone.y );
+	
+							if( cell )
+							{			
+								// Create the new marker
+								var marker = document.createElement( 'span' );
+								marker.id = 'current_play';
+								marker.innerHTML = '0';
+								marker.className = ( currentStone.color == 'b' )? 'marker_blackstone': 'marker_whitestone';
+	
+								// Add the marker element to the cell
+								cell.appendChild( marker );
+							}// End if
+						}// End if
+					}// End if not pass
+						
+					// If the turn info panel was specified
+/*					if( this.turnInfoPanel )
+					{
+						// Create a string with the details of the current play
+						var turnInfoContent = 'Last Play: ';
+
+						if( currentStone.color == 'b' )
+							turnInfoContent += 'Black ';
+						else
+							turnInfoContent += 'White ';
+						
+						if( currentStone.action == 'pass' )
+							turnInfoContent += ' Pass';
+						else
+						{
+							turnInfoContent += ( currentStone.y + 1 ).toString() + ' ' +
+									( currentStone.x + 1 ).toString();
+						}// End else
+						
+						this.turnInfoPanel = $( options.turnInfo ).html( turnInfoContent );
+					}// End if
+*/
 				}// End if
 				
 				// If we have a comment, add it to the board
@@ -720,56 +802,71 @@ $.extend( {
 				{
 					var currentStone = currentTurn.stone;
 					
-					// Remove the stone from the internal board, and the board's display element
-					this.removeStoneFromInternalBoard( currentStone );
-					this.removeStoneFromDisplay( currentStone.x, currentStone.y, currentStone.color );
-					
-					// Keep track of the number of stones captured
-					var numCaptured = 0;
-
-					// Foreach stone in the remove list, put it back on the board
-					for( var number in currentTurn.removeList )
+					// If the time remaining is set in the turn, update the correct player's time remaining
+					if( currentTurn.timeRemaining )
 					{
-						var tempStone = currentTurn.removeList[number];
-						this.addStoneToInternalBoard( tempStone );
-						this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
-						numCaptured++;
-					}// End for each removed stone
+						if( currentStone.color == 'b' )
+							var selector = '#player_black_timeremaining';
+						else
+							var selector = '#player_white_timeremaining';
+						
+						$( selector ).html( currentTurn.timeRemaining );
+					}// End if
 					
-					// Update the number of captured stones if we need to
-					if( numCaptured > 0 )
-						this.updateCaptureDisplay( currentStone.color, ( numCaptured * -1 ) );
-					
-					// If we are to mark the most recently played stone
-					if( this.markCurrentStone )
+					// If the player didn't pass
+					if( currentStone.action != 'pass' )
 					{
-						// Find and remove any current stone markers
-						$( '#current_play' ).each( function()
+						// Remove the stone from the internal board, and the board's display element
+						this.removeStoneFromInternalBoard( currentStone );
+						this.removeStoneFromDisplay( currentStone.x, currentStone.y, currentStone.color );
+						
+						// Keep track of the number of stones captured
+						var numCaptured = 0;
+	
+						// Foreach stone in the remove list, put it back on the board
+						for( var number in currentTurn.removeList )
 						{
-							this.parentNode.removeChild( this );
-						} );
-
-						// Get the previously played stone, if there is one
-						if( this.turnIndex > 1 )
+							var tempStone = currentTurn.removeList[number];
+							this.addStoneToInternalBoard( tempStone );
+							this.addStoneToDisplay( tempStone.x, tempStone.y, tempStone.color );
+							numCaptured++;
+						}// End for each removed stone
+						
+						// Update the number of captured stones if we need to
+						if( numCaptured > 0 )
+							this.updateCaptureDisplay( currentStone.color, ( numCaptured * -1 ) );
+						
+						// If we are to mark the most recently played stone
+						if( this.markCurrentStone )
 						{
-							var previousStone = this.turnObjects[ this.turnIndex - 1 ].stone;
-
-							// Get a reference to the board cell at x,y
-							var cell = this.getBoardCellAt( previousStone.x, previousStone.y );
-
-							if( cell )
-							{			
-								// Create the new marker
-								var marker = document.createElement( 'span' );
-								marker.id = 'current_play';
-								marker.innerHTML = '0';
-								marker.className = ( previousStone.color == 'b' )? 'marker_blackstone': 'marker_whitestone';
-
-								// Add the marker element to the cell
-								cell.appendChild( marker );
+							// Find and remove any current stone markers
+							$( '#current_play' ).each( function()
+							{
+								this.parentNode.removeChild( this );
+							} );
+	
+							// Get the previously played stone, if there is one
+							if( this.turnIndex > 1 )
+							{
+								var previousStone = this.turnObjects[ this.turnIndex - 1 ].stone;
+	
+								// Get a reference to the board cell at x,y
+								var cell = this.getBoardCellAt( previousStone.x, previousStone.y );
+	
+								if( cell )
+								{			
+									// Create the new marker
+									var marker = document.createElement( 'span' );
+									marker.id = 'current_play';
+									marker.innerHTML = '0';
+									marker.className = ( previousStone.color == 'b' )? 'marker_blackstone': 'marker_whitestone';
+	
+									// Add the marker element to the cell
+									cell.appendChild( marker );
+								}// End if
 							}// End if
 						}// End if
-					}// End if					
+					}// End if not pass				
 				}// End if
 				
 				// If there are white stones to add, remove them
@@ -800,6 +897,28 @@ $.extend( {
 				
 				// Now that we've reversed the current turn, move back to the previous turn
 				this.turnIndex--;
+				
+				// If the turn info panel was specified
+/*				if( this.turnInfoPanel )
+				{
+					// Create a string with the details of the current play
+					var turnInfoContent = 'Last Play: ';
+
+					if( currentStone.color == 'b' )
+						turnInfoContent += 'Black ';
+					else
+						turnInfoContent += 'White ';
+					
+					if( currentStone.action == 'pass' )
+						turnInfoContent += ' Pass';
+					else
+					{
+						turnInfoContent += currentStone.x;
+					}// End else
+					
+					this.turnInfoPanel = $( options.turnInfo ).html( turnInfoContent );
+				}// End if
+*/
 
 				// If the index went out of range, put it back in range and return
 				if( this.turnIndex < -1 )
