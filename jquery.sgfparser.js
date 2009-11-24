@@ -766,6 +766,52 @@ $.extend( {
 											this.board.komi = komi;
 									}// End if
 									break;
+								
+								// Specifies the black territory or area
+								case 'TB':
+									// Get a short cut to the list of territory
+									var territoryList = this.gameTree[node][property];
+									
+									// Foreach point of territory, create a stone object
+									turnObj.territoryBlack = new Array();
+									for( var n in territoryList )
+									{
+										// Create a structure to store the point of territory
+										var point = { x: false, y: false };
+
+										point.x = territoryList[n].charAt( 0 );
+										point.y = territoryList[n].charAt( 1 );
+										
+										// Translate the go stone coordinates from alpha to numeric
+										point.x = parseInt( point.x.charCodeAt( 0 ) ) - 97;
+										point.y = parseInt( point.y.charCodeAt( 0 ) ) - 97;
+										
+										turnObj.territoryBlack.push( point );
+									}// End for n
+									break;
+								
+								// Specifies the white territory or reaa
+								case 'TW':
+									// Get a short cut to the list of territory
+									var territoryList = this.gameTree[node][property];
+									
+									// Foreach point of territory, create a stone object
+									turnObj.territoryWhite = new Array();
+									for( var n in territoryList )
+									{
+										// Create a structure to store the point of territory
+										var point = { x: false, y: false };
+
+										point.x = territoryList[n].charAt( 0 );
+										point.y = territoryList[n].charAt( 1 );
+										
+										// Translate the go stone coordinates from alpha to numeric
+										point.x = parseInt( point.x.charCodeAt( 0 ) ) - 97;
+										point.y = parseInt( point.y.charCodeAt( 0 ) ) - 97;
+										
+										turnObj.territoryWhite.push( point );
+									}// End for n
+									break;
 
 								// End GM[1] properties ///////////////////////////////////////////
 

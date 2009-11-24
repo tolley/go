@@ -103,3 +103,18 @@
 .goban .white {
 	background: url(/images/white-20x20.png) no-repeat;
 }
+
+/* Markup images */
+.goban .territory_black {
+	background: url(/images/b-x-20x20.png) no-repeat;
+	width: 20px;
+	height: 20px;
+	position: relative;
+}
+
+.goban .territory_white {
+	background: url(/images/w-x-20x20.png) no-repeat;
+	width: 20px;
+	height: 20px;
+	position: relative;
+}

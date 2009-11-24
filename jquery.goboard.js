@@ -67,7 +67,7 @@ $.extend( {
 			gameName: '',
 			
 			// The final result of the game
-			result: '',
+			result: false,
 			
 			// The round number and type (final, semifinal) of this game
 			roundInfo: '',
@@ -180,6 +180,12 @@ $.extend( {
 					
 					// The number of stones left in the current byo-yomi period fo rthe player that played a stone this turn
 					stonesRemaining: false,
+					
+					// Marks white territory or area on the board
+					territoryBlack: false,
+					
+					// Marks black territory or area on the board
+					territoryWhite: false,
 					 
 					// Adds a comment to this turn object
 					addComment: function( msg )
@@ -204,7 +210,8 @@ $.extend( {
 					name: 'N/A',
 					rank: 'N/A',
 					teamName: 'N/A',
-					captures: 0
+					captures: 0,
+					territoryCount: 0
 				};
 			},
 
@@ -797,6 +804,63 @@ $.extend( {
 				if( currentTurn.comments && currentTurn.comments.length > 0 )
 					this.addCommentToDisplay( currentTurn.comments );
 				
+				// Remove any mark up from the previous turn
+				$( '.goban .marker' ).each( function(){
+					this.parentNode.removeChild( this );
+				} );
+				
+				// If there is black territory marked this turn, build the markup for it
+				if( currentTurn.territoryBlack && currentTurn.territoryBlack.length > 0 )
+				{
+					// Update the black player's territory count
+					this.playerBlack.territoryCount += currentTurn.territoryBlack.length;
+
+					for( var n in currentTurn.territoryBlack )
+					{
+						var point = currentTurn.territoryBlack[n];
+						var cell = this.getBoardCellAt( point.x, point.y );
+						
+						var marker = document.createElement( 'div' );
+						marker.className = 'marker territory_black';
+						cell.appendChild( marker );
+					}// End for n					
+				}// End if
+				
+				// If there is black territory marked this turn, build the markup for it
+				if( currentTurn.territoryWhite && currentTurn.territoryWhite.length > 0 )
+				{
+					// Update the white player's territory count
+					this.playerWhite.territoryCount += currentTurn.territoryWhite.length;
+
+					for( var n in currentTurn.territoryWhite )
+					{
+						var point = currentTurn.territoryWhite[n];
+						var cell = this.getBoardCellAt( point.x, point.y );
+						
+						var marker = document.createElement( 'div' );
+						marker.className = 'marker territory_white';
+						cell.appendChild( marker );
+					}// End for n	
+				}// End if
+				
+				// If this is the last turn in the game, and we have a final score, show it
+				if( this.turnIndex == this.turnObjects.length - 1 )
+				{
+					var comment = '';
+					if( this.playerWhite.territoryCount > 0 || this.playerBlack.territoryCount > 0 )
+					{
+						comment += 'Black: Captures ' + this.playerBlack.captures + ', Territory ' + this.playerBlack.territoryCount;
+						comment += ', Total ' + ( this.playerBlack.captures + this.playerBlack.territoryCount ) + '\n';
+						comment += 'White: Captures ' + this.playerWhite.captures + ', Territory ' + this.playerWhite.territoryCount;
+						comment += ', Total ' + ( this.playerWhite.captures + this.playerWhite.territoryCount ) + '\n';
+					}// End if
+					
+					if( this.result )
+						comment += 'Result: ' + this.result;
+
+					this.addCommentToDisplay( comment );
+				}// End if
+				
 				return true;
 			},
 			
@@ -891,6 +955,11 @@ $.extend( {
 					}// End if not pass				
 				}// End if
 				
+				// Remove any mark up from the previous turn
+				$( '.goban .marker' ).each( function(){
+					this.parentNode.removeChild( this );
+				} );
+				
 				// If there are white stones to add, remove them
 				if( currentTurn.additionalWhiteStones && currentTurn.additionalWhiteStones.length > 0 )
 				{
@@ -913,9 +982,13 @@ $.extend( {
 					}// End for n
 				}// End if
 				
-				// If we have a comment, remove it from the board
-				if( currentTurn.comments && currentTurn.comments.length > 0 )
-					this.removeCommentFromDisplay( currentTurn.comments );
+				// If there is white territory in this node, decrease the white player's territory count
+				if( currentTurn.territoryWhite && currentTurn.territoryWhite.length > 0 )
+					this.playerWhite.territoryCount -= currentTurn.territoryWhite.length;
+				
+				// If there is black territory in this node, decrease the black player's territory count
+				if( currentTurn.territoryBlack && currentTurn.territoryBlack.length > 0 )
+					this.playerBlack.territoryCount -= currentTurn.territoryBlack.length;
 				
 				// Now that we've reversed the current turn, move back to the previous turn
 				this.turnIndex--;
@@ -923,7 +996,8 @@ $.extend( {
 				// If the turn info panel was specified, display the previous move's info
 				if( this.turnInfoPanel && this.turnIndex > -1 )
 				{
-					var previousStone = this.turnObjects[ this.turnIndex ].stone;
+					var previousTurn = this.turnObjects[ this.turnIndex ];
+					var previousStone = previousTurn.stone;
 					
 					// Create a string with the details of the current play
 					var turnInfoContent = 'Move ' + this.moveNumber + ': ';
@@ -955,6 +1029,39 @@ $.extend( {
 						turnInfoContent += 'N/A';
 					
 					this.turnInfoPanel = $( options.turnInfo ).html( turnInfoContent );
+					
+					// If there is territory marked this turn, build the markup for it
+					if( previousTurn.territoryBlack && previousTurn.territoryBlack.length > 0 )
+					{
+						for( var n in previousTurn.territoryBlack )
+						{
+							var point = previousTurn.territoryBlack[n];
+							var cell = this.getBoardCellAt( point.x, point.y );
+							
+							var marker = document.createElement( 'div' );
+							marker.className = 'marker territory_black';
+							cell.appendChild( marker );
+						}// End for n
+					}// End if
+					
+					if( previousTurn.territoryWhite && currentTurn.previousWhite.length > 0 )
+					{
+						for( var n in previousTurn.territoryWhite )
+						{
+							var point = previousTurn.territoryWhite[n];
+							var cell = this.getBoardCellAt( point.x, point.y );
+							
+							var marker = document.createElement( 'div' );
+							marker.className = 'marker territory_white';
+							cell.appendChild( marker );
+						}// End for n	
+					}// End if
+					
+					// If we have a comment, restore it
+					if( previousTurn.comments && previousTurn.comments.length > 0 )
+						this.addCommentToDisplay( previousTurn.comments );
+					else
+						this.addCommentToDisplay( ' ' );
 				}// End if
 
 				// If the index went out of range, put it back in range and return
