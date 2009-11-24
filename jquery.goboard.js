@@ -35,6 +35,9 @@ $.extend( {
 			
 			// Keeps track of the turn we are on
 			turnIndex: -1,
+			
+			// Keeps track of the move number.
+			moveNumber: 0,
 
 			// A reference to the chat window
 			chatWindow: false,
@@ -109,7 +112,7 @@ $.extend( {
 			playerWhitePanel: false,
 			
 			// The element that will hold the information about the most recently played stone
-//			turnInfoPanel: false,
+			turnInfoPanel: false,
 			
 			// A flag set to true when we are to mark the most recently played stone
 			markCurrentStone: true,	
@@ -627,14 +630,13 @@ $.extend( {
 									addClass( 'playerInfoPanel' );
 				}// End if
 				
-/*				// If the turn info panel was specified
+				// If the turn info panel was specified
 				if( options.turnInfo && options.turnInfo.length > 0 )
 				{
 					var turnInfoContent = 'Move: N/A';
 					
 					this.turnInfoPanel = $( options.turnInfo ).html( turnInfoContent ).addClass( 'gameInfoPanel' );
 				}// End if
-*/
 				
 				// Tell the world we have loaded
 				this.loaded = true;
@@ -687,6 +689,9 @@ $.extend( {
 				if( currentTurn.stone )
 				{
 					var currentStone = currentTurn.stone;
+					
+					// Increment the move number used in the move info panel
+					this.moveNumber++;
 
 					// If the time remaining is set in the turn, update the correct player's time remaining
 					if( currentTurn.timeRemaining )
@@ -753,27 +758,39 @@ $.extend( {
 					}// End if not pass
 						
 					// If the turn info panel was specified
-/*					if( this.turnInfoPanel )
+					if( this.turnInfoPanel )
 					{
 						// Create a string with the details of the current play
-						var turnInfoContent = 'Last Play: ';
+						var turnInfoContent = 'Move ' + this.moveNumber + ': ';
 
-						if( currentStone.color == 'b' )
-							turnInfoContent += 'Black ';
-						else
-							turnInfoContent += 'White ';
-						
-						if( currentStone.action == 'pass' )
-							turnInfoContent += ' Pass';
-						else
+						if( currentStone )
 						{
-							turnInfoContent += ( currentStone.y + 1 ).toString() + ' ' +
-									( currentStone.x + 1 ).toString();
-						}// End else
+							if( currentStone.color == 'b' )
+								turnInfoContent += 'Black ';
+							else
+								turnInfoContent += 'White ';
+							
+							if( currentStone.action == 'pass' )
+								turnInfoContent += ' Pass';
+							else
+							{
+								// Translate the stone's coordinates into alpha numeric
+								var x = currentStone.x + 1;
+								if( x >= 9 ) x++;
+								x = String.fromCharCode( x + 64 );
+
+								var y = currentStone.y + 1;
+								y = y - 20;
+								if( y < 0 ) y = y * -1;
+
+								turnInfoContent += x + ' ' + y;
+							}// End else
+						}// End if
+						else
+							turnInfoPanel += 'N/A';
 						
 						this.turnInfoPanel = $( options.turnInfo ).html( turnInfoContent );
 					}// End if
-*/
 				}// End if
 				
 				// If we have a comment, add it to the board
@@ -801,6 +818,11 @@ $.extend( {
 				if( currentTurn.stone )
 				{
 					var currentStone = currentTurn.stone;
+					
+					// Deincrement the move number used in the move info panel
+					this.moveNumber--;
+					if( this.moveNumber < 0 )
+						this.moveNumber = 0;
 					
 					// If the time remaining is set in the turn, update the correct player's time remaining
 					if( currentTurn.timeRemaining )
@@ -898,27 +920,42 @@ $.extend( {
 				// Now that we've reversed the current turn, move back to the previous turn
 				this.turnIndex--;
 				
-				// If the turn info panel was specified
-/*				if( this.turnInfoPanel )
+				// If the turn info panel was specified, display the previous move's info
+				if( this.turnInfoPanel && this.turnIndex > -1 )
 				{
-					// Create a string with the details of the current play
-					var turnInfoContent = 'Last Play: ';
-
-					if( currentStone.color == 'b' )
-						turnInfoContent += 'Black ';
-					else
-						turnInfoContent += 'White ';
+					var previousStone = this.turnObjects[ this.turnIndex ].stone;
 					
-					if( currentStone.action == 'pass' )
-						turnInfoContent += ' Pass';
+					// Create a string with the details of the current play
+					var turnInfoContent = 'Move ' + this.moveNumber + ': ';
+
+					if( previousStone )
+					{	
+						if( previousStone.color == 'b' )
+							turnInfoContent += 'Black ';
+						else
+							turnInfoContent += 'White ';
+						
+						if( previousStone.action == 'pass' )
+							turnInfoContent += ' Pass';
+						else
+						{
+							// Translate the stone's coordinates into alpha numeric
+							var x = previousStone.x + 1;
+							if( x >= 9 ) x++;
+							x = String.fromCharCode( x + 64 );
+
+							var y = previousStone.y + 1;
+							y = y - 20;
+							if( y < 0 ) y = y * -1;
+
+							turnInfoContent += x + ' ' + y;
+						}// End else
+					}// End if
 					else
-					{
-						turnInfoContent += currentStone.x;
-					}// End else
+						turnInfoContent += 'N/A';
 					
 					this.turnInfoPanel = $( options.turnInfo ).html( turnInfoContent );
 				}// End if
-*/
 
 				// If the index went out of range, put it back in range and return
 				if( this.turnIndex < -1 )

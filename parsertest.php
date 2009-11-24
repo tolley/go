@@ -24,8 +24,8 @@ $( document ).ready( function()
 				'chatWindow': '#chatWindow',
 				'gameInfo': '#gameinfo',
 				'whiteInfo': '#player_whilte_info',
-				'blackInfo': '#player_black_info'  } );
-//				'turnInfo': '#turn_info' } );
+				'blackInfo': '#player_black_info',
+				'turnInfo': '#turn_info' } );
 } );
 </script>
 
@@ -79,9 +79,8 @@ $( document ).ready( function()
 			</div>
 			<div id="player_black_info" style="width: 49%; float: right;">
 			</div>
-<!--			<div id="turn_info" style="width:420px; text-align:left;">
+			<div id="turn_info" style="width:420px; text-align:left;">
 			</div>
--->
 		</div>
 		
 		<textarea id="chatWindow" style="width:420px; height:75px;"></textarea>

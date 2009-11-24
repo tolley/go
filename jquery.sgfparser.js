@@ -468,7 +468,6 @@ $.extend( {
 								// End SETUP properties ///////////////////////////////////////////////
 								
 								// Begin NODE ANNOTATION properties ///////////////////////////////////
-								
 								// A player made a comment
 								case 'C':
 									turnObj.addComment( this.gameTree[node][property] );
@@ -512,7 +511,6 @@ $.extend( {
 								// End NODE ANNOTATION properties /////////////////////////////////////
 								
 								// Begin MOVE ANNOTATION properties ///////////////////////////////////
-								
 								// The move played is bad
 								case 'BM':
 									if( goStone.color == 'w' )
@@ -548,7 +546,6 @@ $.extend( {
 								// End MOVE ANNOTATION properties /////////////////////////////////////
 								
 /*								// Begin MARKUP properties ////////////////////////////////////////////
-
 								// Marks the given points with a circle
 								case 'CR':
 									break;
@@ -570,7 +567,6 @@ $.extend( {
 */
 								
 								// Begin ROOT properties //////////////////////////////////////////////
-								
 								// Defines the game type.  If it's not a go game, exit
 								case 'GM':
 									if( this.gameTree[node][property] != 1 )
@@ -590,7 +586,6 @@ $.extend( {
 
 
 								// Begin GAMEINFO properties ////////////////////////////////////////
-
 								// The black player's rank
 								case 'BR':
 									playerBlack.rank = this.gameTree[node][property];
@@ -708,7 +703,6 @@ $.extend( {
 
 
 								// Begin TIMING properties ////////////////////////////////////////
-
 								// The time left for black after this move was played, in seconds
 								case 'BL':
 									var timeRemaining = parseInt( this.gameTree[node][property] );
@@ -753,7 +747,6 @@ $.extend( {
 								// End TIMGING properties //////////////////////////////////////////
 								
 								// Begin GM[1] properties /////////////////////////////////////////
-								
 								// The number of handicap stones.
 								case 'HA':
 									this.board.numHandicapStones = this.gameTree[node][property];
