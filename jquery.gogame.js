@@ -45,7 +45,7 @@
 		}// End if
 		
 		// Returns true if the game file has been loaded and is ready for interaction
-		$.fn.isGameLoaded = function()
+		this.isGameLoaded = function()
 		{
 			if( goBoard )
 				return goBoard.loaded;
@@ -54,46 +54,48 @@
 		}// End this.isGameLoaded
 		
 		// Advances the loaded game to the next move
-		$.fn.nextTurn = function()
+		this.nextTurn = function()
 		{
 			if( goBoard )
 				goBoard.nextTurn();
 		}// End this.nextTurn
 		
 		// Backs the loaded game up to the previous move
-		$.fn.previousTurn = function()
+		this.previousTurn = function()
 		{
 			if( goBoard )
 				goBoard.previousTurn();
 		}// End this.previousTurn
 		
 		// Resets the view to the first move of the game
-		$.fn.firstTurn = function()
+		this.firstTurn = function()
 		{
 			if( goBoard )
 				goBoard.firstTurn();
 		}// End this.firstTurn
 		
 		// Advantances the game to the final move
-		$.fn.lastTurn = function()
+		this.lastTurn = function()
 		{
 			if( goBoard )
 				goBoard.lastTurn();
 		}// End this.lastTurn
 		
 		// Updates the view so that it will shows the n'th move
-		$.fn.jumpToTurn = function( n )
+		this.jumpToTurn = function( n )
 		{
 			if( goBoard )
 				goBoard.jumpToTurn( n );
 		}// End this.jumpToTurn
+		
+		var self = this;
 		
 		// If the next button options are set, plug into it's click event
 		if( options.nextBtn && options.nextBtn.length > 0 )
 		{
 			$( options.nextBtn ).click( function()
 			{
-				$.fn.nextTurn();
+				self.nextTurn();
 			} );
 		}// End if
 
@@ -102,7 +104,7 @@
 		{
 			$( options.previousBtn ).click( function()
 			{
-				$.fn.previousTurn();
+				self.previousTurn();
 			} );
 		}// End if
 		
@@ -111,7 +113,7 @@
 		{
 			$( options.firstBtn ).click( function()
 			{
-				$.fn.firstTurn();
+				self.firstTurn();
 			} );
 		}// End if
 
@@ -120,7 +122,7 @@
 		{
 			$( options.lastBtn ).click( function()
 			{
-				$.fn.lastTurn();
+				self.lastTurn();
 			} );
 		}// End if
 

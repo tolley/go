@@ -444,8 +444,7 @@ $.extend( {
 				this.turnIndex = -1;
 
 				// Draw the board using the internal representation
-				// Create a names reference to this element and prepare it for the goban
-				var self = $( elem ).empty().addClass( 'goban' );
+				$( elem ).empty().addClass( 'goban' );
 				
 				// Create the table that we will use to hold our board
 				var table = document.createElement( 'table' );
@@ -617,7 +616,7 @@ $.extend( {
 							'Captures: <span class="black_captures">0</span><br />';
 					
 					// Set the initial time limit for the black player
-					blackInfoContent += 'Time Remaining: <span id="player_black_timeremaining">' + this.timeLimit + '</span>';
+					blackInfoContent += 'Time Remaining: <span class="player_black_timeremaining">' + this.timeLimit + '</span>';
 
 					this.playerBlackPanel = $( options.blackInfo ).html( blackInfoContent ).
 									addClass( 'playerInfoPanel' );
@@ -631,7 +630,7 @@ $.extend( {
 							'Captures: <span class="white_captures">0</span><br />';
 					
 					// Set the initial time limit for the black player
-					whiteInfoContent += 'Time Remaining: <span id="player_white_timeremaining">' + this.timeLimit + '</span>';
+					whiteInfoContent += 'Time Remaining: <span class="player_white_timeremaining">' + this.timeLimit + '</span>';
 
 					this.playerWhitePanel = $( options.whiteInfo ).html( whiteInfoContent ).
 									addClass( 'playerInfoPanel' );
@@ -704,11 +703,9 @@ $.extend( {
 					if( currentTurn.timeRemaining )
 					{
 						if( currentStone.color == 'b' )
-							var selector = '#player_black_timeremaining';
+							$( this.playerBlackPanel ).find( '.player_black_timeremaining' ).html( currentTurn.timeRemaining );
 						else
-							var selector = '#player_white_timeremaining';
-						
-						$( selector ).html( currentTurn.timeRemaining );
+							$( this.playerWhitePanel ).find( '.player_white_timeremaining' ).html( currentTurn.timeRemaining );
 					}// End if
 
 					// If the player didn't pass
@@ -742,7 +739,7 @@ $.extend( {
 						if( this.markCurrentStone )
 						{
 							// Find and remove any current stone markers
-							$( '#current_play' ).each( function()
+							$( elem ).find( '#current_play' ).each( function()
 							{
 								this.parentNode.removeChild( this );
 							} );
@@ -805,7 +802,7 @@ $.extend( {
 					this.addCommentToDisplay( currentTurn.comments );
 				
 				// Remove any mark up from the previous turn
-				$( '.goban .marker' ).each( function(){
+				$( elem ).find( '.marker' ).each( function(){
 					this.parentNode.removeChild( this );
 				} );
 				
@@ -892,11 +889,9 @@ $.extend( {
 					if( currentTurn.timeRemaining )
 					{
 						if( currentStone.color == 'b' )
-							var selector = '#player_black_timeremaining';
+							$( this.playerBlackPanel ).find( '.player_black_timeremaining' ).html( currentTurn.timeRemaining );
 						else
-							var selector = '#player_white_timeremaining';
-						
-						$( selector ).html( currentTurn.timeRemaining );
+							$( this.playerWhitePanel ).find( '.player_white_timeremaining' ).html( currentTurn.timeRemaining );
 					}// End if
 					
 					// If the player didn't pass
@@ -926,7 +921,7 @@ $.extend( {
 						if( this.markCurrentStone )
 						{
 							// Find and remove any current stone markers
-							$( '#current_play' ).each( function()
+							$( elem ).find( '#current_play' ).each( function()
 							{
 								this.parentNode.removeChild( this );
 							} );
@@ -956,7 +951,7 @@ $.extend( {
 				}// End if
 				
 				// Remove any mark up from the previous turn
-				$( '.goban .marker' ).each( function(){
+				$( elem ).find( '.marker' ).each( function(){
 					this.parentNode.removeChild( this );
 				} );
 				
