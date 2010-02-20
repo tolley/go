@@ -37,6 +37,9 @@
 	height:20px;
 	width:20px;
 	text-align:center;
+	margin: 0px;
+	padding: 0px;
+	vertical-align: middle;
 }
 
 .goban .img {
