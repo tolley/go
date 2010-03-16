@@ -637,7 +637,7 @@ $.extend( {
 								
 								// The black player's name
 								case 'PB':
-									playerBlack.name = this.board.event = this.gameTree[node][property];
+									playerBlack.name = this.gameTree[node][property];
 									break;
 								
 								// The location/server where this game was played
