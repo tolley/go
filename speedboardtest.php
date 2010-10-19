@@ -21,9 +21,6 @@ $( document ).ready( function()
 		// The size of the board
 		var boardSize = 19;
 
-		// Find the position of the div that will hold all of the game tiles
-		var gobanPosition = $( this ).offset();
-
 		var xMax = boardSize + 2;
 		var yMax = boardSize + 2;
 
@@ -33,8 +30,11 @@ $( document ).ready( function()
 			{
 				// Build the base tile
 				var newTile = document.createElement( 'div' );
-				newTile.style.left = ( 20 * y ) + gobanPosition.left + 1;
-				newTile.style.top = ( 20 * x ) + gobanPosition.top + 1;
+				
+				// Get the position for this stone
+				var position = calculateTileCoordinates( x, y, this );
+				newTile.style.left = position.left;
+				newTile.style.top = position.top;
 				
 				var className = 'tile ';
 				
@@ -52,6 +52,7 @@ $( document ).ready( function()
 					// Otherwise, we have a liberty tile and need to calculate the proper
 					// image so that it displayes correctly
 					className += calculateLibertyClass( x, y, boardSize );
+
 					newTile.innerHTML = '&nbsp;';
 				}// End else
 					
@@ -60,6 +61,21 @@ $( document ).ready( function()
 			}// End for y
 		}// End for x
 	} );
+	
+	// Returns the top and left coordinates for a given liberty
+	function calculateTileCoordinates( x, y, boardElem )
+	{
+		var returnValue = { top: 0, left: 0 };
+		
+		// Get the offset of the DOM element that holds the board UI
+		var gobanPosition = $( boardElem ).offset();
+		
+		returnValue.left = ( 20 * y ) + gobanPosition.left + 1;
+		returnValue.top = ( 20 * x ) + gobanPosition.top + 1;
+		
+		return returnValue;
+	}// End function calculateTileCoordinates
+
 	
 	// A function that will return the proper innerHTML for the side coordinates
 	function calculateSideCoordinate( x, y, boardSize )
@@ -182,6 +198,19 @@ $( document ).ready( function()
 			}// End else if
 		}// End else
 		
+		// Add the info that the board engine will use to display the turns
+		// Note: This code should stay at the very end of this function because we are incrementing x and y
+
+		// There are no I's in go coordinates
+		if( x >= 9 )
+			x++;
+		
+		if( y >= 9 )
+			y++;
+
+		// Using these class names, we can select a liberty by using it's x,y coordinates: $( '.liberty-x-y' )
+		className += ' liberty liberty-' + String.fromCharCode( x + 97 ) + '-' + String.fromCharCode( y + 97 );
+
 		// Return the calculated className
 		return className;
 	}// End function calculateLibertyClass
