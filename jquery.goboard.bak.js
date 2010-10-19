@@ -34,7 +34,7 @@ $.extend( {
 			size: false,
 			
 			// Keeps track of the turn we are on
-			turnIndex: 1,
+			turnIndex: -1,
 			
 			// Keeps track of the move number.
 			moveNumber: 0,
@@ -49,7 +49,7 @@ $.extend( {
 			boardElem: false,
 
 			// An array to hold the turn objects passed in from the parser
-//			turnObjects: new Array(),
+			turnObjects: new Array(),
 			
 			// Stores the number of handicap stones
 			numHandicapStones: '0',
@@ -119,19 +119,16 @@ $.extend( {
 			
 			// Used to keep track of the stone numbers.  Each stone gets a number when it is
 			// used in setTurnObj.  Those numbers are used in the capturing logic
-//			stoneId: 0,
+			stoneId: 0,
 
 			// Sets the size of the board
 			setBoardSize: function( size )
 			{
 				// If the board has already been sized, then don't do it again
 				if( this.internalBoard && this.size )
-					return;
-				
-				// Make sure the size is an int
-				size = parseInt( size );
-			
-				if( ! isNaN( size ) && size > 0 )
+					return;			
+
+				if( size > 0 )
 				{
 					this.size = size;
 					
@@ -236,7 +233,7 @@ $.extend( {
 			// and the usage of that data.
 			setTurnObj: function ( turn, turnObj )
 			{
-/*				// If there is already a turn object for this turn, let the user know
+				// If there is already a turn object for this turn, let the user know
 				if( this.turnObjects[turn] )
 				{
 					alert( 'Duplicate turns set for turn ' + turn );
@@ -249,7 +246,6 @@ $.extend( {
 				
 				// Set the turn object on the list of turns
 				this.turnObjects[turn] = turnObj;
-*/
 			},
 
 
@@ -416,61 +412,246 @@ $.extend( {
 			// turn objects.  This will generate the html elements to display the game
 			onParserFinish: function()
 			{
-				// Calculate the max dimensions for the board plus coordinates
-				var xMax = this.size + 2;
-				var yMax = this.size + 2;
-				
-				// Set the board's display element container and class name
-				this.boardElem = elem;
-				$( this.boardElem ).addClass( 'goban' );
-				
-				// Set the style information on the element the board will display inside of
-				this.boardElem.style.height = String( xMax * 20 ) + 'px';
-				this.boardElem.style.width  = String( yMax * 20 ) + 'px';
-		
-				// Build each tile that will make up the board display
-				for( var x = 0; x < xMax; ++x )
+				// Make sure we actually have some turn objects
+				if( this.turnObjects.length == 0 )
 				{
-					for( var y = 0; y < yMax; ++y )
+					alert( 'Unable to render game: no nodes where set.' );
+					return;
+				}// End if
+				
+				// Reset the board's internal representation
+				if( this.size > 0 )
+				{
+					// Update the internal board
+					this.internalBoard = new Array();
+					for( var y = 0; y < this.size; ++y )
 					{
-						// Build the base tile
-						var newTile = document.createElement( 'div' );
-
-						// Get the position for this stone
-						var position = this.calculateTileCoordinates( x, y );
-						newTile.style.left = position.left;
-						newTile.style.top = position.top;
-
-						var className = 'tile ';
-
-						// Add the className that will give the tile the proper display
-						// If we have a tile that is part of the UI (the side coordinates)
-						if( x == 0 || y == 0 || x == xMax - 1 || y == yMax - 1 )
+						for( var x = 0; x < this.size; ++x )
 						{
-							className += 'blank';
-							
-							// Calculate the innerHTML for the coordinates display
-							newTile.innerHTML = this.calculateSideCoordinate( x, y );
-						}// End if
-						else
-						{
-							// Otherwise, we have a liberty tile and need to calculate the proper
-							// image so that it displayes correctly
-							className += this.calculateLibertyClass( x, y );
-		
-							newTile.innerHTML = '&nbsp;';
-						}// End else
+							if( ! ( this.internalBoard[x] instanceof Array ) )
+								this.internalBoard[x] = new Array();
+							this.internalBoard[x].push( 'e' );
+						}// End for y
+					}// End for x
+				}// End if
+				else
+				{
+					alert( 'Unable to render board in onParserFinish: board size not set' );
+					return;
+				}// End else
+				
+				// Make sure we are on the first turn
+				this.turnIndex = -1;
 
-						newTile.className = className;
-						this.boardElem.appendChild( newTile );
-					}// End for y
+				// Draw the board using the internal representation
+				$( elem ).empty().addClass( 'goban' );
+				
+				// Create the table that we will use to hold our board
+				var table = document.createElement( 'table' );
+				table.border = 0;
+				table.cellPadding = 0;
+				table.cellSpacing = 0;
+				this.boardElem = document.createElement( 'tbody' );
+				table.appendChild( this.boardElem );
+
+				elem.appendChild( table );
+				
+				// Create the first row, which is alpha character
+				var row = document.createElement( 'tr' );
+				this.boardElem.appendChild( row );
+				
+				// Create a blank cell so that the table will line up correctly
+				var blankLabel = document.createElement( 'td' );
+				blankLabel.className = 'blank';
+				row.appendChild( blankLabel );
+				
+				// Create the cells labeled A through T (skipping I) that appear at the top of the board
+				var tempSize = parseInt( this.size ) + 1;
+				for( var x = 1; x <= tempSize; ++x )
+				{
+					if( x != 9 )
+					{
+						var labelCell = document.createElement( 'td' );
+						labelCell.className = 'blank';
+						
+						var label = document.createElement( 'span' );
+						label.className = 'blank';
+						label.innerHTML = String.fromCharCode( x + 64 );
+						labelCell.appendChild( label );
+						row.appendChild( labelCell );
+					}// End if
 				}// End for x
+				
+				// Create a blank cell so that the table will line up correctly
+				var blankLabel = document.createElement( 'td' );
+				blankLabel.className = 'blank';
+				row.appendChild( blankLabel );
+				
+				// Create each liberty
+				for( var x = 1; x <= this.size; ++x )
+				{
+					// Create the current row and append it to the table
+					var row = document.createElement( 'tr' );
+					this.boardElem.appendChild( row );
+					
+					// Create the number that resides besides the board on the left
+					var labelCell = document.createElement( 'td' );
+					labelCell.className = 'blank';
+					
+					var label = document.createElement( 'span' );
+					label.className = 'blank';
+					label.innerHTML = Math.abs( ( this.size - x ) * -1 ) + 1;
+					labelCell.appendChild( label );
+					row.appendChild( labelCell );
+
+					// Create each table cell (liberty)
+					for( var y = 1; y <= this.size; ++y )
+					{
+						var liberty = document.createElement( 'td' );
+						row.appendChild( liberty );
+
+						// If the liberty has a stone on it
+						if( typeof this.internalBoard[ x - 1 ][ y - 1 ] == 'object' )
+						{
+							if( this.internalBoard[ x - 1 ][ y - 1 ].color == 'b' )
+								var libertyClass = 'black';
+							else
+								var libertyClass = 'white';
+						}// End if
+						else if( this.internalBoard[ x - 1 ][ y - 1 ] == 'e' )
+						{
+							// Otherwise, the liberty is open and we need to figure out 
+							// which image to use.
+							var libertyClass = this.calculateLibertyClass( x, y );
+						}// End else if
+
+						liberty.className = libertyClass;
+					}// End for y
+
+					// Create the number that resides besides the board on the right
+					var labelCell = document.createElement( 'td' );
+					labelCell.className = 'blank';
+					
+					var label = document.createElement( 'span' );
+					label.className = 'blank';
+					label.innerHTML = Math.abs( ( this.size - x ) * -1 ) + 1;
+					labelCell.appendChild( label );
+					row.appendChild( labelCell );
+				}// End for x
+				
+				// Create the last row, which is alpha character
+				var row = document.createElement( 'tr' );
+				this.boardElem.appendChild( row );
+				
+				// Create a blank cell so that the table will line up correctly
+				var blankLabel = document.createElement( 'td' );
+				blankLabel.className = 'blank';
+				row.appendChild( blankLabel );
+				
+				// Create the cells labeled A through T (skipping I) that appear at the top of the board
+				for( var x = 1; x <= tempSize; ++x )
+				{
+					if( x != 9 )
+					{
+						var labelCell = document.createElement( 'td' );
+						labelCell.className = 'blank';
+						
+						var label = document.createElement( 'span' );
+						label.className = 'blank';
+						label.innerHTML = String.fromCharCode( x + 64 );
+						labelCell.appendChild( label );
+						row.appendChild( labelCell );
+					}// End if
+				}// End for x
+				
+				// Create a blank cell so that the table will line up correctly
+				var blankLabel = document.createElement( 'td' );
+				blankLabel.className = 'blank';
+				row.appendChild( blankLabel );
+
+				// Set the reference to the chat window, if one is set
+				if( options.chatWindow && options.chatWindow.length > 0 )
+				{
+					var temp = $( options.chatWindow );
+					if( temp.length > 0 )
+						this.chatWindow = temp[0];
+				}// End if
+				
+				// If the game info element selector is set in the options
+				if( options.gameInfo && options.gameInfo.length > 0 )
+				{
+					// Build the game info panel content
+					var gameInfoContent = 'Game: ' + this.gameName +
+							' played on ' + this.dateTime;
+					
+					
+					if( this.timeLimit || this.komi || this.numHandicapStones )
+					{
+						gameInfoContent += '<br />';
+
+						// If the time limit is set, display them it in the info panel
+						if( this.timeLimit )
+							gameInfoContent += 'Time Limit: ' + this.timeLimit
+						
+						// If the komi is set, display it
+						if( this.komi )
+						{
+							gameInfoContent += ' Komi: ' + this.komi;
+						}// end if
+						
+						// If there are handicap stones, display it
+						if( this.numHandicapStones )
+							gameInfoContent += ' Handicap: ' + this.numHandicapStones;
+					}// End if
+
+					this.gameInfoPanel = $( options.gameInfo ).html( gameInfoContent ).
+									addClass( 'gameInfoPanel' );
+				}// End if
+				
+				// If the black player info panel selector is set in the options
+				if( options.blackInfo && options.blackInfo.length > 0 )
+				{
+					var blackInfoContent = 'Black: ' + this.playerBlack.name + 
+							' (' + this.playerBlack.rank + ') <br />' +
+							'Captures: <span class="black_captures">0</span><br />';
+					
+					// Set the initial time limit for the black player
+					blackInfoContent += 'Time Remaining: <span class="player_black_timeremaining">' + this.timeLimit + '</span>';
+
+					this.playerBlackPanel = $( options.blackInfo ).html( blackInfoContent ).
+									addClass( 'playerInfoPanel' );
+				}// End if
+				
+				// If the white player info panel selector is set in the options
+				if( options.whiteInfo && options.whiteInfo.length > 0 )
+				{
+					var whiteInfoContent = 'White: ' + this.playerWhite.name + 
+							' (' + this.playerWhite.rank + ') <br />' +
+							'Captures: <span class="white_captures">0</span><br />';
+					
+					// Set the initial time limit for the black player
+					whiteInfoContent += 'Time Remaining: <span class="player_white_timeremaining">' + this.timeLimit + '</span>';
+
+					this.playerWhitePanel = $( options.whiteInfo ).html( whiteInfoContent ).
+									addClass( 'playerInfoPanel' );
+				}// End if
+				
+				// If the turn info panel was specified
+				if( options.turnInfo && options.turnInfo.length > 0 )
+				{
+					var turnInfoContent = 'Move: N/A';
+					
+					this.turnInfoPanel = $( options.turnInfo ).html( turnInfoContent ).addClass( 'gameInfoPanel' );
+				}// End if
+				
+				// Tell the world we have loaded
+				this.loaded = true;
 			},
 			
  			// Moves the turn index forward one and applies the changes to the board display
 			nextTurn: function()
 			{
-/*				// If this object isn't fully loaded, return false
+				// If this object isn't fully loaded, return false
 				if( ! this.loaded )
 					return false;
 
@@ -676,15 +857,14 @@ $.extend( {
 
 					this.addCommentToDisplay( comment );
 				}// End if
-
+				
 				return true;
-*/
 			},
 			
 			// Moves the turn index back one and applies the changes to the board display
 			previousTurn: function()
 			{
-/*				// If this object isn't fully loaded, return false
+				// If this object isn't fully loaded, return false
 				if( ! this.loaded )
 					return false;
 
@@ -884,39 +1064,36 @@ $.extend( {
 					this.turnIndex = -1;
 
 				return true;
-*/
 			},
 			
 			// Moves the turn index to the first node and updates the view
 			firstTurn: function()
 			{
-/*				// If this object isn't fully loaded, return false
+				// If this object isn't fully loaded, return false
 				if( ! this.loaded )
 					return false;
 
 				// While the turn index isn't at the first turn, call previousTurn.
 				// Note: previousTurn deincrements the turnIndex
 				while( this.previousTurn() );
-*/
 			},
 			
 			// Moves the turn index to the final node and updates the view
 			lastTurn: function()
 			{
-/*				// If this object isn't fully loaded, return false
+				// If this object isn't fully loaded, return false
 				if( ! this.loaded )
 					return false;
 
 				// While the turn index isn't at the last turn, call nextTurn.
 				// Note: nextTurn increments turnIndex
 				while( this.nextTurn() );
-*/
 			},
 			
 			// Updates the view so that it will shows the n'th move
 			jumpToTurn: function( n )
 			{
-/*				// If this object isn't fully loaded, return false
+				// If this object isn't fully loaded, return false
 				if( ! this.loaded )
 					return false;
 
@@ -939,14 +1116,13 @@ $.extend( {
 				}// End if
 				else
 					return false;
-*/
 			},
 			
 			// Adds a stone to the board's display elements. Note: This function simple displays
 			// the stone, it doesn't do any validation on the move
 			addStoneToDisplay: function( x, y, color )
 			{
-/*				// Get a reference to the actual html element that will be used to display this stone
+				// Get a reference to the actual html element that will be used to display this stone
 				var cell = this.getBoardCellAt( x, y );
 				if( cell )
 				{
@@ -956,52 +1132,50 @@ $.extend( {
 					else
 						cell.className = 'white';
 				}// End if
-*/
 			},
 			
 			// Removes a stone from the board's display elements. Note: This function simply removes
 			// the stone from the display.  Other than verifying the correct color, it does no other checks
 			removeStoneFromDisplay: function( x, y, color )
 			{
-/*				// Get a reference to the actual html element that will be used to display this stone
+				// Get a reference to the actual html element that will be used to display this stone
 				var cell = this.getBoardCellAt( x, y );
 				if( cell )
 				{
 					cell.className = this.calculateLibertyClass( y + 1, x + 1 );
 				}// End if
-*/
 			},
 			
 			// Adds a stone to the internal board which is used to run the logic for capturing stones
 			addStoneToInternalBoard: function( stone )
 			{
-//				this.internalBoard[stone.y][stone.x] = stone;
+				this.internalBoard[stone.y][stone.x] = stone;
 			},
 			
 			// Removes a stone from the internal board, which is used to run the logic for capturing stones
 			removeStoneFromInternalBoard: function( stone )
 			{
-//				this.internalBoard[stone.y][stone.x] = 'e';
+				this.internalBoard[stone.y][stone.x] = 'e';
 			},
 
 			// Adds a comment to the chat window
 			addCommentToDisplay: function( comment )
 			{
-//				this.chatWindow.value = comment;
-//				this.chatWindow.scrollTop = this.chatWindow.scrollHeight;
+				this.chatWindow.value = comment;
+				this.chatWindow.scrollTop = this.chatWindow.scrollHeight;
 			},
 			
 			// Removes a comment from the chat window
 			removeCommentFromDisplay: function( comment )
 			{
-//				this.chatWindow.value = '';
+				this.chatWindow.value = '';
 			},
 			
 			// If the player info panel element is set, this function updates the number
 			// of captures displayed for that player
 			updateCaptureDisplay: function( color, numCaptures )
 			{
-/*				if( numCaptures == 0 )
+				if( numCaptures == 0 )
 					return;
 
 				// Get the proper elements based on the color
@@ -1040,13 +1214,12 @@ $.extend( {
 					if( playerObj.captures < 0 )
 						playerObj.captures = 0;
 				}// End if
-*/
 			},
 			
 			// Returns the table cell element stored in the board at x,y
 			getBoardCellAt: function( x, y )
 			{
-/*				// Increment x and y so we will ignore the guide rows
+				// Increment x and y so we will ignore the guide rows
 				x++; y++;
 
 				// Get a reference to the actual html td element
@@ -1063,111 +1236,48 @@ $.extend( {
 				}// End if
 
 				return false;
-*/
 			},
 			
-			///////////////////////////////////////////////////////////////////////////
-			//////////////////////////// Board Display methods ////////////////////////
-			///////////////////////////////////////////////////////////////////////////
-			
-			// Returns the top and left coordinates for a given liberty
-			calculateTileCoordinates: function( x, y )
-			{
-				var returnValue = { top: 0, left: 0 };
-				
-				// Get the offset of the DOM element that holds the board UI
-				var gobanPosition = $( this.boardElem ).offset();
-				
-				returnValue.left = ( 20 * y ) + gobanPosition.left + 1;
-				returnValue.top = ( 20 * x ) + gobanPosition.top + 1;
-				
-				return returnValue;
-			},
-		
-			
-			// A function that will return the proper innerHTML for the side coordinates
-			calculateSideCoordinate: function( x, y )
-			{
-				// The return value
-				var innerHTML = '&nbsp;';
-				
-				// The maximum for x and y with the board size
-				var xMax = this.size + 1;
-				var yMax = this.size + 1;
-		
-				// In building the side coordinates, we have to make sure not to set an innerHTML for the corner tiles.
-				// The corner tiles are left blank so that the coordinates will line up with the liberty the coorespond to
-		
-				// If we are on the top row, and it's not a tile
-				if( x == 0 && ( y != 0 && y != yMax ) )
-				{
-					// Theres no i in the coordinates
-					if( y >= 9 )
-						y++;
-					innerHTML = String.fromCharCode( y + 64 );
-				}// End if
-				
-				// If we are on the bottom row, and it's not a tile
-				else if( x == xMax && ( y != 0 && y != yMax ) )
-				{
-					// Theres no i in the coordinates
-					if( y >= 9 )
-						y++;
-					innerHTML = String.fromCharCode( y + 64 );
-				}// End if
-				
-				// If we are on the left side, and it's not a tile
-				else if( y == 0 && ( x != 0 && x != xMax ) )
-					innerHTML = x;
-				
-				// If we are on the right side, and it's not a tile
-				else if( y == yMax && ( x != 0 && x != xMax ) )
-					innerHTML = x;
-		
-				return innerHTML;
-			},
-			
-			// A function that will calculate the proper className to give to a liberty tile
-			// based on the coordinates past in, and return it.
+			// Returns the value of the image file to use as the liberty image for an empty liberty
+			// Note: It uses the board's size, and the image paths passed in from the options
 			calculateLibertyClass: function( x, y )
 			{
-				// The default liberty className
-				var className = 'c';
-		
-				// If the tile is on the top row
+				// Determine which liberty graphic to show
+				var libertyClass = 'c';
+				var libertyText = '.';
+				
+				// The series of if else if statements basically handle the edges of the board.
+				// If the final else condition is executed it will check for star points.  The
+				// default return value is a center open liberty
 				if( x == 1 )
 				{
-					// If we have the top left tile
 					if( y == 1 )
-						className = 'tl';
-					// If we have the top right tile
+						libertyClass = 'tl';
 					else if( y == this.size )
-						className = 'tr';
+						libertyClass = 'tr';
 					else
-						className = 't';
+						libertyClass = 't';
 				}// End if
-				// If the tile is on the bottom row
 				else if( x == this.size )
 				{
-					// If we have the bottom left tile
 					if( y == 1 )
-						className = 'bl';
-					// If we have the bottom right tile
+						libertyClass = 'bl';
 					else if( y == this.size )
-						className = 'br';
+						libertyClass = 'br';
 					else
-						className = 'b';
-				}// End if
-				// If we have a left side tile
+						libertyClass = 'b';				
+				}// End else if
 				else if( y == 1 )
-					className = 'l';
-				// If we have a right side tile
+				{
+					libertyClass = 'l';
+				}// End else if
 				else if( y == this.size )
-					className = 'r';
+				{
+					libertyClass = 'r';
+				}// End else if
 				else
 				{
-					// Otherwise, we have to check for a star point
-		
+					// Here we check for star points
 					// Calculate the center of the board
 					var center = Math.ceil( ( this.size ) / 2 );
 					
@@ -1178,49 +1288,35 @@ $.extend( {
 					if( x == cornerStar )
 					{
 						if( y == cornerStar )
-							className = 'cs';
+							libertyClass = 'cs';
 						else if( y == ( this.size - ( cornerStar - 1 ) ) )
-							className = 'cs';
+							libertyClass = 'cs';
 						else if( y == center && this.size >= 17 )
-							className = 'cs';
+							libertyClass = 'cs';
 					}// End else if
 					// Middle star points
 					else if( x == center )
 					{
 						if( y == 4 && this.size >= 17 )
-							className = 'cs';
+							libertyClass = 'cs';
 						else if( y == ( this.size - 3 ) && this.size >= 17 )
-							className = 'cs';
+							libertyClass = 'cs';
 						else if( y == center )
-							className = 'cs';
+							libertyClass = 'cs';
 					}// End else if
 					// Bottom star points
 					else if( x == ( this.size - ( cornerStar - 1 ) ) )
 					{
 						if( y == cornerStar )
-							className = 'cs';
+							libertyClass = 'cs';
 						else if( y == ( this.size - ( cornerStar - 1 ) ) )
-							className = 'cs';
+							libertyClass = 'cs';
 						else if( y == center && this.size >= 17 )
-							className = 'cs';
+							libertyClass = 'cs';
 					}// End else if
 				}// End else
-				
-				// Add the info that the board engine will use to display the turns
-				// Note: This code should stay at the very end of this function because we are incrementing x and y
-		
-				// There are no I's in go coordinates
-				if( x >= 9 )
-					x++;
-				
-				if( y >= 9 )
-					y++;
-		
-				// Using these class names, we can select a liberty by using it's x,y coordinates: $( '.liberty-x-y' )
-				className += ' liberty liberty-' + String.fromCharCode( x + 97 ) + '-' + String.fromCharCode( y + 97 );
-		
-				// Return the calculated className
-				return className;
+
+				return libertyClass;
 			}
 		} );// End goBoard object definition
 		

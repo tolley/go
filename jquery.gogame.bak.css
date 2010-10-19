@@ -1,0 +1,123 @@
+.goban {
+/*	width: 420px; */
+}
+
+.turnInfoPanel {
+	color: #000;
+	background-color: #ccc;
+	border: solid 1px #000;
+	font-size: 12px;
+	font-family: Helvetica;
+	text-align: left;
+}
+
+.gameInfoPanel {
+	color: #000;
+	background-color: #ccc;
+	border: solid 1px #000;
+	font-size: 12px;
+	font-family: Helvetica;
+	text-align: center;
+}
+
+.playerInfoPanel {
+	color: #000;
+	background-color: #ccc;
+	border: solid 1px #000;
+	font-size: 12px;
+	font-family: Helvetica;
+}
+
+
+.goban table {
+	border: solid 0px;
+}
+
+.goban td {
+	height:20px;
+	width:20px;
+	text-align:center;
+	margin: 0px;
+	padding: 0px;
+	vertical-align: middle;
+}
+
+.goban .img {
+	margin: 0px;
+	padding: 0px;
+}
+
+.goban #current_play {
+	font-size: 14px;
+	font-weight: bold;
+	font-family: helvetica;
+}
+
+.goban .marker_whitestone {
+	color: #000000;
+}
+
+.goban .marker_blackstone {
+	color: #FFFFFF;
+}
+
+/* The image that goes around the actual board */
+.goban .blank {
+	background: url(/images/blank-20x20.png) no-repeat;
+	color: #000;
+	font-size: 12px;
+	font-family: helvetica;
+}
+
+/* The liberty and stone images */
+.goban .b {
+	background: url(/images/b-20x20.png) no-repeat;	
+}
+.goban .bl {
+	background: url(/images/bl-20x20.png) no-repeat;
+}
+.goban .black {
+	background: url(/images/black-20x20.png) no-repeat;
+}
+.goban .br {
+	background: url(/images/br-20x20.png) no-repeat;
+}
+.goban .c {
+	background: url(/images/c-20x20.png) no-repeat;
+}
+.goban .cs {
+	background: url(/images/cs-20x20.png) no-repeat;
+}
+.goban .l {
+	background: url(/images/l-20x20.png) no-repeat;
+}
+.goban .r {
+	background: url(/images/r-20x20.png) no-repeat;
+}
+.goban .t {
+	background: url(/images/t-20x20.png) no-repeat;
+}
+.goban .tl {
+	background: url(/images/tl-20x20.png) no-repeat;
+}
+.goban .tr {
+	background: url(/images/tr-20x20.png) no-repeat;
+}
+.goban .white {
+	background: url(/images/white-20x20.png) no-repeat;
+}
+
+/* Markup images */
+.goban .territory_black {
+	background: url(/images/b-x-20x20.png) no-repeat;
+	width: 20px;
+	height: 20px;
+	position: relative;
+}
+
+.goban .territory_white {
+	background: url(/images/w-x-20x20.png) no-repeat;
+	width: 20px;
+	height: 20px;
+	position: relative;
+}

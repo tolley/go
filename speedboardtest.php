@@ -21,9 +21,15 @@ $( document ).ready( function()
 		// The size of the board
 		var boardSize = 19;
 
+		// Calculate the max dimensions for the board plus coordinates
 		var xMax = boardSize + 2;
 		var yMax = boardSize + 2;
+		
+		// Set the style information on the element the board will display inside of
+		this.style.height = String( xMax * 20 ) + 'px';
+		this.style.width = String( yMax * 20 ) + 'px';
 
+		// Build each tile that will make up the board display
 		for( var x = 0; x < xMax; ++x )
 		{
 			for( var y = 0; y < yMax; ++y )
@@ -221,8 +227,6 @@ $( document ).ready( function()
 <style type="text/css">
 
 div.goban {
-	width: 420px;
-	height: 420px;
 	border: solid 1px #000;
 }
 
