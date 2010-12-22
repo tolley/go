@@ -1,6 +1,6 @@
 <?
 // Create the path to our go sgf files
-$path = dirname( __FILE__ ) . '/';
+$path = dirname( __FILE__ ) . '/games/';
 
 $files = array(
 	$path . 'tolley.sgf',
@@ -14,7 +14,6 @@ foreach( $files as $file )
 	$temp = loadSGF( $file );
 	debug( $temp );
 }// End foreach sgf file
-
 
 // Takes in the path to an sgf file and returns an array with all the parts of the game
 // parsed out in php structures

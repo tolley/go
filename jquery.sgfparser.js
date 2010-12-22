@@ -312,534 +312,534 @@ $.extend( {
 					this.board = board;
 					
 					// Create our player objects
-					var playerWhite = this.board.getBlankPlayerObj( 'white' );
-					var playerBlack = this.board.getBlankPlayerObj( 'black' );
+					this.board.playerBlack = this.board.getBlankPlayerObj( 'white' );
+					this.board.playerWhite = this.board.getBlankPlayerObj( 'black' );
 					
 					// Loop over each node and each node's properties, applying any static board
 					// properties to the board, and generating delta's between each move
 					for( var node = 0; node <= this.gameTree.length - 1; ++node )
 					{
-						// Create a blank stone, so we can set the properties here
-						var goStone = this.board.getBlankStone();
-						
 						// Get a blank turn object to fill in and pass to the board to calculate the deltas
 						var turnObj = this.board.getBlankTurnObject();
+						
+						turnObj = this.parseGameNode( this.gameTree[node], turnObj );
 
-						// Make sure the board size was set in the first node
-						if( node == 1 && ! this.board.size )
+						// Set the turn object in the board
+						this.board.setTurnObj( turnObj );
+					}// End for each node
+					
+					// Let the world know the game was successfully parsed
+					this.board.loaded = true;
+					
+					console.log( this.board );
+				},// End prepBoard
+				
+				// Applies a node from the gametree data to a turn object and returns the turn object
+				parseGameNode: function( node, turnObj )
+				{
+					// Get an empty stone object from the board
+					var goStone = this.board.getBlankStone();
+
+					// Loop over each property in the node
+					for( var property in node )
+					{
+						// Switch based on the property name
+						switch( property )
 						{
-							alert( 'Board size not found in the first node, unable to generate deltas' );
-							return;
-						}// End if
-
-						for( var property in this.gameTree[node] )
-						{
-							// Switch based on the property name
-							switch( property )
-							{
-								// For a list of properties see: http://www.red-bean.com/sgf/properties.html
-								
-								// Begin MOVE properties //////////////////////////////////////////////
-								case 'KO':
-									// This value tells the viewer to play a given stone even if it's illegal
-									// but we don't need to do that cause we already allow illegal moves
-									break;
-								
-								// Sets the move number, used for printing
-								case 'MN':
-									if( parseInt( gameTree[node][property] ) != NaN )
-										goStone.number = parseInt( gameTree[node][property] );
-									break;
-
-								// Black makes a move
-								case 'B':
-									if( ! goStone.x && ! goStone.y && ! goStone.action )
-									{
-										// Get the coordinates of the move and send them to the board
-										goStone.x = this.gameTree[node][property].charAt( 0 );
-										goStone.y = this.gameTree[node][property].charAt( 1 );
-										goStone.color = 'b';
-										
-										// Translate the go stone coordinates from alpha to numeric
-										goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 97;
-										goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 97;
-										
-										// If the coordinates of the stone are out of range, treat it as a pass
-										if( goStone.x == this.board.size && goStone.y == this.board.size )
-											goStone.action = 'pass';
-										else
-											goStone.action = 'place';
-									}// End if
-									else
-										alert( 'Two stones placed in node '  + node );
-									break;
+							// For a list of properties see: http://www.red-bean.com/sgf/properties.html
+							
+							// Begin MOVE properties //////////////////////////////////////////////
+							case 'KO':
+								// This value tells the viewer to play a given stone even if it's illegal
+								// but we don't need to do that cause we already allow illegal moves
+								break;
+							
+							// Sets the move number, used for printing
+							case 'MN':
+								if( parseInt( node[property] ) != NaN )
+									goStone.number = parseInt( node[property] );
+								break;
+	
+							// Black makes a move
+							case 'B':
+								if( ! goStone.x && ! goStone.y && ! goStone.action )
+								{
+									// Get the coordinates of the move and send them to the board
+									goStone.x = node[property].charAt( 0 );
+									goStone.y = node[property].charAt( 1 );
+									goStone.color = 'b';
 									
-								// White makes a move
-								case 'W':
-									if( ! goStone.x && ! goStone.y && ! goStone.action )
-									{
-										// Get the coordinates of the move and send them to the board
-										goStone.x = this.gameTree[node][property].charAt( 0 );
-										goStone.y = this.gameTree[node][property].charAt( 1 );
-										goStone.color = 'w';
-										
-										// Translate the go stone coordinates from alpha to numeric
-										goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 97;
-										goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 97;
-										
-										// If the coordinates of the stone are out of range, treat it as a pass
-										if( goStone.x == this.board.size && goStone.y == this.board.size )
-											goStone.action = 'pass';
-										else
-											goStone.action = 'place';
-									}// End if
-									else
-										alert( 'Two stones placed in node '  + node );
-									break;
-
-								// End MOVE properties //////////////////////////////////////////////////
-								
-								// Begin SETUP properties ///////////////////////////////////////////////
-								// Adds a list of black stones to the board
-								case 'AB':								
-									// Get a short cut to the list of stones
-									var stoneList = this.gameTree[node][property];
+									// Translate the go stone coordinates from alpha to numeric
+									goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 97;
+									goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 97;
 									
-									// Foreach stone, create a stone object
-									var stoneObjects = new Array();
-									for( var n in stoneList )
-									{
-										// Get a blank stone and fill in the details
-										var tempStone = this.board.getBlankStone();
-										tempStone.color = 'b';
-										tempStone.action = 'place';
-										tempStone.x = stoneList[n].charAt( 0 );
-										tempStone.y = stoneList[n].charAt( 1 );
-										
-										// Translate the go stone coordinates from alpha to numeric
-										tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 97;
-										tempStone.y = parseInt( tempStone.y.charCodeAt( 0 ) ) - 97;
-										
-										stoneObjects.push( tempStone );
-									}// End for n
+									// If the coordinates of the stone are out of range, treat it as a pass
+									if( goStone.x == this.board.size && goStone.y == this.board.size )
+										goStone.action = 'pass';
+									else
+										goStone.action = 'place';
+								}// End if
+								else
+									alert( 'Two stones placed in node '  + node );
+								break;
+								
+							// White makes a move
+							case 'W':
+								if( ! goStone.x && ! goStone.y && ! goStone.action )
+								{
+									// Get the coordinates of the move and send them to the board
+									goStone.x = node[property].charAt( 0 );
+									goStone.y = node[property].charAt( 1 );
+									goStone.color = 'w';
 									
-									// Add the list of black stones to the turn
-									turnObj.additionalBlackStones = stoneObjects;
-									break;
-								
-								// Clears the given point on the board
-								case 'AE':
-									break;
-								
-								// Adds a list of white stones to the board
-								case 'AW':
-									// Get a short cut to the list of stones
-									var stoneList = this.gameTree[node][property];
+									// Translate the go stone coordinates from alpha to numeric
+									goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 97;
+									goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 97;
 									
-									// Foreach stone, create a stone object
-									var stoneObjects = new Array();
-									for( var n in stoneList )
-									{
-										// Get a blank stone and fill in the details
-										var tempStone = this.board.getBlankStone();
-										tempStone.color = 'w';
-										tempStone.action = 'place';
-										tempStone.x = stoneList[n].charAt( 0 );
-										tempStone.y = stoneList[n].charAt( 1 );
-										
-										// Translate the go stone coordinates from alpha to numeric
-										tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 97;
-										tempStone.y = parseInt( tempStone.y.charCodeAt( 0 ) ) - 97;
-										
-										stoneObjects.push( tempStone );
-									}// End for n
+									// If the coordinates of the stone are out of range, treat it as a pass
+									if( goStone.x == this.board.size && goStone.y == this.board.size )
+										goStone.action = 'pass';
+									else
+										goStone.action = 'place';
+								}// End if
+								else
+									alert( 'Two stones placed in node '  + node );
+								break;
+	
+							// End MOVE properties //////////////////////////////////////////////////
+							
+							// Begin SETUP properties ///////////////////////////////////////////////
+							// Adds a list of black stones to the board
+							case 'AB':								
+								// Get a short cut to the list of stones
+								var stoneList = node[property];
+								
+								// Foreach stone, create a stone object
+								var stoneObjects = new Array();
+								for( var n in stoneList )
+								{
+									// Get a blank stone and fill in the details
+									var tempStone = this.board.getBlankStone();
+									tempStone.color = 'b';
+									tempStone.action = 'place';
+									tempStone.x = stoneList[n].charAt( 0 );
+									tempStone.y = stoneList[n].charAt( 1 );
 									
-									// Add the list of white stones to the turn
-									turnObj.additionalWhiteStones = stoneObjects;
-									break;
+									// Translate the go stone coordinates from alpha to numeric
+									tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 97;
+									tempStone.y = parseInt( tempStone.y.charCodeAt( 0 ) ) - 97;
+									
+									stoneObjects.push( tempStone );
+								}// End for n
 								
-								// Tells the user who's turn it is to play, used in problems and such
-								case 'PL':
-									if( this.gameTree[node][property] == 'B' )
-										turnObj.addComment( 'Black to play' );
-									else
-										turnObj.addComment( 'White to play' );
-									break;
-								// End SETUP properties ///////////////////////////////////////////////
+								// Add the list of black stones to the turn
+								turnObj.additionalBlackStones = stoneObjects;
+								break;
+							
+							// Clears the given point on the board
+							case 'AE':
+								break;
+							
+							// Adds a list of white stones to the board
+							case 'AW':
+								// Get a short cut to the list of stones
+								var stoneList = node[property];
 								
-								// Begin NODE ANNOTATION properties ///////////////////////////////////
-								// A player made a comment
-								case 'C':
-									turnObj.addComment( this.gameTree[node][property] );
-									break;
+								// Foreach stone, create a stone object
+								var stoneObjects = new Array();
+								for( var n in stoneList )
+								{
+									// Get a blank stone and fill in the details
+									var tempStone = this.board.getBlankStone();
+									tempStone.color = 'w';
+									tempStone.action = 'place';
+									tempStone.x = stoneList[n].charAt( 0 );
+									tempStone.y = stoneList[n].charAt( 1 );
+									
+									// Translate the go stone coordinates from alpha to numeric
+									tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 97;
+									tempStone.y = parseInt( tempStone.y.charCodeAt( 0 ) ) - 97;
+									
+									stoneObjects.push( tempStone );
+								}// End for n
 								
-								// Designates this node as an even position
-								case 'DM':
-									turnObj.addComment( 'The position is even.' );
-									break;
+								// Add the list of white stones to the turn
+								turnObj.additionalWhiteStones = stoneObjects;
+								break;
+							
+							// Tells the user who's turn it is to play, used in problems and such
+							case 'PL':
+								if( node[property] == 'B' )
+									turnObj.addComment( 'Black to play' );
+								else
+									turnObj.addComment( 'White to play' );
+								break;
+							// End SETUP properties ///////////////////////////////////////////////
+							
+							// Begin NODE ANNOTATION properties ///////////////////////////////////
+							// A player made a comment
+							case 'C':
+								turnObj.addComment( node[property] );
+								break;
+							
+							// Designates this node as an even position
+							case 'DM':
+								turnObj.addComment( 'The position is even.' );
+								break;
+							
+							// Designates this node as good for black
+							case 'GB':
+								turnObj.addComment( 'This is good for black.' );
+								break;
+							
+							// Designages this node as good for white
+							case 'GW':
+								turnObj.addComment( 'This is good for white.' );
+								break;
+							
+							// Designates this node as a hotspot
+							case 'HO':
+								turnObj.addComment( 'This is a hotspot for both white and black.' );
+								break;
+							
+							// Designates a name for this node
+							case 'N':
+								turnObj.addComment( 'Node: ' + node[property] );
+								break;								
+							
+							// Designates that this position is unclear
+							case 'UC':
+								turnObj.addComment( 'This position is unclear.' );
+								break;
+							
+							// Designates a value for this node
+							case 'V':
+								turnObj.addComment( 'This is worth ' + node[property] );
+								break;
+	
+							// End NODE ANNOTATION properties /////////////////////////////////////
+							
+							// Begin MOVE ANNOTATION properties ///////////////////////////////////
+							// The move played is bad
+							case 'BM':
+								if( goStone.color == 'w' )
+									turnObj.addComment( 'This is a bad move for white.' );
+								else
+									turnObj.addComment( 'This is a bad move for black.' );
+								break;
+							
+							// The move is doubtful
+							case 'DO':
+								if( goStone.color == 'w' )
+									turnObj.addComment( 'This is a doubtful move for white.' );
+								else
+									turnObj.addComment( 'This is a doubtful move for black.' );
+								break;
+							
+							// The move is an interesting one
+							case 'IT':
+								if( goStone.color == 'w' )
+									turnObj.addComment( 'This is an interesting move by white.' );
+								else
+									turnObj.addComment( 'This is an interesting move by black.' );
+								break;
+							
+							// The move is a tesuji
+							case 'TE':
+								if( goStone.color == 'w' )
+									turnObj.addComment( 'This is a tesuji for white.' );
+								else
+									turnObj.addComment( 'This is a tesuji for black.' );
+								break;
 								
-								// Designates this node as good for black
-								case 'GB':
-									turnObj.addComment( 'This is good for black.' );
-									break;
+							// End MOVE ANNOTATION properties /////////////////////////////////////
 								
-								// Designages this node as good for white
-								case 'GW':
-									turnObj.addComment( 'This is good for white.' );
-									break;
-								
-								// Designates this node as a hotspot
-								case 'HO':
-									turnObj.addComment( 'This is a hotspot for both white and black.' );
-									break;
-								
-								// Designates a name for this node
-								case 'N':
-									turnObj.addComment( 'Node: ' + this.gameTree[node][property] );
-									break;								
-								
-								// Designates that this position is unclear
-								case 'UC':
-									turnObj.addComment( 'This position is unclear.' );
-									break;
-								
-								// Designates a value for this node
-								case 'V':
-									turnObj.addComment( 'This is worth ' + this.gameTree[node][property] );
-									break;
+/*							// Begin MARKUP properties ////////////////////////////////////////////
+							// Marks the given points with a circle
+							case 'CR':
+								break;
 
-								// End NODE ANNOTATION properties /////////////////////////////////////
-								
-								// Begin MOVE ANNOTATION properties ///////////////////////////////////
-								// The move played is bad
-								case 'BM':
-									if( goStone.color == 'w' )
-										turnObj.addComment( 'This is a bad move for white.' );
-									else
-										turnObj.addComment( 'This is a bad move for black.' );
-									break;
-								
-								// The move is doubtful
-								case 'DO':
-									if( goStone.color == 'w' )
-										turnObj.addComment( 'This is a doubtful move for white.' );
-									else
-										turnObj.addComment( 'This is a doubtful move for black.' );
-									break;
-								
-								// The move is an interesting one
-								case 'IT':
-									if( goStone.color == 'w' )
-										turnObj.addComment( 'This is an interesting move by white.' );
-									else
-										turnObj.addComment( 'This is an interesting move by black.' );
-									break;
-								
-								// The move is a tesuji
-								case 'TE':
-									if( goStone.color == 'w' )
-										turnObj.addComment( 'This is a tesuji for white.' );
-									else
-										turnObj.addComment( 'This is a tesuji for black.' );
-									break;
-								
-								// End MOVE ANNOTATION properties /////////////////////////////////////
-								
-/*								// Begin MARKUP properties ////////////////////////////////////////////
-								// Marks the given points with a circle
-								case 'CR':
-									break;
+							// Dims out the given points
+							case 'DD':
+								break;
 
-								// Dims out the given points
-								case 'DD':
-									break;
+							// Writes the given text to the board around the current stone
+							case 'LB':
+								// Foreach point, split by : and add the markup
+								break;								
 
-								// Writes the given text to the board around the current stone
-								case 'LB':
-									// Foreach point, split by : and add the markup
-									break;								
+							// Marks the given points with an X
+							case 'X':
+								break;
 
-								// Marks the given points with an X
-								case 'X':
-									break;
-
-								// End MARKUP properties //////////////////////////////////////////////
+							// End MARKUP properties //////////////////////////////////////////////
 */
+							// Begin ROOT properties //////////////////////////////////////////////
+							// Defines the game type.  If it's not a go game, exit
+							case 'GM':
+//								if( this.gameTree[node][property] != 1 )
+//								{
+//									alert( 'Unable to parse game file: Not a go game' );
+//									return false;
+//								}// End if
+								break;
+
+							// The size of the board.
+							case 'SZ':
+								if( parseInt( node[property] ) != NaN && node == 0 )
+									this.board.boardSize = node[property];
+								break;
+							
+							// End ROOT properties ////////////////////////////////////////////////
+
+
+							// Begin GAMEINFO properties ////////////////////////////////////////
+							// The black player's rank
+							case 'BR':
+								this.board.playerBlack.rank = node[property];
+								break;
+
+							// The black player's team's name
+							case 'BT':
+								this.board.playerBlack.teamName = node[property];
+								break;
+
+							// The copyright info related to the game
+							case 'CP':
+							case 'CoPyright':
+							case 'COPYRIGHT':
+							case 'copyright':
+								this.board.copyrightInfo = node[property];
+								break;
+
+							// The date / time that this game was played
+							case 'DT':
+								// this.board.dateTime = dateFormat(  );
+								this.board.dateTime = node[property];
+								break;
+
+							// The event/venue where this game was played
+							case 'EV':
+								this.board.event = node[property];
+								break;
+
+							// The name of the game
+							case 'GN':
+								this.board.gameName = node[property];
+								break;
+
+							// Extra info about this game
+							case 'GC':
+								this.board.gameInfo = node[property];
+								break;
+							
+							// Some information about the opening of this game
+							case 'ON':
+								this.board.openingType = node[property];
+								break;
+							
+							// The overtime (byo-yomi) method used in this game
+							case 'OT':
+								this.board.overtime = node[property];
+								break;
+							
+							// The black player's name
+							case 'PB':
+								this.board.playerBlack.name = node[property];
+								break;
+							
+							// The location/server where this game was played
+							case 'PC':
+								this.board.location = node[property];
+								break;
+
+							// The white player's name
+							case 'PW':
+								this.board.playerWhite.name = node[property];
+								break;
+
+							// The final result of the game
+							case 'RE':
+								this.board.result = node[property];
+								break;
 								
-								// Begin ROOT properties //////////////////////////////////////////////
-								// Defines the game type.  If it's not a go game, exit
-								case 'GM':
-									if( this.gameTree[node][property] != 1 )
-									{
-										alert( 'Unable to parse game file: Not a go game' );
-										return false;
-									}// End if
-									break;
+							// The round number and type (final, semifinal) of this game
+							case 'RO':
+								this.board.roundInfo = node[property];
+								break;
+							
+							// The rules set this game was played under
+							case 'RU':
+								this.board.rulesSet = node[property];
+								break;
+							
+							// The source of the this game (book, journal, etc)
+							case 'SO':
+								this.board.source = node[property];
+								break;
+							
+							// The time limit for this game
+							case 'TM':
+								var timeLimit = parseInt( node[property] );
+								if( timeLimit != NaN )
+								{
+									var minutes = ( Math.floor( timeLimit / 60 ) ).toString();
+									var seconds = ( timeLimit % 60 ).toString();
 
-								// The size of the board.
-								case 'SZ':
-									if( parseInt( this.gameTree[node][property] ) != NaN && node == 0 )
-										this.board.setBoardSize( this.gameTree[node][property] );
-									break;
-								
-								// End ROOT properties ////////////////////////////////////////////////
-
-
-								// Begin GAMEINFO properties ////////////////////////////////////////
-								// The black player's rank
-								case 'BR':
-									playerBlack.rank = this.gameTree[node][property];
-									break;
-
-								// The black player's team's name
-								case 'BT':
-									playerBlack.teamName = this.gameTree[node][property];
-									break;
-
-								// The copyright info related to the game
-								case 'CP':
-								case 'CoPyright':
-								case 'COPYRIGHT':
-								case 'copyright':
-									this.board.copyrightInfo = this.gameTree[node][property];
-									break;
-
-								// The date / time that this game was played
-								case 'DT':
-									// this.board.dateTime = dateFormat(  );
-									this.board.dateTime = this.gameTree[node][property];
-									break;
-
-								// The event/venue where this game was played
-								case 'EV':
-									this.board.event = this.gameTree[node][property];
-									break;
-
-								// The name of the game
-								case 'GN':
-									this.board.gameName = this.gameTree[node][property];
-									break;
-
-								// Extra info about this game
-								case 'GC':
-									this.board.gameInfo = this.gameTree[node][property];
-									break;
-								
-								// Some information about the opening of this game
-								case 'ON':
-									this.board.openingType = this.gameTree[node][property];
-									break;
-								
-								// The overtime (byo-yomi) method used in this game
-								case 'OT':
-									this.board.overtime = this.gameTree[node][property];
-									break;
-								
-								// The black player's name
-								case 'PB':
-									playerBlack.name = this.gameTree[node][property];
-									break;
-								
-								// The location/server where this game was played
-								case 'PC':
-									this.board.location = this.gameTree[node][property];
-									break;
-
-								// The white player's name
-								case 'PW':
-									playerWhite.name = this.gameTree[node][property];
-									break;
-
-								// The final result of the game
-								case 'RE':
-									this.board.result = this.gameTree[node][property];
-									break;
-								
-								// The round number and type (final, semifinal) of this game
-								case 'RO':
-									this.board.roundInfo = this.gameTree[node][property];
-									break;
-								
-								// The rules set this game was played under
-								case 'RU':
-									this.board.rulesSet = this.gameTree[node][property];
-									break;
-								
-								// The source of the this game (book, journal, etc)
-								case 'SO':
-									this.board.source = this.gameTree[node][property];
-									break;
-								
-								// The time limit for this game
-								case 'TM':
-									var timeLimit = parseInt( this.gameTree[node][property] );
-									if( timeLimit != NaN )
-									{
-										var minutes = ( Math.floor( timeLimit / 60 ) ).toString();
-										var seconds = ( timeLimit % 60 ).toString();
-
-										if( seconds.length == 1 )
-											seconds = '0' + seconds;
-										
-										this.board.timeLimit = minutes + ':' + seconds;
-									}// End if
-									break;
-								
-								// The person or server that created the game file
-								case 'US':
-									this.board.author = this.gameTree[node][property];
-									break;
-								
-								// The white player's rank
-								case 'WR':
-									playerWhite.rank = this.gameTree[node][property];
-									break;
-								
-								// The white player's team's name
-								case 'WT':
-									playerWhite.teamName = this.gameTree[node][property];
-									break;
-								// End GAME properties ////////////////////////////////////////
-
-
-								// Begin TIMING properties ////////////////////////////////////////
-								// The time left for black after this move was played, in seconds
-								case 'BL':
-									var timeRemaining = parseInt( this.gameTree[node][property] );
-									if( timeRemaining != NaN )
-									{
-										// Parse the int into a nice looking string and set it in the turn object
-										var minutes = ( Math.floor( timeRemaining / 60 ) ).toString();
-										var seconds = ( timeRemaining % 60 ).toString();
-
-										if( seconds.length == 1 )
-											seconds = '0' + seconds;
-										
-										turnObj.timeRemaining = minutes + ':' + seconds;
-									}// End if
-									break;
-
-								// The number of moves left for black in this byo-yomi period
-								case 'OB':
-									turnObj.stonesRemaining = parseInt( this.gameTree[node][property] );
-									break;
-
-								// The number of moves left for white in this byo-yomi perioid
-								case 'OW':
-									turnObj.stonesRemaining = parseInt( this.gameTree[node][property] );
-									break;
-
-								// The time left for white after this move was played, in seconds
-								case 'WL':
-									var timeRemaining = parseInt( this.gameTree[node][property] );
-									if( timeRemaining != NaN )
-									{
-										// Parse the int into a nice looking string and set it in the turn object
-										var minutes = ( Math.floor( timeRemaining / 60 ) ).toString();
-										var seconds = ( timeRemaining % 60 ).toString();
-
-										if( seconds.length == 1 )
-											seconds = '0' + seconds;
-										
-										turnObj.timeRemaining = minutes + ':' + seconds;
-									}// End if
-									break;								
-								// End TIMGING properties //////////////////////////////////////////
-								
-								// Begin GM[1] properties /////////////////////////////////////////
-								// The number of handicap stones.
-								case 'HA':
-									this.board.numHandicapStones = this.gameTree[node][property];
-									break;
-								
-								// Defines the komi for this game
-								case 'KM':
-									komi = this.gameTree[node][property];
+									if( seconds.length == 1 )
+										seconds = '0' + seconds;
 									
-									// Remove any trailing zeros from the komi value
+									this.board.timeLimit = minutes + ':' + seconds;
+								}// End if
+								break;
+							
+							// The person or server that created the game file
+							case 'US':
+								this.board.author = node[property];
+								break;
+							
+							// The white player's rank
+							case 'WR':
+								this.board.playerWhite.rank = node[property];
+								break;
+							
+							// The white player's team's name
+							case 'WT':
+								this.board.playerWhite.teamName = node[property];
+								break;
+							// End GAME properties ////////////////////////////////////////
+
+
+							// Begin TIMING properties ////////////////////////////////////////
+							// The time left for black after this move was played, in seconds
+							case 'BL':
+								var timeRemaining = parseInt( node[property] );
+								if( timeRemaining != NaN )
+								{
+									// Parse the int into a nice looking string and set it in the turn object
+									var minutes = ( Math.floor( timeRemaining / 60 ) ).toString();
+									var seconds = ( timeRemaining % 60 ).toString();
+
+									if( seconds.length == 1 )
+										seconds = '0' + seconds;
+									
+									turnObj.timeRemaining = minutes + ':' + seconds;
+								}// End if
+								break;
+
+							// The number of moves left for black in this byo-yomi period
+							case 'OB':
+								turnObj.stonesRemaining = parseInt( node[property] );
+								break;
+
+							// The number of moves left for white in this byo-yomi perioid
+							case 'OW':
+								turnObj.stonesRemaining = parseInt( node[property] );
+								break;
+
+							// The time left for white after this move was played, in seconds
+							case 'WL':
+								var timeRemaining = parseInt( node[property] );
+								if( timeRemaining != NaN )
+								{
+									// Parse the int into a nice looking string and set it in the turn object
+									var minutes = ( Math.floor( timeRemaining / 60 ) ).toString();
+									var seconds = ( timeRemaining % 60 ).toString();
+
+									if( seconds.length == 1 )
+										seconds = '0' + seconds;
+									
+									turnObj.timeRemaining = minutes + ':' + seconds;
+								}// End if
+								break;								
+							// End TIMGING properties //////////////////////////////////////////
+							
+							// Begin GM[1] properties /////////////////////////////////////////
+							// The number of handicap stones.
+							case 'HA':
+								this.board.numHandicapStones = node[property];
+								break;
+							
+							// Defines the komi for this game
+							case 'KM':
+								komi = node[property];
+								
+								// Remove any trailing zeros from the komi value
+								if( komi.length > 0 )
+								{
+									while( komi.charAt( komi.length - 1 ) == '0' && komi.length > 1 )
+										komi = komi.substr( 0, komi.length - 1 );
+									
 									if( komi.length > 0 )
-									{
-										while( komi.charAt( komi.length - 1 ) == '0' && komi.length > 1 )
-											komi = komi.substr( 0, komi.length - 1 );
-										
-										if( komi.length > 0 )
-											this.board.komi = komi;
-									}// End if
-									break;
+										this.board.komi = komi;
+								}// End if
+								break;
+							
+							// Specifies the black territory or area
+							case 'TB':
+								// Get a short cut to the list of territory
+								var territoryList = node[property];
 								
-								// Specifies the black territory or area
-								case 'TB':
-									// Get a short cut to the list of territory
-									var territoryList = this.gameTree[node][property];
-									
-									// Foreach point of territory, create a stone object
-									turnObj.territoryBlack = new Array();
-									for( var n in territoryList )
-									{
-										// Create a structure to store the point of territory
-										var point = { x: false, y: false };
+								// Foreach point of territory, create a stone object
+								turnObj.territoryBlack = new Array();
+								for( var n in territoryList )
+								{
+									// Create a structure to store the point of territory
+									var point = { x: false, y: false };
 
-										point.x = territoryList[n].charAt( 0 );
-										point.y = territoryList[n].charAt( 1 );
-										
-										// Translate the go stone coordinates from alpha to numeric
-										point.x = parseInt( point.x.charCodeAt( 0 ) ) - 97;
-										point.y = parseInt( point.y.charCodeAt( 0 ) ) - 97;
-										
-										turnObj.territoryBlack.push( point );
-									}// End for n
-									break;
+									point.x = territoryList[n].charAt( 0 );
+									point.y = territoryList[n].charAt( 1 );
+									
+									// Translate the go stone coordinates from alpha to numeric
+									point.x = parseInt( point.x.charCodeAt( 0 ) ) - 97;
+									point.y = parseInt( point.y.charCodeAt( 0 ) ) - 97;
+									
+									turnObj.territoryBlack.push( point );
+								}// End for n
+								break;
 								
-								// Specifies the white territory or reaa
-								case 'TW':
-									// Get a short cut to the list of territory
-									var territoryList = this.gameTree[node][property];
+							// Specifies the white territory or reaa
+							case 'TW':
+								// Get a short cut to the list of territory
+								var territoryList = node[property];
+								
+								// Foreach point of territory, create a stone object
+								turnObj.territoryWhite = new Array();
+								for( var n in territoryList )
+								{
+									// Create a structure to store the point of territory
+									var point = { x: false, y: false };
+
+									point.x = territoryList[n].charAt( 0 );
+									point.y = territoryList[n].charAt( 1 );
 									
-									// Foreach point of territory, create a stone object
-									turnObj.territoryWhite = new Array();
-									for( var n in territoryList )
-									{
-										// Create a structure to store the point of territory
-										var point = { x: false, y: false };
+									// Translate the go stone coordinates from alpha to numeric
+									point.x = parseInt( point.x.charCodeAt( 0 ) ) - 97;
+									point.y = parseInt( point.y.charCodeAt( 0 ) ) - 97;
+									
+									turnObj.territoryWhite.push( point );
+								}// End for n
+								break;
 
-										point.x = territoryList[n].charAt( 0 );
-										point.y = territoryList[n].charAt( 1 );
-										
-										// Translate the go stone coordinates from alpha to numeric
-										point.x = parseInt( point.x.charCodeAt( 0 ) ) - 97;
-										point.y = parseInt( point.y.charCodeAt( 0 ) ) - 97;
-										
-										turnObj.territoryWhite.push( point );
-									}// End for n
-									break;
+							// End GM[1] properties ///////////////////////////////////////////
 
-								// End GM[1] properties ///////////////////////////////////////////
-
-								default:
-									// Uncomment this to see all the properties I still have to implement
-//									console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
-									break;
+							default:
+								// Uncomment this to see all the properties I still have to implement
+//								console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
+								break;
 							}// End switch property name
 						}// End for property
 						
 						// If we have a stone, add it to the turn
 						if( goStone.action )
 						{
-							if( this.board.isLegalPlay( goStone ) || goStone.action == 'pass' )
-								turnObj.stone = goStone;
+							// Note: we need to check for legal plays here
+							turnObj.stone = goStone;
 						}// End if
-						
-						// Set the turn object in the board
-						this.board.setTurnObj( node, turnObj );
-					}// End for each node
 					
-					// Send the player information to the board
-					this.board.playerBlack = playerBlack;
-					this.board.playerWhite = playerWhite;
-
-					// Let the board know we are finished parsing
-					this.board.onParserFinish();
-				}
+					// Return the turn object
+					return turnObj;
+				}// End parseGameNode
 			} );
 
 			// Pass the sgf file to the callback function
