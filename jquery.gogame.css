@@ -1,8 +1,6 @@
-/* parsertest style definitions */
 div.goban {
 	border: solid 1px #000;
 }
-/* end parsertest style definitions */
 
 .goban .tile {
 	position: absolute;

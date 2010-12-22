@@ -36,7 +36,16 @@
 						// Save a reference to the game file, let the world know a 
 						// game as been loaded, and pass the board to the parser
 						gameFile = gameTree;
-						gameFile.prepBoard( goBoard );
+						gameFile.parse( goBoard );
+						
+						// If the file was successfully parsed into the goboard object
+						if( goBoard.loaded )
+						{
+							// Tell the board to display the game
+							goBoard.display();
+						}// End if
+						else
+							alert( 'Game could not be loaded' );
 					} );
 					break;
 				default:

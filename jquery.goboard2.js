@@ -15,7 +15,6 @@ $.extend( {
 	createGoBoard: function( options, elem )
 	{
 		options = $.extend( {
-			size: 19,
 			dim: 20,
 			format: 'sgf',
 			gameUrl: '',
@@ -29,9 +28,6 @@ $.extend( {
 
 			// The internal representation of the state of the board
 			boardSize: false,
-			
-			// The size of the board
-			size: false,
 			
 			// Keeps track of the turn we are on
 			turnIndex: 1,
@@ -116,7 +112,14 @@ $.extend( {
 			
 			// A flag set to true when we are to mark the most recently played stone
 			markCurrentStone: true,	
+			
+			// The internal represenation of the board.  This helps do capture logic and such
+			internalBoard: false,
 
+			/////////////////////////////////////////////////////////////////////////////////
+			/////////////////////////// Begin parser used methods ///////////////////////////
+			/////////////////////////////////////////////////////////////////////////////////
+			
 			// Called by the parser to get blank stone objects.  These are the stones
 			// that will be passed back to the board attached to a turn object
 			getBlankStone: function()
@@ -126,7 +129,7 @@ $.extend( {
 					 color:    false, 
 					 action:   false, 
 					 number:   false };
-			},
+			},// End getBlankStone
 			
 			// Called by the parser to get an empty "turn" object.  These objects will
 			// be populated by the parser and passed to the board object
@@ -170,7 +173,7 @@ $.extend( {
 							this.comments = $.trim( msg );
 					}
 				};
-			},
+			},// End getBlankTurnObject
    
    			// Creates an empty player object.  These objects are used by the parser to set the 
    			// player properties.
@@ -184,7 +187,7 @@ $.extend( {
 					captures: 0,
 					territoryCount: 0
 				};
-			},
+			},// End getBlankPlayerObj
 
 			
 			// Called by the parser object, in order of moves, to set the data for each move.
@@ -198,7 +201,284 @@ $.extend( {
 
 				// Add the turn object to the list
 				if( this.turnObjects.push( turnObj ) );
-			},
+			},// End setTurnObj
+			
+			// Returns a blank liberty object.  These are used in the internalBoard to do
+			// capture logic, and board display
+			getBlankLibertyObject: function()
+			{
+				return {
+					state: 'open',
+					openElem: false,
+					whiteElem: false,
+					blackElem: false
+				};
+			},// End function getBlankLibertyObject
+			/////////////////////////////////////////////////////////////////////////////////
+			///////////////////////////// End parser used methods ///////////////////////////
+			/////////////////////////////////////////////////////////////////////////////////
+			
+			
+			// Called by the main jquery plugin to display this game
+			display: function()
+			{
+				// If the board size isn't set, let the user know
+				if( ! this.boardSize )
+				{
+					alert( 'Board Size not found' );
+					return;
+				}// End if
+
+				// Make sure we have a place to display our board
+				if( ! elem )
+				{
+					alert( 'Display element not find in goboard.display()' );
+					return;
+				}// End if
+
+				this.boardElem = elem;
+				$( this.boardElem ).addClass( 'goban' );
+			
+				// Calculate the max dimensions for the board plus coordinates
+				var xMax = parseInt( this.boardSize ) + 2;
+				var yMax = parseInt( this.boardSize ) + 2;
+				
+				// Set the style information on the element the board will display inside of
+				this.boardElem.style.height = String( xMax * 20 ) + 'px';
+				this.boardElem.style.width = String( yMax * 20 ) + 'px';
+
+				// Generate the internal board representation and the display elements
+				this.internalBoard = new Array();
+				for( var y = 1; y <= this.boardSize; ++y )
+				{
+					for( var x = 1; x <= this.boardSize; ++x )
+					{
+						if( ! ( this.internalBoard[x] instanceof Array ) )
+							this.internalBoard[x] = new Array();
+						
+						// Get an empty liberty
+						var liberty = this.getBlankLibertyObject();
+						
+						// Create the display elements that make up a liberty
+						liberty = this.createLibertyElements( liberty, x, y );
+
+						this.internalBoard[x].push( liberty );
+					}// End for y
+				}// End for x
+			},// End function display
+			
+			/////////////////////////////////////////////////////////////////////////////////
+			////////////////////////// Begin board display methods //////////////////////////
+			/////////////////////////////////////////////////////////////////////////////////
+			
+			createLibertyElements: function( liberty, x, y )
+			{
+				// Build the display elements for the three liberty states
+				var newTile = document.createElement( 'div' );
+				
+				// Get the position for this stone
+				var position = this.calculateTileCoordinates( x, y );
+				newTile.style.left = position.left;
+				newTile.style.top = position.top;
+				
+				var className = 'tile ';
+				
+				// Add the className that will give the tile the proper display
+				// If we have a tile that is part of the UI (the side coordinates)
+//				if( x == 0 || y == 0 || x == xMax - 1 || y == yMax - 1 )
+//				{
+//					className += 'blank';
+//					
+//					// Calculate the innerHTML for the coordinates display
+//					newTile.innerHTML = calculateSideCoordinate( x, y );
+//				}// End if
+//				else
+//				{
+					// Otherwise, we have a liberty tile and need to calculate the proper
+					// image so that it displayes correctly
+					className += this.calculateLibertyClass( x, y );
+	
+					newTile.innerHTML = '&nbsp;';
+//				}// End else
+					
+				newTile.className = className;
+				
+				// Clone the empty liberty tile and create the black and white occupied liberties
+				var blackOccupied = newTile.cloneNode( true );
+				blackOccupied.className = 'tile black liberty';
+				blackOccupied.style.display = 'none';
+
+				var whiteOccupied = newTile.cloneNode( true );
+				whiteOccupied.className = 'tile white liberty';
+				whiteOccupied.style.display = 'none';
+
+				// Add the liberty display elements to the liberty object
+				liberty.openElem = newTile;
+				liberty.blackElem = blackOccupied;
+				liberty.whiteElem = whiteOccupied;
+				
+				// Append each display element to the board UI
+				this.boardElem.appendChild( liberty.openElem );
+				this.boardElem.appendChild( liberty.blackElem );
+				this.boardElem.appendChild( liberty.whiteElem );
+				
+				return liberty;
+			},// End function createLibertyElements
+
+			// Returns the top and left coordinates for a given liberty
+			calculateTileCoordinates: function( x, y )
+			{
+				var returnValue = { top: 0, left: 0 };
+				
+				// Get the offset of the DOM element that holds the board UI
+				var gobanPosition = $( this.boardElem ).offset();
+				
+				returnValue.left = ( 20 * y ) + gobanPosition.left + 1;
+				returnValue.top = ( 20 * x ) + gobanPosition.top + 1;
+				
+				return returnValue;
+			},// End function calculateTileCoordinates
+			
+			// A function that will return the proper innerHTML for the side coordinates
+			calculateSideCoordinate: function( x, y )
+			{
+				// The return value
+				var innerHTML = '&nbsp;';
+				
+				// The maximum for x and y with the boardSize
+				var xMax = this.boardSize + 1;
+				var yMax = this.boardSize + 1;
+			
+				// In building the side coordinates, we have to make sure not to set an innerHTML for the corner tiles.
+				// The corner tiles are left blank so that the coordinates will line up with the liberty the coorespond to
+			
+				// If we are on the top row, and it's not a tile
+				if( x == 0 && ( y != 0 && y != yMax ) )
+				{
+					// Theres no i in the coordinates
+					if( y >= 9 )
+						y++;
+					innerHTML = String.fromCharCode( y + 64 );
+				}// End if
+				
+				// If we are on the bottom row, and it's not a tile
+				else if( x == xMax && ( y != 0 && y != yMax ) )
+				{
+					// Theres no i in the coordinates
+					if( y >= 9 )
+						y++;
+					innerHTML = String.fromCharCode( y + 64 );
+				}// End if
+				
+				// If we are on the left side, and it's not a tile
+				else if( y == 0 && ( x != 0 && x != xMax ) )
+					innerHTML = x;
+				
+				// If we are on the right side, and it's not a tile
+				else if( y == yMax && ( x != 0 && x != xMax ) )
+					innerHTML = x;
+			
+				return innerHTML;
+			},// End function calculateSideCoordinate
+
+			// A function that will calculate the proper className to give to a liberty tile
+			// based on the coordinates past in, and return it.
+			calculateLibertyClass: function( x, y )
+			{
+				// The default liberty className
+				var className = 'c';
+			
+				// If the tile is on the top row
+				if( x == 1 )
+				{
+					// If we have the top left tile
+					if( y == 1 )
+						className = 'tl';
+					// If we have the top right tile
+					else if( y == this.boardSize )
+						className = 'tr';
+					else
+						className = 't';
+				}// End if
+				// If the tile is on the bottom row
+				else if( x == this.boardSize )
+				{
+					// If we have the bottom left tile
+					if( y == 1 )
+						className = 'bl';
+					// If we have the bottom right tile
+					else if( y == this.boardSize )
+						className = 'br';
+					else
+						className = 'b';
+				}// End if
+				// If we have a left side tile
+				else if( y == 1 )
+					className = 'l';
+				// If we have a right side tile
+				else if( y == this.boardSize )
+					className = 'r';
+				else
+				{
+					// Otherwise, we have to check for a star point
+			
+					// Calculate the center of the board
+					var center = Math.ceil( ( this.boardSize ) / 2 );
+					
+					// The value for corner star points
+					var cornerStar = ( this.boardSize >= 13 )? 4: 3;
+					
+					// Top star points
+					if( x == cornerStar )
+					{
+						if( y == cornerStar )
+							className = 'cs';
+						else if( y == ( this.boardSize - ( cornerStar - 1 ) ) )
+							className = 'cs';
+						else if( y == center && this.boardSize >= 17 )
+							className = 'cs';
+					}// End else if
+					// Middle star points
+					else if( x == center )
+					{
+						if( y == 4 && this.boardSize >= 17 )
+							className = 'cs';
+						else if( y == ( this.boardSize - 3 ) && this.boardSize >= 17 )
+							className = 'cs';
+						else if( y == center )
+							className = 'cs';
+					}// End else if
+					// Bottom star points
+					else if( x == ( this.boardSize - ( cornerStar - 1 ) ) )
+					{
+						if( y == cornerStar )
+							className = 'cs';
+						else if( y == ( this.boardSize - ( cornerStar - 1 ) ) )
+							className = 'cs';
+						else if( y == center && this.boardSize >= 17 )
+							className = 'cs';
+					}// End else if
+				}// End else
+				
+				// Add the info that the board engine will use to display the turns
+				// Note: This code should stay at the very end of this function because we are incrementing x and y
+			
+				// There are no I's in go coordinates
+				if( x >= 9 )
+					x++;
+				
+				if( y >= 9 )
+					y++;
+			
+				// Using these class names, we can select a liberty by using it's x,y coordinates: $( '.liberty-x-y' )
+				className += ' liberty';
+			
+				// Return the calculated className
+				return className;
+			}// End function calculateLibertyClass
+			/////////////////////////////////////////////////////////////////////////////////
+			//////////////////////////// End board display methods///////////////////////////
+			/////////////////////////////////////////////////////////////////////////////////
 		} );// End goBoard object definition
 		
 		return goBoard;

@@ -301,7 +301,7 @@ $.extend( {
 
 				// Loops over each node in the sgf file and sets all properties on the board, and
 				// generates the list of delta's between turns.
-				prepBoard: function( board )
+				parse: function( board )
 				{
 					if( ! board )
 					{
@@ -330,8 +330,6 @@ $.extend( {
 					
 					// Let the world know the game was successfully parsed
 					this.board.loaded = true;
-					
-					console.log( this.board );
 				},// End prepBoard
 				
 				// Applies a node from the gametree data to a turn object and returns the turn object
