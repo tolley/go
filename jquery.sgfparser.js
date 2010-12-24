@@ -585,7 +585,7 @@ $.extend( {
 							// The size of the board.
 							case 'SZ':
 								if( parseInt( node[property] ) != NaN && node == 0 )
-									this.board.boardSize = node[property];
+									this.board.boardSize = parseInt( node[property] );
 								break;
 							
 							// End ROOT properties ////////////////////////////////////////////////

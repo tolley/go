@@ -236,22 +236,26 @@ $.extend( {
 					return;
 				}// End if
 
+				// Save a reference to our go board display element, apply the 
+				// goban class, and clean out any child elements it may have
 				this.boardElem = elem;
 				$( this.boardElem ).addClass( 'goban' );
-			
+				while( this.boardElem.firstChild )
+						this.boardElem.removeChild( this.boardElem.firstChild );
+
 				// Calculate the max dimensions for the board plus coordinates
-				var xMax = parseInt( this.boardSize ) + 2;
-				var yMax = parseInt( this.boardSize ) + 2;
-				
+				var xMax = this.boardSize + 2;
+				var yMax = this.boardSize + 2;
+
 				// Set the style information on the element the board will display inside of
 				this.boardElem.style.height = String( xMax * 20 ) + 'px';
 				this.boardElem.style.width = String( yMax * 20 ) + 'px';
 
 				// Generate the internal board representation and the display elements
 				this.internalBoard = new Array();
-				for( var y = 1; y <= this.boardSize; ++y )
+				for( var y = 0; y < yMax; ++y )
 				{
-					for( var x = 1; x <= this.boardSize; ++x )
+					for( var x = 0; x < xMax; ++x )
 					{
 						if( ! ( this.internalBoard[x] instanceof Array ) )
 							this.internalBoard[x] = new Array();
@@ -285,21 +289,22 @@ $.extend( {
 				
 				// Add the className that will give the tile the proper display
 				// If we have a tile that is part of the UI (the side coordinates)
-//				if( x == 0 || y == 0 || x == xMax - 1 || y == yMax - 1 )
-//				{
-//					className += 'blank';
-//					
-//					// Calculate the innerHTML for the coordinates display
-//					newTile.innerHTML = calculateSideCoordinate( x, y );
-//				}// End if
-//				else
-//				{
+
+				if( x == 0 || y == 0 || x == ( this.boardSize + 1 ) || y == ( this.boardSize + 1 ) )
+				{
+					className += 'blank';
+					
+					// Calculate the innerHTML for the coordinates display
+					newTile.innerHTML = this.calculateSideCoordinate( x, y );
+				}// End if
+				else
+				{
 					// Otherwise, we have a liberty tile and need to calculate the proper
 					// image so that it displayes correctly
 					className += this.calculateLibertyClass( x, y );
 	
 					newTile.innerHTML = '&nbsp;';
-//				}// End else
+				}// End else
 					
 				newTile.className = className;
 				
