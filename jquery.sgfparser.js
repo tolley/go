@@ -322,10 +322,19 @@ $.extend( {
 						// Get a blank turn object to fill in and pass to the board to calculate the deltas
 						var turnObj = this.board.getBlankTurnObject();
 						
+						// Parse the node into a turn object
 						turnObj = this.parseGameNode( this.gameTree[node], turnObj );
-
-						// Set the turn object in the board
-						this.board.setTurnObj( turnObj );
+						
+						// If we have the initial stone object, set it on the board
+						if( node == 0 && ! turnObj.stone )
+						{
+							this.board.initialTurn = turnObj;
+						}// End if
+						else
+						{
+							// Otherwise, set it as a normal turn object on the board
+							this.board.setTurnObj( turnObj );
+						}// End else
 					}// End for each node
 					
 					// Let the world know the game was successfully parsed
@@ -368,11 +377,11 @@ $.extend( {
 									goStone.color = 'b';
 									
 									// Translate the go stone coordinates from alpha to numeric
-									goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 97;
-									goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 97;
+									goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 96;
+									goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 96;
 									
 									// If the coordinates of the stone are out of range, treat it as a pass
-									if( goStone.x == this.board.size && goStone.y == this.board.size )
+									if( goStone.x > this.board.boardSize && goStone.y > this.board.boardSize )
 										goStone.action = 'pass';
 									else
 										goStone.action = 'place';
@@ -391,11 +400,11 @@ $.extend( {
 									goStone.color = 'w';
 									
 									// Translate the go stone coordinates from alpha to numeric
-									goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 97;
-									goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 97;
+									goStone.x = parseInt( goStone.x.charCodeAt( 0 ) ) - 96;
+									goStone.y = parseInt( goStone.y.charCodeAt( 0 ) ) - 96;
 									
 									// If the coordinates of the stone are out of range, treat it as a pass
-									if( goStone.x == this.board.size && goStone.y == this.board.size )
+									if( goStone.x > this.board.boardSize && goStone.y > this.board.boardSize )
 										goStone.action = 'pass';
 									else
 										goStone.action = 'place';
@@ -424,8 +433,8 @@ $.extend( {
 									tempStone.y = stoneList[n].charAt( 1 );
 									
 									// Translate the go stone coordinates from alpha to numeric
-									tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 97;
-									tempStone.y = parseInt( tempStone.y.charCodeAt( 0 ) ) - 97;
+									tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 96;
+									tempStone.y = parseInt( tempStone.y.charCodeAt( 0 ) ) - 96;
 									
 									stoneObjects.push( tempStone );
 								}// End for n
@@ -455,8 +464,8 @@ $.extend( {
 									tempStone.y = stoneList[n].charAt( 1 );
 									
 									// Translate the go stone coordinates from alpha to numeric
-									tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 97;
-									tempStone.y = parseInt( tempStone.y.charCodeAt( 0 ) ) - 97;
+									tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 96;
+									tempStone.y = parseInt( tempStone.y.charCodeAt( 0 ) ) - 96;
 									
 									stoneObjects.push( tempStone );
 								}// End for n
@@ -789,8 +798,8 @@ $.extend( {
 									point.y = territoryList[n].charAt( 1 );
 									
 									// Translate the go stone coordinates from alpha to numeric
-									point.x = parseInt( point.x.charCodeAt( 0 ) ) - 97;
-									point.y = parseInt( point.y.charCodeAt( 0 ) ) - 97;
+									point.x = parseInt( point.x.charCodeAt( 0 ) ) - 96;
+									point.y = parseInt( point.y.charCodeAt( 0 ) ) - 96;
 									
 									turnObj.territoryBlack.push( point );
 								}// End for n
@@ -812,8 +821,8 @@ $.extend( {
 									point.y = territoryList[n].charAt( 1 );
 									
 									// Translate the go stone coordinates from alpha to numeric
-									point.x = parseInt( point.x.charCodeAt( 0 ) ) - 97;
-									point.y = parseInt( point.y.charCodeAt( 0 ) ) - 97;
+									point.x = parseInt( point.x.charCodeAt( 0 ) ) - 96;
+									point.y = parseInt( point.y.charCodeAt( 0 ) ) - 96;
 									
 									turnObj.territoryWhite.push( point );
 								}// End for n

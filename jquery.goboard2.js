@@ -29,8 +29,11 @@ $.extend( {
 			// The internal representation of the state of the board
 			boardSize: false,
 			
+			// The initial turn object, used to store handy cap stones, or pre game comments
+			initialTurn: false,
+			
 			// Keeps track of the turn we are on
-			turnIndex: 1,
+			turnIndex: 0,
 			
 			// Keeps track of the move number.
 			moveNumber: 0,
@@ -117,7 +120,7 @@ $.extend( {
 			internalBoard: false,
 
 			/////////////////////////////////////////////////////////////////////////////////
-			/////////////////////////// Begin parser used methods ///////////////////////////
+			/////////////////////////// Begin parser interface methods///////////////////////
 			/////////////////////////////////////////////////////////////////////////////////
 			
 			// Called by the parser to get blank stone objects.  These are the stones
@@ -127,9 +130,8 @@ $.extend( {
 				return { x: 	  false, 
 					 y: 	  false, 
 					 color:    false, 
-					 action:   false, 
-					 number:   false };
-			},// End getBlankStone
+					 action:   false };
+			}, // End getBlankStone
 			
 			// Called by the parser to get an empty "turn" object.  These objects will
 			// be populated by the parser and passed to the board object
@@ -173,7 +175,7 @@ $.extend( {
 							this.comments = $.trim( msg );
 					}
 				};
-			},// End getBlankTurnObject
+			}, // End getBlankTurnObject
    
    			// Creates an empty player object.  These objects are used by the parser to set the 
    			// player properties.
@@ -187,7 +189,7 @@ $.extend( {
 					captures: 0,
 					territoryCount: 0
 				};
-			},// End getBlankPlayerObj
+			}, // End getBlankPlayerObj
 
 			
 			// Called by the parser object, in order of moves, to set the data for each move.
@@ -201,7 +203,7 @@ $.extend( {
 
 				// Add the turn object to the list
 				if( this.turnObjects.push( turnObj ) );
-			},// End setTurnObj
+			}, // End setTurnObj
 			
 			// Returns a blank liberty object.  These are used in the internalBoard to do
 			// capture logic, and board display
@@ -237,11 +239,15 @@ $.extend( {
 						this.state = 'open';
 					},
 				};
-			},// End function getBlankLibertyObject
+			}, // End function getBlankLibertyObject
+
 			/////////////////////////////////////////////////////////////////////////////////
-			///////////////////////////// End parser used methods ///////////////////////////
+			//////////////////////// End parser interface methods ///////////////////////////
 			/////////////////////////////////////////////////////////////////////////////////
 			
+			/////////////////////////////////////////////////////////////////////////////////
+			////////////////////////// Begin board display methods //////////////////////////
+			/////////////////////////////////////////////////////////////////////////////////
 			
 			// Called by the main jquery plugin to display this game
 			display: function()
@@ -274,6 +280,9 @@ $.extend( {
 				// Set the style information on the element the board will display inside of
 				this.boardElem.style.height = String( xMax * 20 ) + 'px';
 				this.boardElem.style.width = String( yMax * 20 ) + 'px';
+				
+				// Initialize the UI based on the options passed into the jquery method call
+				this.initializeDisplay();
 
 				// Generate the internal board representation and the display elements
 				this.internalBoard = new Array();
@@ -330,12 +339,15 @@ $.extend( {
 						}// End else
 					}// End for y
 				}// End for x
-			},// End function display
+				
+				// If we have an initial turn, set the display accordingly with ignoreCaptures
+				if( this.initialTurn )
+				{
+					this.playTurn( this.initialTurn, true );
+				}// End if
+			}, // End function display
 			
-			/////////////////////////////////////////////////////////////////////////////////
-			////////////////////////// Begin board display methods //////////////////////////
-			/////////////////////////////////////////////////////////////////////////////////
-			
+			// Creates and positions the DOM elements the give coordinates
 			createLibertyTile: function( x, y )
 			{
 				// Create a div element for the liberty element
@@ -347,7 +359,7 @@ $.extend( {
 				newTile.style.top = position.top;
 				
 				return newTile;
-			},// End function createLibertyTile
+			}, // End function createLibertyTile
 
 			// Returns the top and left coordinates for a given liberty
 			calculateTileCoordinates: function( x, y )
@@ -361,7 +373,7 @@ $.extend( {
 				returnValue.top = ( 20 * x ) + gobanPosition.top + 1;
 				
 				return returnValue;
-			},// End function calculateTileCoordinates
+			}, // End function calculateTileCoordinates
 			
 			// A function that will return the proper innerHTML for the side coordinates
 			calculateSideCoordinate: function( x, y )
@@ -403,7 +415,7 @@ $.extend( {
 					innerHTML = x;
 			
 				return innerHTML;
-			},// End function calculateSideCoordinate
+			}, // End function calculateSideCoordinate
 
 			// A function that will calculate the proper className to give to a liberty tile
 			// based on the coordinates past in, and return it.
@@ -496,10 +508,309 @@ $.extend( {
 			
 				// Return the calculated className
 				return className;
-			}// End function calculateLibertyClass
+			}, // End function calculateLibertyClass
+			
+			
+			// Initializes the the display elements based on the options used when this object was created
+			initializeDisplay: function()
+			{
+				// Set the reference to the chat window, if one is set
+				if( options.chatWindow && options.chatWindow.length > 0 )
+				{
+					var temp = $( options.chatWindow );
+					if( temp.length > 0 )
+						this.chatWindow = temp[0];
+				}// End if
+				
+				// If the game info element selector is set in the options
+				if( options.gameInfo && options.gameInfo.length > 0 )
+				{
+					// Build the game info panel content
+					var gameInfoContent = 'Game: ' + this.gameName +
+							' played on ' + this.dateTime;
+					
+					
+					if( this.timeLimit || this.komi || this.numHandicapStones )
+					{
+						gameInfoContent += '<br />';
+
+						// If the time limit is set, display them it in the info panel
+						if( this.timeLimit )
+							gameInfoContent += 'Time Limit: ' + this.timeLimit
+						
+						// If the komi is set, display it
+						if( this.komi )
+						{
+							gameInfoContent += ' Komi: ' + this.komi;
+						}// end if
+						
+						// If there are handicap stones, display it
+						if( this.numHandicapStones )
+							gameInfoContent += ' Handicap: ' + this.numHandicapStones;
+					}// End if
+
+					this.gameInfoPanel = $( options.gameInfo ).html( gameInfoContent ).
+									addClass( 'gameInfoPanel' );
+				}// End if
+				
+				// If the black player info panel selector is set in the options
+				if( options.blackInfo && options.blackInfo.length > 0 )
+				{
+					var blackInfoContent = 'Black: ' + this.playerBlack.name + 
+							' (' + this.playerBlack.rank + ') <br />' +
+							'Captures: <span class="black_captures">0</span><br />';
+					
+					// Set the initial time limit for the black player
+					blackInfoContent += 'Time Remaining: <span class="player_black_timeremaining">' + this.timeLimit + '</span>';
+
+					this.playerBlackPanel = $( options.blackInfo ).html( blackInfoContent ).
+									addClass( 'playerInfoPanel' );
+				}// End if
+				
+				// If the white player info panel selector is set in the options
+				if( options.whiteInfo && options.whiteInfo.length > 0 )
+				{
+					var whiteInfoContent = 'White: ' + this.playerWhite.name + 
+							' (' + this.playerWhite.rank + ') <br />' +
+							'Captures: <span class="white_captures">0</span><br />';
+					
+					// Set the initial time limit for the black player
+					whiteInfoContent += 'Time Remaining: <span class="player_white_timeremaining">' + this.timeLimit + '</span>';
+
+					this.playerWhitePanel = $( options.whiteInfo ).html( whiteInfoContent ).
+									addClass( 'playerInfoPanel' );
+				}// End if
+				
+				// If the turn info panel was specified
+				if( options.turnInfo && options.turnInfo.length > 0 )
+				{
+					var turnInfoContent = 'Move: N/A';
+					
+					this.turnInfoPanel = $( options.turnInfo ).html( turnInfoContent ).addClass( 'gameInfoPanel' );
+				}// End if
+			},// End function initializeDisplay
+			
+			// If the player info panel element is set, this function updates the number
+			// of captures displayed for that player
+			updateCaptureDisplay: function( color, numCaptures )
+			{
+				if( numCaptures == 0 )
+					return;
+
+				// Get the proper elements based on the color
+				var captureDisplay = false;
+				var playerObj = false;
+
+				if( color == 'w' && this.playerWhitePanel )
+				{
+					captureDisplay = this.playerWhitePanel.find( '.white_captures' );
+					playerObj = this.playerWhite;
+				}// End if
+				else if( color == 'b' && this.playerBlackPanel )
+				{
+					captureDisplay = this.playerBlackPanel.find( '.black_captures' );
+					playerObj = this.playerBlack;
+				}// End else
+				
+				// If we have the capture display element, update it
+				if( captureDisplay )
+				{
+					var currentCaptureCount = parseInt( captureDisplay.html() );
+					if( currentCaptureCount == NaN )
+						currentCaptureCount = 0;
+					
+					currentCaptureCount += numCaptures;
+					if( currentCaptureCount < 0 )
+						currentCaptureCount = 0;
+					
+					captureDisplay.html( currentCaptureCount );
+				}// End if
+				
+				// If we have a player object, update the number of captures
+				if( playerObj )
+				{
+					playerObj.captures += numCaptures;
+					if( playerObj.captures < 0 )
+						playerObj.captures = 0;
+				}// End if
+			}, // End function updateCaptureDisplay
+			
+			// Adds a comment to the chat window
+			addCommentToDisplay: function( comment )
+			{
+				if( this.chatWindow )
+				{
+					this.chatWindow.value = comment;
+					this.chatWindow.scrollTop = this.chatWindow.scrollHeight;
+				}// End if
+			}, // End function addCommentToDisplay
+			
+			// Clears all comments from the chat window
+			clearCommentsFromDisplay: function( comment )
+			{
+				if( this.chatWindow )
+				{
+					this.chatWindow.value = '';
+				}// End if
+			}, // End function clearCommentsFromDisplay
+			
 			/////////////////////////////////////////////////////////////////////////////////
 			//////////////////////////// End board display methods///////////////////////////
 			/////////////////////////////////////////////////////////////////////////////////
+			
+			/////////////////////////////////////////////////////////////////////////////////
+			/////////////////////////// Begin turn interface methods ////////////////////////
+			/////////////////////////////////////////////////////////////////////////////////
+			
+			// Takes in a turn object and sets the internal state of the board accordingly
+			// If ignoreCaptures is true, the capture logic will be ignored for this turn
+			playTurn: function( turnObj, ignoreCaptures )
+			{
+				// If we have a stone object, play it
+				if( turnObj.stone )
+				{
+					this.placeStone( turnObj.stone );
+				}// End if
+
+				// If we have additional stones to play, play them
+				if( turnObj.additionalBlackStones && turnObj.additionalBlackStones.length > 0 )
+				{
+					for( var n = 0; n < turnObj.additionalBlackStones.length; ++n )
+					{
+						this.placeStone( turnObj.additionalBlackStones[n] );
+					}// End foreach additional black stone
+				}// End if additional black stones
+				
+				if( turnObj.additionalWhiteStones && turnObj.additionalWhiteStones.length > 0 )
+				{
+					for( var n = 0; n < turnObj.additionalWhiteStones.length; ++n )
+					{
+						this.placeStone( turnObj.additionalWhiteStones[n] );
+					}// End foreach additional white stone
+				}// End if additional white stones
+				
+				// If we have comments, add them to the chat window
+				if( turnObj.comments && turnObj.comments.length > 0 )
+					this.addCommentToDisplay( turnObj.comments );
+				else
+					this.clearCommentsFromDisplay();
+			},// End function playTurn
+			
+			// Takes in a turn object and unsets the internal state of the board accordingly
+			unPlayTurn: function( turnObj )
+			{
+				// If we have a stone object, remove it
+				if( turnObj.stone )
+				{
+					this.removeStone( turnObj.stone );
+				}// End if
+
+				// If we have additional stones, unplay them
+				if( turnObj.additionalBlackStones && turnObj.additionalBlackStones.length > 0 )
+				{
+					for( var n = 0; n < turnObj.additionalBlackStones.length; ++n )
+					{
+						this.placeStone( turnObj.additionalBlackStones[n] );
+					}// End foreach additional black stone
+				}// End if additional black stones
+				
+				if( turnObj.additionalWhiteStones && turnObj.additionalWhiteStones.length > 0 )
+				{
+					for( var n = 0; n < turnObj.additionalWhiteStones.length; ++n )
+					{
+						this.placeStone( turnObj.additionalWhiteStones[n] );
+					}// End foreach additional white stone
+				}// End if additional white stones
+				
+				// If we have comments, remove them from the chat window
+				if( this.comments && this.comments.length > 0 )
+					this.clearCommentsFromDisplay();
+			}, // End function unPlayTurn
+
+			// Called by the jquery plugin interface to advance the game a turn
+			nextTurn: function()
+			{
+				this.playTurn( this.turnObjects[ this.turnIndex ] );
+				
+				// Increment the turn index
+				this.turnIndex++;
+				
+				// Make sure the turn index stays in bounds
+				if( this.turnIndex >= this.turnObjects.length )
+					this.turnIndex = this.turnObjects.length - 1;
+			}, // End function nextTurn
+			
+			// Called by the jquery plugin interface to reverse the game a turn
+			previousTurn: function()
+			{
+				this.unPlayTurn( this.turnObjects[ this.turnIndex ] );
+
+				// Deincrement the turn index
+				this.turnIndex--;
+				
+				// Make sure the turn index stays in bounds
+				if( this.turnIndex < 0 )
+					this.turnIndex = 0;
+			}, // End function previous turn
+			
+			// Called by the jquery plugin interface to move the game to the last turn
+			lastTurn: function()
+			{
+				while( this.turnIndex < this.turnObjects.length - 1 )
+					this.nextTurn();
+			}, // End function lastTurn
+
+			// Called by the jquery plugin interface to move the game to the first turn
+			firstTurn: function()
+			{
+				while( this.turnIndex > 0 )
+					this.previousTurn();
+				
+				this.previousTurn();
+			}, // End function firstTurn
+
+			// Called by the jquery plugin interface to advance the game to an arbirtary move
+			jumpToTurn: function( n )
+			{
+			},// End function jumpToTurn
+			
+			/////////////////////////////////////////////////////////////////////////////////
+			/////////////////////////// End turn interface methods //////////////////////////
+			/////////////////////////////////////////////////////////////////////////////////
+
+			/////////////////////////////////////////////////////////////////////////////////
+			//////////////////////////// Begin turn logic methods ///////////////////////////
+			/////////////////////////////////////////////////////////////////////////////////
+			
+			// Adjusts the display elements necessary to display the placing of the given stone object
+			placeStone: function( stone )
+			{
+				console.log( stone );
+				// If the stone is not a pass
+				if( stone.action != 'pass' )
+				{
+					if( stone.color == 'b' )
+						this.internalBoard[ stone.x][ stone.y ].playBlack();
+					else if( stone.color == 'w' )
+						this.internalBoard[ stone.x][ stone.y ].playWhite();
+				}// End if
+			}, // End function placeStone
+			
+			// Adjusts the display elements necessary to display the removal of a given stone object
+			removeStone: function( stone )
+			{
+				// If the stone is not a pass
+				if( stone.action != 'pass' )
+					this.internalBoard[ stone.x][ stone.y ].open();
+			}, // End function removeStone
+			
+			/////////////////////////////////////////////////////////////////////////////////
+			////////////////////////////// End turn logic methods ///////////////////////////
+			/////////////////////////////////////////////////////////////////////////////////
+			
+			// A function so that I won't have to remember to move my last comma
+			// Don't forget to take this out before you call it finished
+			commaBait: function(){}
 		} );// End goBoard object definition
 		
 		return goBoard;
