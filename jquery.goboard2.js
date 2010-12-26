@@ -211,7 +211,31 @@ $.extend( {
 					state: 'open',
 					openElem: false,
 					whiteElem: false,
-					blackElem: false
+					blackElem: false,
+					
+					playBlack: function()
+					{
+						this.openElem.style.display = 'none';
+						this.whiteElem.style.display = 'none';
+						this.blackElem.style.display = '';
+						this.state = 'black';
+					},
+					
+					playWhite: function()
+					{
+						this.openElem.style.display = 'none';
+						this.blackElem.style.display = 'none';
+						this.whiteElem.style.display = '';
+						this.state = 'white';
+					},
+					
+					open: function()
+					{
+						this.blackElem.style.display = 'none';
+						this.whiteElem.style.display = 'none';
+						this.openElem.style.display = '';
+						this.state = 'open';
+					},
 				};
 			},// End function getBlankLibertyObject
 			/////////////////////////////////////////////////////////////////////////////////
@@ -305,7 +329,7 @@ $.extend( {
 							this.internalBoard[x][y] = liberty;
 						}// End else
 					}// End for y
-				}// End for x				
+				}// End for x
 			},// End function display
 			
 			/////////////////////////////////////////////////////////////////////////////////
