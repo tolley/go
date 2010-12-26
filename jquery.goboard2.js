@@ -260,75 +260,70 @@ $.extend( {
 						if( ! ( this.internalBoard[x] instanceof Array ) )
 							this.internalBoard[x] = new Array();
 						
-						// Get an empty liberty
-						var liberty = this.getBlankLibertyObject();
-						
-						// Create the display elements that make up a liberty
-						liberty = this.createLibertyElements( liberty, x, y );
+						// Create the display element for this liberty
+						var newTile = this.createLibertyTile( x, y );
 
-						this.internalBoard[x].push( liberty );
+						// If we have a side coordinate (not actually a liberty)
+						if( x == 0 || y == 0 || x == ( this.boardSize + 1 ) || y == ( this.boardSize + 1 ) )
+						{
+							// Make the tile empty, and add the proper coordinate display
+							newTile.className = 'tile blank';
+							newTile.innerHTML = this.calculateSideCoordinate( x, y );
+							
+							// Add the new tile to the display
+							this.boardElem.appendChild( newTile );
+						}// End if
+						else
+						{
+							// Otherwise, add the appropiate class to the tile for its position on the board
+							newTile.className = 'tile liberty ' + this.calculateLibertyClass( x, y );
+							newTile.innerHTML = '&nbsp;';
+
+							// Create the actual liberty object that will hold all the tiles for this liberty
+							var liberty = this.getBlankLibertyObject();
+
+							// Clone the empty liberty tile and create the black and white occupied liberties
+							var blackOccupied = newTile.cloneNode( true );
+							blackOccupied.className = 'tile liberty black';
+							blackOccupied.style.display = 'none';
+
+							var whiteOccupied = newTile.cloneNode( true );
+							whiteOccupied.className = 'tile liberty white';
+							whiteOccupied.style.display = 'none';
+
+							// Add the liberty display elements to the liberty object
+							liberty.openElem = newTile;
+							liberty.blackElem = blackOccupied;
+							liberty.whiteElem = whiteOccupied;
+
+							// Append each display element to the board UI
+							this.boardElem.appendChild( liberty.openElem );
+							this.boardElem.appendChild( liberty.blackElem );
+							this.boardElem.appendChild( liberty.whiteElem );
+
+							// Add our liberty to the internal board
+							this.internalBoard[x][y] = liberty;
+						}// End else
 					}// End for y
-				}// End for x
+				}// End for x				
 			},// End function display
 			
 			/////////////////////////////////////////////////////////////////////////////////
 			////////////////////////// Begin board display methods //////////////////////////
 			/////////////////////////////////////////////////////////////////////////////////
 			
-			createLibertyElements: function( liberty, x, y )
+			createLibertyTile: function( x, y )
 			{
-				// Build the display elements for the three liberty states
+				// Create a div element for the liberty element
 				var newTile = document.createElement( 'div' );
 				
-				// Get the position for this stone
+				// Calculate the position of this liberty in the display
 				var position = this.calculateTileCoordinates( x, y );
 				newTile.style.left = position.left;
 				newTile.style.top = position.top;
 				
-				var className = 'tile ';
-				
-				// Add the className that will give the tile the proper display
-				// If we have a tile that is part of the UI (the side coordinates)
-
-				if( x == 0 || y == 0 || x == ( this.boardSize + 1 ) || y == ( this.boardSize + 1 ) )
-				{
-					className += 'blank';
-					
-					// Calculate the innerHTML for the coordinates display
-					newTile.innerHTML = this.calculateSideCoordinate( x, y );
-				}// End if
-				else
-				{
-					// Otherwise, we have a liberty tile and need to calculate the proper
-					// image so that it displayes correctly
-					className += this.calculateLibertyClass( x, y );
-	
-					newTile.innerHTML = '&nbsp;';
-				}// End else
-					
-				newTile.className = className;
-				
-				// Clone the empty liberty tile and create the black and white occupied liberties
-				var blackOccupied = newTile.cloneNode( true );
-				blackOccupied.className = 'tile black liberty';
-				blackOccupied.style.display = 'none';
-
-				var whiteOccupied = newTile.cloneNode( true );
-				whiteOccupied.className = 'tile white liberty';
-				whiteOccupied.style.display = 'none';
-
-				// Add the liberty display elements to the liberty object
-				liberty.openElem = newTile;
-				liberty.blackElem = blackOccupied;
-				liberty.whiteElem = whiteOccupied;
-				
-				// Append each display element to the board UI
-				this.boardElem.appendChild( liberty.openElem );
-				this.boardElem.appendChild( liberty.blackElem );
-				this.boardElem.appendChild( liberty.whiteElem );
-				
-				return liberty;
-			},// End function createLibertyElements
+				return newTile;
+			},// End function createLibertyTile
 
 			// Returns the top and left coordinates for a given liberty
 			calculateTileCoordinates: function( x, y )
@@ -474,9 +469,6 @@ $.extend( {
 				
 				if( y >= 9 )
 					y++;
-			
-				// Using these class names, we can select a liberty by using it's x,y coordinates: $( '.liberty-x-y' )
-				className += ' liberty';
 			
 				// Return the calculated className
 				return className;
