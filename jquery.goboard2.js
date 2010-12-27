@@ -211,31 +211,26 @@ $.extend( {
 			{
 				return {
 					state: 'open',
-					openElem: false,
-					whiteElem: false,
-					blackElem: false,
+					displayElem: false,
+					openClassName: false,
+					whiteClassName: false,
+					blackClassName: false,
 					
 					playBlack: function()
 					{
-						this.openElem.style.display = 'none';
-						this.whiteElem.style.display = 'none';
-						this.blackElem.style.display = '';
+						this.displayElem.className = this.blackClassName;
 						this.state = 'black';
 					},
 					
 					playWhite: function()
 					{
-						this.openElem.style.display = 'none';
-						this.blackElem.style.display = 'none';
-						this.whiteElem.style.display = '';
+						this.displayElem.className = this.whiteClassName;
 						this.state = 'white';
 					},
 					
 					open: function()
 					{
-						this.blackElem.style.display = 'none';
-						this.whiteElem.style.display = 'none';
-						this.openElem.style.display = '';
+						this.displayElem.className = this.openClassName;
 						this.state = 'open';
 					},
 				};
@@ -294,7 +289,7 @@ $.extend( {
 							this.internalBoard[x] = new Array();
 						
 						// Create the display element for this liberty
-						var newTile = this.createLibertyTile( x, y );
+						var newTile = this.createBoardTile( x, y );
 
 						// If we have a side coordinate (not actually a liberty)
 						if( x == 0 || y == 0 || x == ( this.boardSize + 1 ) || y == ( this.boardSize + 1 ) )
@@ -309,30 +304,22 @@ $.extend( {
 						else
 						{
 							// Otherwise, add the appropiate class to the tile for its position on the board
-							newTile.className = 'tile liberty ' + this.calculateLibertyClass( x, y );
+							var tileClass = 'tile liberty ' + this.calculateLibertyClass( x, y );
+
+							newTile.className = tileClass;
 							newTile.innerHTML = '&nbsp;';
 
 							// Create the actual liberty object that will hold all the tiles for this liberty
 							var liberty = this.getBlankLibertyObject();
 
-							// Clone the empty liberty tile and create the black and white occupied liberties
-							var blackOccupied = newTile.cloneNode( true );
-							blackOccupied.className = 'tile liberty black';
-							blackOccupied.style.display = 'none';
+							// Set the class names and the display element on the liberty object
+							liberty.displayElem = newTile;
+							liberty.openClassName = tileClass;
+							liberty.blackClassName = 'tile liberty black';
+							liberty.whiteClassName = 'tile liberty white';
 
-							var whiteOccupied = newTile.cloneNode( true );
-							whiteOccupied.className = 'tile liberty white';
-							whiteOccupied.style.display = 'none';
-
-							// Add the liberty display elements to the liberty object
-							liberty.openElem = newTile;
-							liberty.blackElem = blackOccupied;
-							liberty.whiteElem = whiteOccupied;
-
-							// Append each display element to the board UI
-							this.boardElem.appendChild( liberty.openElem );
-							this.boardElem.appendChild( liberty.blackElem );
-							this.boardElem.appendChild( liberty.whiteElem );
+							// Append the display element to the DOM
+							this.boardElem.appendChild( liberty.displayElem );
 
 							// Add our liberty to the internal board
 							this.internalBoard[x][y] = liberty;
@@ -348,7 +335,7 @@ $.extend( {
 			}, // End function display
 			
 			// Creates and positions the DOM elements the give coordinates
-			createLibertyTile: function( x, y )
+			createBoardTile: function( x, y )
 			{
 				// Create a div element for the liberty element
 				var newTile = document.createElement( 'div' );
@@ -359,7 +346,7 @@ $.extend( {
 				newTile.style.top = position.top;
 				
 				return newTile;
-			}, // End function createLibertyTile
+			}, // End function createBoardTile
 
 			// Returns the top and left coordinates for a given liberty
 			calculateTileCoordinates: function( x, y )
@@ -750,7 +737,15 @@ $.extend( {
 				
 				// Make sure the turn index stays in bounds
 				if( this.turnIndex < 0 )
+				{
 					this.turnIndex = 0;
+
+					// If we have an initial turn, set the display accordingly with ignoreCaptures
+					if( this.initialTurn )
+					{
+						this.playTurn( this.initialTurn, true );
+					}// End if
+				}// End if
 			}, // End function previous turn
 			
 			// Called by the jquery plugin interface to move the game to the last turn
@@ -767,6 +762,12 @@ $.extend( {
 					this.previousTurn();
 				
 				this.previousTurn();
+				
+				// If we have an initial turn, set the display accordingly with ignoreCaptures
+				if( this.initialTurn )
+				{
+					this.playTurn( this.initialTurn, true );
+				}// End if
 			}, // End function firstTurn
 
 			// Called by the jquery plugin interface to advance the game to an arbirtary move
@@ -785,7 +786,6 @@ $.extend( {
 			// Adjusts the display elements necessary to display the placing of the given stone object
 			placeStone: function( stone )
 			{
-				console.log( stone );
 				// If the stone is not a pass
 				if( stone.action != 'pass' )
 				{
