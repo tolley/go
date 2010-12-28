@@ -8,7 +8,7 @@
 
 <script type="text/javascript" src="/jquery.js"></script>
 <script type="text/javascript" src="/jquery.gogame.js"></script>
-<script type="text/javascript" src="/jquery.goboard2.js"></script>
+<script type="text/javascript" src="/jquery.goboard.js"></script>
 <script type="text/javascript" src="/jquery.sgfparser.js"></script>
 
 <script type="text/javascript">
