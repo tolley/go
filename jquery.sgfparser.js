@@ -372,8 +372,8 @@ $.extend( {
 								if( ! goStone.x && ! goStone.y && ! goStone.action )
 								{
 									// Get the coordinates of the move and send them to the board
-									goStone.x = node[property].charAt( 0 );
-									goStone.y = node[property].charAt( 1 );
+									goStone.x = node[property].charAt( 1 );
+									goStone.y = node[property].charAt( 0 );
 									goStone.color = 'b';
 									
 									// Translate the go stone coordinates from alpha to numeric
@@ -395,8 +395,8 @@ $.extend( {
 								if( ! goStone.x && ! goStone.y && ! goStone.action )
 								{
 									// Get the coordinates of the move and send them to the board
-									goStone.x = node[property].charAt( 0 );
-									goStone.y = node[property].charAt( 1 );
+									goStone.x = node[property].charAt( 1 );
+									goStone.y = node[property].charAt( 0 );
 									goStone.color = 'w';
 									
 									// Translate the go stone coordinates from alpha to numeric
@@ -429,8 +429,8 @@ $.extend( {
 									var tempStone = this.board.getBlankStone();
 									tempStone.color = 'b';
 									tempStone.action = 'place';
-									tempStone.x = stoneList[n].charAt( 0 );
-									tempStone.y = stoneList[n].charAt( 1 );
+									tempStone.x = stoneList[n].charAt( 1 );
+									tempStone.y = stoneList[n].charAt( 0 );
 									
 									// Translate the go stone coordinates from alpha to numeric
 									tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 96;
@@ -460,8 +460,8 @@ $.extend( {
 									var tempStone = this.board.getBlankStone();
 									tempStone.color = 'w';
 									tempStone.action = 'place';
-									tempStone.x = stoneList[n].charAt( 0 );
-									tempStone.y = stoneList[n].charAt( 1 );
+									tempStone.x = stoneList[n].charAt( 1 );
+									tempStone.y = stoneList[n].charAt( 0 );
 									
 									// Translate the go stone coordinates from alpha to numeric
 									tempStone.x = parseInt( tempStone.x.charCodeAt( 0 ) ) - 96;
@@ -794,8 +794,8 @@ $.extend( {
 									// Create a structure to store the point of territory
 									var point = { x: false, y: false };
 
-									point.x = territoryList[n].charAt( 0 );
-									point.y = territoryList[n].charAt( 1 );
+									point.x = territoryList[n].charAt( 1 );
+									point.y = territoryList[n].charAt( 0 );
 									
 									// Translate the go stone coordinates from alpha to numeric
 									point.x = parseInt( point.x.charCodeAt( 0 ) ) - 96;
@@ -817,8 +817,8 @@ $.extend( {
 									// Create a structure to store the point of territory
 									var point = { x: false, y: false };
 
-									point.x = territoryList[n].charAt( 0 );
-									point.y = territoryList[n].charAt( 1 );
+									point.x = territoryList[n].charAt( 1 );
+									point.y = territoryList[n].charAt( 0 );
 									
 									// Translate the go stone coordinates from alpha to numeric
 									point.x = parseInt( point.x.charCodeAt( 0 ) ) - 96;
