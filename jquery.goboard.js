@@ -130,7 +130,9 @@ $.extend( {
 				return { x: 	  false, 
 					 y: 	  false, 
 					 color:    false, 
-					 action:   false };
+					 action:   false, 
+					 capturedStones: new Array(),
+				};
 			}, // End getBlankStone
 			
 			// Called by the parser to get an empty "turn" object.  These objects will
@@ -215,24 +217,30 @@ $.extend( {
 					openClassName: false,
 					whiteClassName: false,
 					blackClassName: false,
-					
-					playBlack: function()
+					stone: false,
+				
+					playOn: function( stone )
 					{
-						this.displayElem.className = this.blackClassName;
-						this.state = 'black';
-					},
-					
-					playWhite: function()
-					{
-						this.displayElem.className = this.whiteClassName;
-						this.state = 'white';
-					},
+						this.stone = stone;
+						switch( stone.color )
+						{
+							case 'b':
+								this.displayElem.className = this.blackClassName;
+								this.state = 'black';
+								break;
+							case 'w':
+								this.displayElem.className = this.whiteClassName;
+								this.state = 'white';
+								break;
+						}// End switch color
+					},// End function playOn
 					
 					open: function()
 					{
+						this.stone = false;
 						this.displayElem.className = this.openClassName;
 						this.state = 'open';
-					},
+					},// End function open
 				};
 			}, // End function getBlankLibertyObject
 
@@ -317,6 +325,8 @@ $.extend( {
 							liberty.openClassName = tileClass;
 							liberty.blackClassName = 'tile liberty black';
 							liberty.whiteClassName = 'tile liberty white';
+							liberty.x = x;
+							liberty.y = y;
 
 							// Append the display element to the DOM
 							this.boardElem.appendChild( liberty.displayElem );
@@ -689,7 +699,7 @@ $.extend( {
 				// If we have a stone object, remove it
 				if( turnObj.stone )
 				{
-					this.removeStone( turnObj.stone );
+					this.unPlaceStone( turnObj.stone );
 				}// End if
 
 				// If we have additional stones, unplay them
@@ -773,6 +783,7 @@ $.extend( {
 			// Called by the jquery plugin interface to advance the game to an arbirtary move
 			jumpToTurn: function( n )
 			{
+				// No interface for this yet
 			},// End function jumpToTurn
 			
 			/////////////////////////////////////////////////////////////////////////////////
@@ -789,20 +800,17 @@ $.extend( {
 				// If the stone is not a pass
 				if( stone.action != 'pass' )
 				{
-					if( stone.color == 'b' )
-						this.internalBoard[ stone.x][ stone.y ].playBlack();
-					else if( stone.color == 'w' )
-						this.internalBoard[ stone.x][ stone.y ].playWhite();
+					this.internalBoard[ stone.x ][ stone.y ].playOn( stone );
 				}// End if
 			}, // End function placeStone
 			
 			// Adjusts the display elements necessary to display the removal of a given stone object
-			removeStone: function( stone )
+			unPlaceStone: function( stone )
 			{
-				// If the stone is not a pass
+				// If the stone is not a pass, play it on the specified liberty
 				if( stone.action != 'pass' )
 					this.internalBoard[ stone.x][ stone.y ].open();
-			}, // End function removeStone
+			}, // End function unPlaceStone
 			
 			/////////////////////////////////////////////////////////////////////////////////
 			////////////////////////////// End turn logic methods ///////////////////////////
