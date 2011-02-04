@@ -904,12 +904,7 @@ $.extend( {
 
 				// Foreach stone that needs to be removed, remove it from the internal board
 				for( var index in captured )
-				{
-//					console.log( captured[index] );
 					this.unPlaceStone( captured[index] );
-//					var tempStone = captured[number];
-//					this.internalBoard[tempStone.x][tempStone.y] = 'e';
-				}// End for each captured stone
 
 				return captured;
 			},// End function removeStonesCapturedBy
