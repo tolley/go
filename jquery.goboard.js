@@ -244,9 +244,6 @@ $.extend( {
 					{
 						this.stone = stone;
 
-						// Debugging code
-						this.stone.displayElem = this.displayElem;
-
 						switch( stone.color )
 						{
 							case 'b':
