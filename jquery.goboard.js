@@ -131,7 +131,28 @@ $.extend( {
 					 y: 	  false, 
 					 color:    false, 
 					 action:   false, 
-					 capturedStones: new Array(),
+					 capturedStones: {},
+					 
+					 // Returns the index value that is used in the capture logic
+					 getIndex: function()
+					 {
+					 	// If this stone doesn't have coordinates, return false
+						if( this.action == 'pass' )
+							return false;
+						
+						// Convert the numeric x value into an alpha string, and there are no I's in go coordinates
+						var charCodeX = this.x;
+						if( parseInt( charCodeX ) >= 9 )
+							charCodeX++;
+			
+						// Convert the numeric y value into an alpha string, and there are no I's in go coordinates
+						var charCodeY = this.y;
+						if( parseInt( charCodeY ) >= 9 )
+							charCodeY++;
+						
+						// Return the index value
+						return String.fromCharCode( charCodeX + 96 ) + String.fromCharCode( charCodeY + 96 );
+					 }// End function getIndex
 				};
 			}, // End getBlankStone
 			
@@ -222,6 +243,10 @@ $.extend( {
 					playOn: function( stone )
 					{
 						this.stone = stone;
+
+						// Debugging code
+						this.stone.displayElem = this.displayElem;
+
 						switch( stone.color )
 						{
 							case 'b':
@@ -666,7 +691,13 @@ $.extend( {
 				// If we have a stone object, play it
 				if( turnObj.stone )
 				{
+					// Place the stone on the board and determine if any stones were captured
 					this.placeStone( turnObj.stone );
+					var capturedStones = this.removeStonesCapturedBy( turnObj.stone );
+					
+					// Add any captured stones to the stone's list of captured stones
+					for( var index in capturedStones )
+						turnObj.stone.capturedStones[index] = capturedStones[index];
 				}// End if
 
 				// If we have additional stones to play, play them
@@ -675,6 +706,7 @@ $.extend( {
 					for( var n = 0; n < turnObj.additionalBlackStones.length; ++n )
 					{
 						this.placeStone( turnObj.additionalBlackStones[n] );
+						this.removeStonesCapturedBy( turnObj.additionalBlackStones[n] );
 					}// End foreach additional black stone
 				}// End if additional black stones
 				
@@ -683,6 +715,7 @@ $.extend( {
 					for( var n = 0; n < turnObj.additionalWhiteStones.length; ++n )
 					{
 						this.placeStone( turnObj.additionalWhiteStones[n] );
+						this.removeStonesCapturedBy( turnObj.additionalWhiteStones[n] );
 					}// End foreach additional white stone
 				}// End if additional white stones
 				
@@ -696,10 +729,17 @@ $.extend( {
 			// Takes in a turn object and unsets the internal state of the board accordingly
 			unPlayTurn: function( turnObj )
 			{
-				// If we have a stone object, remove it
+				// If we have a stone object
 				if( turnObj.stone )
 				{
+					// Remove the stone object from the board and replace any stones that it captured
 					this.unPlaceStone( turnObj.stone );
+					
+					for( var index in turnObj.stone.capturedStones )
+					{
+						this.placeStone( turnObj.stone.capturedStones[index] );
+						delete turnObj.stone.capturedStones[index];
+					}// End for index
 				}// End if
 
 				// If we have additional stones, unplay them
@@ -707,7 +747,7 @@ $.extend( {
 				{
 					for( var n = 0; n < turnObj.additionalBlackStones.length; ++n )
 					{
-						this.placeStone( turnObj.additionalBlackStones[n] );
+						this.unPlaceStone( turnObj.additionalBlackStones[n] );
 					}// End foreach additional black stone
 				}// End if additional black stones
 				
@@ -715,7 +755,7 @@ $.extend( {
 				{
 					for( var n = 0; n < turnObj.additionalWhiteStones.length; ++n )
 					{
-						this.placeStone( turnObj.additionalWhiteStones[n] );
+						this.unPlaceStone( turnObj.additionalWhiteStones[n] );
 					}// End foreach additional white stone
 				}// End if additional white stones
 				
@@ -740,21 +780,20 @@ $.extend( {
 			// Called by the jquery plugin interface to reverse the game a turn
 			previousTurn: function()
 			{
+				// Deincrement the turn index and make sure it stays in range
+				this.turnIndex--;
+
+				if( this.turnIndex < 0 )
+					this.turnIndex = 0;
+				
 				this.unPlayTurn( this.turnObjects[ this.turnIndex ] );
 
-				// Deincrement the turn index
-				this.turnIndex--;
-				
 				// Make sure the turn index stays in bounds
-				if( this.turnIndex < 0 )
+				if( this.turnIndex == 0 )
 				{
-					this.turnIndex = 0;
-
 					// If we have an initial turn, set the display accordingly with ignoreCaptures
 					if( this.initialTurn )
-					{
 						this.playTurn( this.initialTurn, true );
-					}// End if
 				}// End if
 			}, // End function previous turn
 			
@@ -797,11 +836,9 @@ $.extend( {
 			// Adjusts the display elements necessary to display the placing of the given stone object
 			placeStone: function( stone )
 			{
-				// If the stone is not a pass
+				// If the stone is not a pass add it to the board
 				if( stone.action != 'pass' )
-				{
 					this.internalBoard[ stone.x ][ stone.y ].playOn( stone );
-				}// End if
 			}, // End function placeStone
 			
 			// Adjusts the display elements necessary to display the removal of a given stone object
@@ -809,8 +846,164 @@ $.extend( {
 			{
 				// If the stone is not a pass, play it on the specified liberty
 				if( stone.action != 'pass' )
-					this.internalBoard[ stone.x][ stone.y ].open();
+					this.internalBoard[ stone.x ][ stone.y ].open();
 			}, // End function unPlaceStone
+			
+			// Removes any stones captured by currentStone.  This method is called when a stone is
+			// played.
+			removeStonesCapturedBy: function( currentStone )
+			{
+				// The return value
+				var captured = {};
+
+				// Get a shortcut to the stone's coordinates
+				var x = currentStone.x;
+				var y = currentStone.y;
+
+				// Create a list of all neighboring stones
+				var neighbors = new Array();
+				if( this.internalBoard[x] && this.internalBoard[x][y + 1] )
+				{
+					if( this.internalBoard[x][y + 1].stone && 
+					    this.internalBoard[x][y + 1].stone.color != currentStone.color )
+						neighbors.push( this.internalBoard[x][y + 1].stone );
+				}// End if
+				
+				if( this.internalBoard[x] && this.internalBoard[x][y - 1] )
+				{
+					if( this.internalBoard[x][y - 1].stone &&
+					    this.internalBoard[x][y - 1].stone.color != currentStone.color )
+						neighbors.push( this.internalBoard[x][y - 1].stone );
+				}// End if
+				
+				if( this.internalBoard[x + 1] && this.internalBoard[x + 1][y] )
+				{
+					if( this.internalBoard[x + 1][y].stone && 
+					    this.internalBoard[x + 1][y].stone.color != currentStone.color )
+						neighbors.push( this.internalBoard[x + 1][y].stone );
+				}// End if
+				
+				if( this.internalBoard[x - 1] && this.internalBoard[x - 1][y] )
+				{
+					if( this.internalBoard[x - 1][y].stone &&
+					    this.internalBoard[x - 1][y].stone.color != currentStone.color )
+						neighbors.push( this.internalBoard[x - 1][y].stone );
+				}// End if
+
+				// Foreach neighbor, if it's an enemy, check to see if it was captured
+				while( neighbors.length > 0 )
+				{
+					var currentNeighbor = neighbors.pop();
+					
+					// If this stone hasn't already been captured
+					if( ! captured[ currentNeighbor.getIndex() ] )
+					{
+						var capturedList = this.isCaptured( currentNeighbor );
+
+						for( var index in capturedList )
+							captured[index] = capturedList[index];
+					}// End if
+				}// End while
+
+				// Foreach stone that needs to be removed, remove it from the internal board
+				for( var index in captured )
+				{
+//					console.log( captured[index] );
+					this.unPlaceStone( captured[index] );
+//					var tempStone = captured[number];
+//					this.internalBoard[tempStone.x][tempStone.y] = 'e';
+				}// End for each captured stone
+
+				return captured;
+			},// End function removeStonesCapturedBy
+			
+
+			// Returns a list of stones if target is part of a group of captured stones, false otherwise
+			isCaptured: function( targetStone )
+			{
+				// Create a queue to hold the stones connected to our target stone
+				var queue = new Array();
+				
+				// Create a list to hold the stones that have been checked.
+				var checkedList = {};
+				
+				// A variable to keep track of the number of open liberties
+				var openLibertyCount = 0;
+				
+				// Add our first node onto the queue and onto the checked list
+				queue.push( targetStone );
+				checkedList[ targetStone.getIndex() ] = targetStone;
+				
+				// While the queue isn't empty and we still haven't found any open liberties
+				while( queue.length > 0 && openLibertyCount == 0 )
+				{
+					// Get the next stone off the queue
+					var currentStone = queue.shift();
+					
+					// An array to store any adjacent stones for checking
+					var neighbors = new Array();
+					
+					// Determine if any of the adjacent liberties are open.  If so, add them to 
+					// the count, if not, if they are a friendly stone and we haven't checked it 
+					// for open liberties, add it to the queue
+					var x = currentStone.x;
+					var y = currentStone.y;
+
+					if( this.internalBoard[x] && this.internalBoard[x][y + 1] )
+					{
+						if( this.internalBoard[x][y + 1].stone )
+							neighbors.push( this.internalBoard[x][y + 1].stone );
+						else
+							openLibertyCount++;
+					}// End if
+					
+					if( this.internalBoard[x] && this.internalBoard[x][y - 1] )
+					{
+						if( this.internalBoard[x][y - 1].stone )
+							neighbors.push( this.internalBoard[x][y - 1].stone );
+						else
+							openLibertyCount++;
+					}// End if
+					
+					if( this.internalBoard[x + 1] && this.internalBoard[x + 1][y] )
+					{
+						if( this.internalBoard[x + 1][y].stone )
+							neighbors.push( this.internalBoard[x + 1][y].stone );
+						else
+							openLibertyCount++;
+					}// End if
+					
+					if( this.internalBoard[x - 1] && this.internalBoard[x - 1][y] )
+					{
+						if( this.internalBoard[x - 1][y].stone )
+							neighbors.push( this.internalBoard[x - 1][y].stone );
+						else
+							openLibertyCount++;
+					}// End if
+					
+					// Foreach neighbor stone, add any friendly neighbors that haven't been
+					// checked for liberties to the queue, ignore all other stones
+					while( neighbors.length > 0 )
+					{
+						var currentNeighbor = neighbors.shift();
+						if( currentNeighbor.color == currentStone.color )
+						{
+							if( ! checkedList[ currentNeighbor.getIndex() ] )
+							{
+								checkedList[ currentNeighbor.getIndex() ] = currentNeighbor;
+								queue.push( currentNeighbor );
+							}// End if
+						}// End if
+					}// End while
+				}// End while
+				
+				// If we found an open liberty, return false, otherwise, return the
+				// list of stones
+				if( openLibertyCount > 0 )
+					return false;
+				else
+					return checkedList;
+			},// End function isCaptured
 			
 			/////////////////////////////////////////////////////////////////////////////////
 			////////////////////////////// End turn logic methods ///////////////////////////
