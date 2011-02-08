@@ -23,6 +23,9 @@ $.extend( {
 
 		// The go board object definition
 		var goBoard = new Object( {
+			// A flag that, when set to false, will turn off the updating of the UI
+			updateUIElements: true,
+
 			// Set to true when the game file has been loaded, and is ready for commands
 			loaded: false,
 
@@ -104,11 +107,23 @@ $.extend( {
 			// The element that holds the black player's information
 			playerBlackPanel: false,
 			
+			// The element that holds the black player's time remaining
+			playerBlackCaptureElem: false,
+			
+			// The element that holds the black player's time remaining
+			playerBlackTimeRemaining: false,
+			
 			// The object that holds the white player's information
 			playerWhite: false,
 			
 			// The element that holds the white player's information
 			playerWhitePanel: false,
+			
+			// The element that holds the white player's capture display element
+			playerWhiteCaptureElem: false,
+			
+			// The element that holds the white player's time remaining
+			playerWhiteTimeRemaining: false,
 			
 			// The element that will hold the information about the most recently played stone
 			turnInfoPanel: false,
@@ -359,10 +374,10 @@ $.extend( {
 					}// End for y
 				}// End for x
 				
-				// If we have an initial turn, set the display accordingly with ignoreCaptures
+				// If we have an initial turn, set the display accordingly
 				if( this.initialTurn )
 				{
-					this.playTurn( this.initialTurn, true );
+					this.playTurn( this.initialTurn );
 				}// End if
 			}, // End function display
 			
@@ -584,6 +599,9 @@ $.extend( {
 
 					this.playerBlackPanel = $( options.blackInfo ).html( blackInfoContent ).
 									addClass( 'playerInfoPanel' );
+					
+					// Store a reference to the element that displays black's time remaining
+					this.playerBlackTimeRemaining = $( this.playerBlackPanel ).find( '.player_black_timeremaining' );
 				}// End if
 				
 				// If the white player info panel selector is set in the options
@@ -598,6 +616,9 @@ $.extend( {
 
 					this.playerWhitePanel = $( options.whiteInfo ).html( whiteInfoContent ).
 									addClass( 'playerInfoPanel' );
+					
+					// Store a reference to the element that displays white's time remaining
+					this.playerWhiteTimeRemaining = $( this.playerWhitePanel ).find( '.player_white_timeremaining' );
 				}// End if
 				
 				// If the turn info panel was specified
@@ -682,8 +703,7 @@ $.extend( {
 			/////////////////////////////////////////////////////////////////////////////////
 			
 			// Takes in a turn object and sets the internal state of the board accordingly
-			// If ignoreCaptures is true, the capture logic will be ignored for this turn
-			playTurn: function( turnObj, ignoreCaptures )
+			playTurn: function( turnObj )
 			{
 				// If we have a stone object, play it
 				if( turnObj.stone )
@@ -716,11 +736,8 @@ $.extend( {
 					}// End foreach additional white stone
 				}// End if additional white stones
 				
-				// If we have comments, add them to the chat window
-				if( turnObj.comments && turnObj.comments.length > 0 )
-					this.addCommentToDisplay( turnObj.comments );
-				else
-					this.clearCommentsFromDisplay();
+				// Update any UI elements that where specified specified in the input options with 
+				this.updatePlayerUI( turnObj );
 			},// End function playTurn
 			
 			// Takes in a turn object and unsets the internal state of the board accordingly
@@ -756,9 +773,8 @@ $.extend( {
 					}// End foreach additional white stone
 				}// End if additional white stones
 				
-				// If we have comments, remove them from the chat window
-				if( this.comments && this.comments.length > 0 )
-					this.clearCommentsFromDisplay();
+				// Update any UI elements that where specified specified in the input options
+				this.updatePlayerUI( turnObj );
 			}, // End function unPlayTurn
 
 			// Called by the jquery plugin interface to advance the game a turn
@@ -777,6 +793,11 @@ $.extend( {
 			// Called by the jquery plugin interface to reverse the game a turn
 			previousTurn: function()
 			{
+				// Make sure we don't keep trying to replay the first turn over and over
+				// when the user hit's previous
+				if( this.turnIndex == 0 )
+					return;
+
 				// Deincrement the turn index and make sure it stays in range
 				this.turnIndex--;
 
@@ -785,34 +806,61 @@ $.extend( {
 				
 				this.unPlayTurn( this.turnObjects[ this.turnIndex ] );
 
-				// Make sure the turn index stays in bounds
+				// If we are at the first turn of the game
 				if( this.turnIndex == 0 )
 				{
-					// If we have an initial turn, set the display accordingly with ignoreCaptures
+					// If we have an initial turn, set the display accordingly
 					if( this.initialTurn )
-						this.playTurn( this.initialTurn, true );
+					{
+						this.playTurn( this.initialTurn );
+						this.updatePlayerUI( this.initialTurn );
+						
+						// Update the time remaining UI elements to show the initial time again
+						this.playerBlackTimeRemaining.html( this.timeLimit );
+						this.playerWhiteTimeRemaining.html( this.timeLimit );
+					}// End if
 				}// End if
+				else
+				{
+					// Otherwise, update the board UI with the previous turns info
+					this.updatePlayerUI( this.turnObjects[ this.turnIndex - 1 ] );
+				}// End else
 			}, // End function previous turn
 			
 			// Called by the jquery plugin interface to move the game to the last turn
 			lastTurn: function()
 			{
-				while( this.turnIndex < this.turnObjects.length - 1 )
+				// Turn off UI updates to speed up execution
+				this.updateUIElements = false;
+
+				// Move to the 2nd to last move
+				while( this.turnIndex < this.turnObjects.length - 3 )
 					this.nextTurn();
+				
+				// Turn the UI updates back on and play the final turns
+				this.updateUIElements = true;
+				this.nextTurn();
+				this.nextTurn();
 			}, // End function lastTurn
 
 			// Called by the jquery plugin interface to move the game to the first turn
 			firstTurn: function()
 			{
-				while( this.turnIndex > 0 )
+				// Turn off UI updates to speed up execution
+				this.updateUIElements = false;
+				
+				// Move the game back to the 2nd move
+				while( this.turnIndex > 1 )
 					this.previousTurn();
 				
+				// Turn UI updates back on and play the first turn
+				this.updateUIElements = true;
 				this.previousTurn();
 				
-				// If we have an initial turn, set the display accordingly with ignoreCaptures
+				// If we have an initial turn, set the display accordingly
 				if( this.initialTurn )
 				{
-					this.playTurn( this.initialTurn, true );
+					this.playTurn( this.initialTurn );
 				}// End if
 			}, // End function firstTurn
 
@@ -821,6 +869,29 @@ $.extend( {
 			{
 				// No interface for this yet
 			},// End function jumpToTurn
+			
+			// Applies the information the turn object to the board's UI elements
+			updatePlayerUI: function( turnObj )
+			{
+				// If the board was instructed not to update the display, don't
+				if( ! this.updateUIElements )
+					return;
+
+				// If we have comments, add them to the chat window
+				if( turnObj.comments && turnObj.comments.length > 0 )
+					this.addCommentToDisplay( turnObj.comments );
+				else
+					this.clearCommentsFromDisplay();
+
+				// If the time remaining is set in the turn, update the correct player's time remaining
+				if( turnObj.timeRemaining )
+				{
+					if( turnObj.stone.color == 'b' )
+						this.playerBlackTimeRemaining.html( turnObj.timeRemaining );
+					else
+						this.playerWhiteTimeRemaining.html( turnObj.timeRemaining );
+				}// End if	
+			},// End function updatePlayerUI
 			
 			/////////////////////////////////////////////////////////////////////////////////
 			/////////////////////////// End turn interface methods //////////////////////////
