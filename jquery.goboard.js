@@ -107,7 +107,7 @@ $.extend( {
 			// The element that holds the black player's information
 			playerBlackPanel: false,
 			
-			// The element that holds the black player's time remaining
+			// The element that displays the black player's capture count
 			playerBlackCaptureElem: false,
 			
 			// The element that holds the black player's time remaining
@@ -119,7 +119,7 @@ $.extend( {
 			// The element that holds the white player's information
 			playerWhitePanel: false,
 			
-			// The element that holds the white player's capture display element
+			// The element that displays the white player's capture count
 			playerWhiteCaptureElem: false,
 			
 			// The element that holds the white player's time remaining
@@ -602,6 +602,9 @@ $.extend( {
 					
 					// Store a reference to the element that displays black's time remaining
 					this.playerBlackTimeRemaining = $( this.playerBlackPanel ).find( '.player_black_timeremaining' );
+					
+					// Store a reference to the element that displays black's capture count
+					this.playerBlackCaptureElem = $( this.playerBlackPanel ).find( '.black_captures' );
 				}// End if
 				
 				// If the white player info panel selector is set in the options
@@ -619,6 +622,9 @@ $.extend( {
 					
 					// Store a reference to the element that displays white's time remaining
 					this.playerWhiteTimeRemaining = $( this.playerWhitePanel ).find( '.player_white_timeremaining' );
+					
+					// Store a reference to the element that displays white's capture count
+					this.playerWhiteCaptureElem = $( this.playerWhitePanel ).find( '.white_captures' );
 				}// End if
 				
 				// If the turn info panel was specified
@@ -632,47 +638,11 @@ $.extend( {
 			
 			// If the player info panel element is set, this function updates the number
 			// of captures displayed for that player
-			updateCaptureDisplay: function( color, numCaptures )
+			updateCaptureDisplay: function()
 			{
-				if( numCaptures == 0 )
-					return;
-
-				// Get the proper elements based on the color
-				var captureDisplay = false;
-				var playerObj = false;
-
-				if( color == 'w' && this.playerWhitePanel )
-				{
-					captureDisplay = this.playerWhitePanel.find( '.white_captures' );
-					playerObj = this.playerWhite;
-				}// End if
-				else if( color == 'b' && this.playerBlackPanel )
-				{
-					captureDisplay = this.playerBlackPanel.find( '.black_captures' );
-					playerObj = this.playerBlack;
-				}// End else
-				
-				// If we have the capture display element, update it
-				if( captureDisplay )
-				{
-					var currentCaptureCount = parseInt( captureDisplay.html() );
-					if( currentCaptureCount == NaN )
-						currentCaptureCount = 0;
-					
-					currentCaptureCount += numCaptures;
-					if( currentCaptureCount < 0 )
-						currentCaptureCount = 0;
-					
-					captureDisplay.html( currentCaptureCount );
-				}// End if
-				
-				// If we have a player object, update the number of captures
-				if( playerObj )
-				{
-					playerObj.captures += numCaptures;
-					if( playerObj.captures < 0 )
-						playerObj.captures = 0;
-				}// End if
+				// Update each player's capture display element
+				this.playerBlackCaptureElem.html( this.playerBlack.captures );
+				this.playerWhiteCaptureElem.html( this.playerWhite.captures );
 			}, // End function updateCaptureDisplay
 			
 			// Adds a comment to the chat window
@@ -712,9 +682,23 @@ $.extend( {
 					this.placeStone( turnObj.stone );
 					var capturedStones = this.removeStonesCapturedBy( turnObj.stone );
 					
-					// Add any captured stones to the stone's list of captured stones
+					// Add any captured stones to the stone's list of captured stones and update
+					// the appropiate player's capture count
+					var bUpdateCaptureUI = false;
 					for( var index in capturedStones )
+					{
+						bUpdateCaptureUI = true;
 						turnObj.stone.capturedStones[index] = capturedStones[index];
+						
+						if( capturedStones[index].color == 'w' )
+							this.playerBlack.captures++;
+						else
+							this.playerWhite.captures++;
+					}// End foreach captured stone
+					
+					// If we need to update the capture display, do so
+					if( bUpdateCaptureUI )
+						this.updateCaptureDisplay();
 				}// End if
 
 				// If we have additional stones to play, play them
@@ -749,11 +733,32 @@ $.extend( {
 					// Remove the stone object from the board and replace any stones that it captured
 					this.unPlaceStone( turnObj.stone );
 					
+					// Foreach stone that was captured by the stone we just removed from the board
+					var bUpdateCaptureUI = false;
 					for( var index in turnObj.stone.capturedStones )
 					{
 						this.placeStone( turnObj.stone.capturedStones[index] );
+						
+						bUpdateCaptureUI = true;
+						
+						if( turnObj.stone.capturedStones[index].color == 'w' )
+							this.playerBlack.captures--;
+						else
+							this.playerWhite.captures--;
+						
+						// Make sure our capture counts stay positive
+						if( this.playerBlack.captures < 0 )
+							this.playerBlack.captures = 0;
+						if( this.playerWhite.captures < 0 )
+							this.playerWhite.captures = 0;
+						
+						// Remove the once captured stone from the capture list
 						delete turnObj.stone.capturedStones[index];
 					}// End for index
+					
+					// If we need to update the capture display, do so
+					if( bUpdateCaptureUI )
+						this.updateCaptureDisplay();
 				}// End if
 
 				// If we have additional stones, unplay them
@@ -890,7 +895,7 @@ $.extend( {
 						this.playerBlackTimeRemaining.html( turnObj.timeRemaining );
 					else
 						this.playerWhiteTimeRemaining.html( turnObj.timeRemaining );
-				}// End if	
+				}// End if
 			},// End function updatePlayerUI
 			
 			/////////////////////////////////////////////////////////////////////////////////
