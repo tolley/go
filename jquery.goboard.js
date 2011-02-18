@@ -634,6 +634,9 @@ $.extend( {
 					
 					this.turnInfoPanel = $( options.turnInfo ).html( turnInfoContent ).addClass( 'gameInfoPanel' );
 				}// End if
+				
+				// Plug into the keyboard events
+				$( document ).bind( 'keypress', { goboard: this }, this.handleKeyPress );
 			},// End function initializeDisplay
 			
 			// If the player info panel element is set, this function updates the number
@@ -663,6 +666,60 @@ $.extend( {
 					this.chatWindow.value = '';
 				}// End if
 			}, // End function clearCommentsFromDisplay
+			
+			// Called by jquery whenever a keyboard key is pressed
+			handleKeyPress: function( e )
+			{
+				// Set the scope of the "this" keyword to the goboard
+				if( ! e || ! e.data || ! e.data.goboard )
+					return true;
+
+				// A flag to indicate whether or not we've handled the current key press
+				var bHandled = false;
+
+				// Switch based on the key that was pressed
+				switch( e.keyCode )
+				{
+					// The left arrow key, reverse the game one move
+					case 37:
+						e.data.goboard.previousTurn();
+						bHandled = true;
+						break;
+					
+					// The right arrow key, advance the game one move
+					case 39:
+						e.data.goboard.nextTurn();
+						bHandled = true;
+						break;
+					
+					// The up arrow key, advance the game to the end
+					case 38:
+						e.data.goboard.firstTurn();
+						bHandled = true;
+						break;
+					
+					// The down arrow key, reverse the game to the beginning
+					case 40:
+						e.data.goboard.lastTurn();
+						bHandled = true;
+						break;
+
+					// See if the keycode matches a subtree
+					default:
+//						console.log( e.keyCode );
+						break;
+				}// End switch character code
+				
+				// If we handled the current key press, prevent the key event's default behaviour
+				if( bHandled )
+				{
+					e.preventDefault();
+					e.stopPropagation();
+					return false;
+				}// End if
+				else
+					return true;
+			},// End function handleKeyPress
 			
 			/////////////////////////////////////////////////////////////////////////////////
 			//////////////////////////// End board display methods///////////////////////////

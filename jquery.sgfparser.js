@@ -805,7 +805,7 @@ $.extend( {
 								}// End for n
 								break;
 								
-							// Specifies the white territory or reaa
+							// Specifies the white territory or area
 							case 'TW':
 								// Get a short cut to the list of territory
 								var territoryList = node[property];
@@ -832,7 +832,8 @@ $.extend( {
 
 							default:
 								// Uncomment this to see all the properties I still have to implement
-//								console.log( 'Unrecognized property ' + property + ' = ' + this.gameTree[node][property] );
+//								console.log( 'Unrecognized property ' + property );
+//								console.log( node );
 								break;
 							}// End switch property name
 						}// End for property
