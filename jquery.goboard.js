@@ -138,6 +138,12 @@ $.extend( {
 			/////////////////////////// Begin parser interface methods///////////////////////
 			/////////////////////////////////////////////////////////////////////////////////
 			
+			// Returns an empty game tree/branch.  This method is used by parsers to create subtrees/branches
+			getNewBranch: function()
+			{
+				return new Array();
+			},// End function getNewBranch
+			
 			// Called by the parser to get blank stone objects.  These are the stones
 			// that will be passed back to the board attached to a turn object
 			getBlankStone: function()
@@ -200,6 +206,9 @@ $.extend( {
 					
 					// Marks black territory or area on the board
 					territoryWhite: false,
+					
+					// An array to hold sub trees/branches
+					subTrees: new Array(),
 					 
 					// Adds a comment to this turn object
 					addComment: function( msg )

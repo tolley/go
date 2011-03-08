@@ -319,11 +319,8 @@ $.extend( {
 					// properties to the board, and generating delta's between each move
 					for( var node = 0; node <= this.gameTree.length - 1; ++node )
 					{
-						// Get a blank turn object to fill in and pass to the board to calculate the deltas
-						var turnObj = this.board.getBlankTurnObject();
-						
 						// Parse the node into a turn object
-						turnObj = this.parseGameNode( this.gameTree[node], turnObj );
+						turnObj = this.parseGameNode( this.gameTree[node] );
 						
 						// If we have the initial stone object, set it on the board
 						if( node == 0 && ! turnObj.stone )
@@ -342,8 +339,11 @@ $.extend( {
 				},// End prepBoard
 				
 				// Applies a node from the gametree data to a turn object and returns the turn object
-				parseGameNode: function( node, turnObj )
+				parseGameNode: function( node )
 				{
+					// Create a blank turn object to return
+					var turnObj = this.board.getBlankTurnObject();
+
 					// Get an empty stone object from the board
 					var goStone = this.board.getBlankStone();
 
@@ -829,6 +829,34 @@ $.extend( {
 								break;
 
 							// End GM[1] properties ///////////////////////////////////////////
+							
+							// Check for subtree's/branches and add them to the turn object
+							case 'subtrees':
+								// Make sure we actually have subtrees
+								if( node['subtrees'].length > 0 )
+								{
+									// Parse each subtree into turn objects and add them to the
+									// current turn object
+									for( var n = 0; n < node['subtrees'].length; ++n )
+									{
+										// Get an empty branch object
+										var subTree = this.board.getNewBranch();
+
+										// Parse each node in the subtree
+										for( var m = 0; m < node['subtrees'][n].length; ++m )
+										{
+											// Parse the node into a turn object
+											var turnObj = this.parseGameNode( node['subtrees'][n][m] );
+											subTree.push( turnObj );
+										}// End for m
+										
+										// Add the sub tree onto the parent turn object
+										turnObj.subTrees.push( subTree );
+									}// End for n
+								}// End if
+								
+//								console.log( turnObj );
+								break;
 
 							default:
 								// Uncomment this to see all the properties I still have to implement

@@ -95,6 +95,8 @@ $( document ).ready( function()
 	</div>
 </div>
 
+<textarea id="tempdisplay"></textarea>
+
 </body>
 
 </html>
