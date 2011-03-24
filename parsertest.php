@@ -15,7 +15,7 @@
 
 $( document ).ready( function()
 {
-	$( '#goban' ).gogame( { 'url': '/games/branch.sgf', 
+	$( '#goban' ).gogame( { 'url': '/games/sanitytest.sgf', 
 				'format': 'sgf',
 				'nextBtn': '#next',
 				'previousBtn': '#previous',
@@ -95,7 +95,7 @@ $( document ).ready( function()
 	</div>
 </div>
 
-<textarea id="tempdisplay"></textarea>
+<div id="tempdisplay" />
 
 </body>
 

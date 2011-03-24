@@ -21,8 +21,7 @@ $.extend( {
 		function parseSGFTree( treeData )
 		{
 			var game = false;
-			treeData = $.trim( treeData );
-		
+			treeData = $.trim( treeData );		
 			var length = treeData.length;
 		
 			// Verify that the tree has the opening and closing ()'s
@@ -74,7 +73,7 @@ $.extend( {
 				game = properties;
 			}// End if
 			else
-				alert( "Invalid game tree found in " + treeData );
+				console.log( "Invalid game tree found in " + treeData );
 			
 			return game;
 		}// End function parseSGFTree
@@ -127,7 +126,7 @@ $.extend( {
 			// While there's another property/value pair
 			while( node.length > 0 )
 			{		
-				// If the first character in the node is opening an new sub tree
+				// If the first character in the node is opening a new sub tree
 				if( node.charAt( 0 ) == '(' )
 				{
 					// Find the end of the sub tree.  Need to do a substr below because
@@ -244,14 +243,9 @@ $.extend( {
 			
 			for( var n = 0; ( n < length ) && ( pos === false ); n++ )
 			{
+				// Update the parenthesis count
 				switch( haystack.charAt( n ) )
 				{
-					// Check for our needle first
-					case needle:
-						//If we aren't in a set of nested parens
-						if( parens == 0 )
-							pos = n;
-						break;
 					case '(':
 						parens++;
 						break;
@@ -264,6 +258,20 @@ $.extend( {
 					default:
 						break;
 				}// End switch
+				
+				// Check for our needle
+				if( haystack.charAt( n ) == needle )
+				{
+					// If needle is a (, make sure the parens count is 1 (that this 
+					// one is the opening paren).  If needle isn't a (, then we found a match
+					if( needle == '(' )
+					{
+						if( parens == 1 )
+							pos = 1;
+					}// End if
+					else
+						pos = n;
+				}// End if
 			}// End for n
 			
 			return pos;

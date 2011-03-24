@@ -1,0 +1,196 @@
+(;GM[1]FF[4]SZ[19]AP[SmartGo:2.7.0.0]
+GN[Aug Workshop]
+PW[Anonymous]WR[5k]
+PB[Anonymous]BR[4k]
+EV[Aug Workshop]
+DT[2009-08-22]
+PC[XYZ Workshop]
+KM[7.5]
+RE[W+ 9.5]
+RU[AGA]
+TM[2700.0]OT[5 X 30 seconds]
+AN[Yuan Zhou 8d]
+C[Yuan Zhou Workshop Game
+White: Anonymous 5k
+Black: Anonymous 4k
+Commentary by Yuan Zhou 7d
+SGF file created by Bill Cobb and Chris Garlock
+Published in the September 14, 2009 edition of the American Go E-Journal
+
+Yuan Zhou is one of the strongest players in the US. He has won many titles. Zhou is also a popular teacher, lecturer, and author. He lives in Germantown, MD, and can be reached at yuan.zhou@zhouyuan.com 
+]
+;B[qd];W[dp];B[pq];W[dd];B[oc]
+(;W[jp]LB[qk:X][qn:Y]
+C[At X or Y is better. This side is bigger.
+
+See the variation.];B[po]
+C[The 6-7 exchange, in traditional theory, is better for Black. Black gets a solid corner. Nevertheless, this is playable for White. In traditional theory, you don't want your opponent to get two corner enclosures like this. It makes the game too easy for Black--solid territory and very good shape.]
+(;W[qj]LB[dj:X][jd:Y][qi:Z]
+C[It is more consistent with his earlier moves for White to play 8 at X (D10), building a moyo. If Black now plays at 8, White would play Y. On the right side, it is better to play 8 at Z. See the variation.]
+;B[ql];W[qg];B[cn]
+C[Good.];W[cp]
+C[White 12 goes back to territorial style, which is inconsistent. The consistent move for moyo style is at X (C8), pushing Black into the corner and getting the outside.]
+LB[cl:X];B[ck]
+(;W[ic]LB[jc:X]
+C[At X (J17) better on this side. A maximum five space extension is bigger and White still can make a two-space extension to the right. See the variation.]
+;B[cf]
+C[Correct.];W[cd];B[dh]
+C[Very good. The opening is better for Black than for White. Black has a lot of solid territory, while White's positions at the top and bottom left are both very open.]
+;W[qn]
+C[This is too early. At X (N3) is much better, a big play. This is better than a white extension at the top because Black is stronger at the bottom. 18 is an overplay.]
+LB[mq:X]
+(;B[pn]
+C[Black should play at X (R5). Black should not let White connect on the right side. This is very good for White. See the variation.]
+LB[qo:X];W[qm];B[pm];W[rl]
+C[This is an ideal result for White--what was weak becomes strong.]
+(;B[qk]
+C[This is a terrible move for Black. Just connecting at X is better--no cut and useful for the outside. Even better for Black is the double hane at Y (S9). See the variation.]
+LB[pl:X][rk:Y];W[rk];B[qo]
+C[White gets points in sente and makes his weak group strong.];W[en]
+C[This is a good point to expand White's area, although because Black is so thick to the right, a more defensive move at X (F3) or an extension at Y (N3) is better.]
+LB[fq:X][mq:Y];B[hp]
+C[Correct. Black must invade. this makes use of Black's thickness to the right.]
+;W[fq];B[iq]
+C[This is wrong. Black should not help White's weak stone get stronger. Black should attach on White's strong side--X (G3) is much better.]
+LB[gq:X];W[jq];B[hn];W[mp]
+C[On the third line is better--aiming for a base.];B[mr]
+C[Correct. Immediately take away White's base and make territory.];W[mq]
+C[White should just run at X (K6).]LB[jn:X];B[lr]
+C[Now Black has a connection at X (K2). This is a big help to Black.]LB[jr:X]
+(;W[jn]LB[jr:X]
+C[White needs to deny Black's connection by playing at X (K2). See the variation.]
+;B[fp]
+C[Black should connect at X (K2) immediately.]LB[jr:X];W[gq]
+C[This is a key spot. Now White can connect. The 37-38 exchange is not good for Black.]
+;B[jr];W[mm]LB[jl:X]
+C[At X (K8) is better. 40 is too close to thickness.];B[eo]
+C[Both players think this cuts off White, but it doesn't. See the variation for White's next move. Black should extend to X (L17), which is big and threatens an invasion on the left.]
+LB[kc:X]
+(;W[dj]
+C[See the variation.];B[cj];W[di];B[ci];W[fj]
+C[White must hane at X (E12).]LB[eh:X];B[eh]
+C[Good. Make White's stones here heavy.];W[hj]TR[mm]
+C[This is correct. If the marked stone was at X (K8), it would be even better.]
+LB[jl:X];B[im]
+C[Preventing White's groups from connecting is correct.];W[jm]
+C[This is wrong. Don't help Black attack the weak group in the center left. White needs to help his weaker group.]
+LB[gh:X];B[il]
+C[Correct.];W[el]
+C[This is bad. Little help and helps Black.];B[do]
+C[Right.];W[ep]
+C[At this point the game is difficult for White.];B[gp]LB[fo:X]
+C[At X (F5) would be much more useful in attacking White's weaker group.]
+;W[fc]
+C[This is the right strategy for White, even though it is risky. If he keeps defending in the center, Black will win easily. This is the move that enables White to win the game. It's very big.]
+;B[jl];W[kl]
+C[This helps Black. Don't touch Black's stones; just jump to X (N9). White is following his opponent, not looking for a better place to play.]
+LB[mk:X];B[kk];W[ll];B[gi]
+C[Good attack.];W[gl]
+C[Not good. At X (J9) is better for running out.]LB[ik:X];B[gj]
+C[Right.];W[gk]LB[hk:X]
+C[White must play at X (H9). White needs to get out. White has a life and death problem otherwise.]
+;B[hk]
+C[This cut is correct. White should die now.];W[fi];B[fh];W[fn]
+(;B[gn]LB[ei:X][kc:Y]
+C[Black should push in at X (E11). See the variaton. 69 does not destroy White's eye space. If Black cannot see a way to kill these stones it is better not to do anything here--take a big point like Y (L17). In life and death situations don't just push around looking for chances. Kill or don't kill. If you can't see a way to kill, play elsewhere. 69 is a dame point. The only way Black can get value from it is by killing White. So don't make this kind of play if you can't see that you will succeed for sure.
+
+Black is still ahead, but playing on dame points is not going to win the game.]
+;W[dn];B[cm];W[dm];B[dk]
+C[Black loses his last chance to kill White. The push at X (E11) still works. If White connects, Black plays at Y (F9).]
+LB[ei:X][fk:Y];W[ek]
+C[Now White is alive.];B[gg]
+C[Another terrible move. Black should play at X (L17). 75 is very small and slow. There is no danger for Black from the cut here. This is the third big mistake in a row for Black. Pushing at Y (E11) is bigger than 75; it is sente. The game is becoming good for White.
+
+Black is not looking at the whole board. He is too focused on the small area here in the center.
+
+Nevertheless, Black still has a chance. He had a very big lead.]
+LB[kc:X][ei:Y];W[lc]
+C[This is huge. Black is too strong for White to extend three spaces here.]
+(;B[le]
+C[This is wrong. It is a major mistake for Black to try to make a lot of points in the center. The three sente moves at X (B15), Y (S14) and Z (N18) are worth more than Black can expect to make in the center. If Black had taken that series of sente moves now he would probably win the game.
+
+Moreover, aiming for center points is using thickness to make territory instead of using it to fight. Better than 77 would be an attachment at W (J16). Thickness is like a big hammer--you want to hit on something. See the variation.
+]
+LB[be:X][rf:Y][mb:Z][id:W];W[lk]
+C[This is wrong for White.t X (P9) is better.]LB[ok:X];B[kj];W[ie]
+C[White should play at X (K16).]LB[jd:X]
+(;B[ig]
+C[Another slow move by Black. At X (K16) is much better. See the variation.]
+LB[jd:X];W[lj];B[li];W[mi];B[pj]
+C[Not continuing in the center is correct.];W[pi];B[qi];W[rj];B[oi];W[ph]
+;B[ok]
+C[This is correct.];W[nj];B[oj];W[lh]
+C[This is correct.];B[ki];W[oh];B[ld]
+C[Another wrong move. It gains no points. Take territory at X (N18). And the other big second line moves noted earlier.]
+LB[mb:X];W[mc]
+C[This is a big loss for Black.];B[nd];W[kd]
+C[This is wrong. X (B15), Y (S15), Z (B5) and W (O18) are big double-sente plays. If Black makes these plays he could still win. At this point whoever gets these will probably win.]
+LB[be:X][re:Y][bo:Z][nb:W];B[ke];W[jd];B[kh];W[fe];B[ge];W[gd];B[he];W[hd]
+;B[ff]
+C[Black is playing small moves.];W[ee];B[mh];W[nh];B[mg];W[ni];B[nm]
+C[This does not fix the problem here. White can play atari at X (Q8).]LB[pl:X]
+;W[nn];B[nl];W[nk];B[ol]
+C[119 at X (Q8) saves a point.]LB[pl:X];W[oq];B[or];W[op];B[pp];W[hr];B[rf]
+C[Finally!];W[bo]
+C[Not responding to 125 is very important. This is the final winning play.]
+;B[rg];W[rh];B[be];W[bd];B[if]
+C[Another slow move.];W[je];B[jf];W[nb];B[ad]
+C[Playing this before responding to 134 is good.];W[ac];B[ae];W[bb]LB[bc:X]
+C[138 should be at X (B17). 138 leaves two ko threats for Black.];B[ob];W[oa]
+;B[pa];W[na];B[pb];W[qf];B[qe];W[al]
+C[The small knight's jump here would be sente.];B[bl];W[am];B[ak];W[bn];B[ro]
+C[A big move.];W[rm];B[kq];W[kp];B[of];W[pf];B[nc];W[mb];B[pe];W[og];B[nf]
+;W[sg]LB[ei:X]
+C[X (E11) is bigger: eight points value and sente for Black..];B[se];W[ce]
+;B[bf];W[df];B[dg];W[md];B[ei]
+C[This is correct, but too late.];W[fm];B[ej];W[fk];B[bm];W[co]
+C[Right. This is bigger than connecting on the edge.];B[an];W[fo]
+C[Right.
+
+The game is over now. Further moves omitted.])
+(;
+FG[4353:]PM[2]MN[1];B[jd];W[id]
+C[White can't resist.];B[jc]))
+(;
+FG[4353:]PM[2]MN[1];B[id];W[jc]
+C[Black is so strong, White cannot resist.];B[hd]
+C[Another sente move.];W[hc];B[ke]
+C[Now Black has a lot more territory in the center.]))
+(;
+FG[4353:]PM[2]MN[1];B[ei]
+C[This push is the key.];W[ej]
+C[White must connect.];B[dk]
+C[It is clear that White is dead.]))
+(;
+FG[4353:]PM[2]MN[1];W[dn];B[do];W[co];B[fn];W[cm];B[bn];W[bm]
+C[Black cannot connect to his left side group.]))
+(;
+FG[4353:]PM[2]MN[1];W[jr];B[ir]
+C[Now Black must prevent White's connection to the left.];W[jn]
+C[This is much better for White.]))
+(;
+FG[4353:]PM[2]MN[1];B[rk];W[qk];B[pl];W[rm]TR[rk]
+C[The marked stone has good aji that Black can exploit with an attachment later at X (R11).]
+LB[qi:X];B[lq]
+C[Much better for Black. Black could also invade in the bottom left with 5.]
+))
+(;
+FG[4353:]PM[2]MN[1];B[qo]
+C[This is a normal continuation.];W[pn];B[on];W[pm];B[pk]
+C[This is much better for Black. White has two weak groups here.]))
+(;
+FG[4353:]PM[2]MN[1];W[ci]
+C[This is even better for White.];B[en];W[dm];B[dn];W[fp];B[ek];W[cf]
+C[This would be a common development and is good for White.]))
+(;
+FG[4353:]PM[2]MN[1];W[qi];B[qk]LB[qm:X]
+C[If Black now plays 2, there is a weakness left around X.];W[qf]LB[mc:X]
+C[After 3, a later white play at X (N17) puts more pressure on Black's corner.]
+))
+(;
+FG[4353:]PM[2]MN[1];W[qn]
+C[This is a simple way for White.];B[qp]
+C[If Black responds this way, . . .];W[qk]
+C[. . . White gets settled. Of course Black may pincer around three instead of the diagonal play in the corner. That gets more complicated.]
+))
+

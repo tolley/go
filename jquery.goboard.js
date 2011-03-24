@@ -788,6 +788,14 @@ $.extend( {
 				
 				// Update any UI elements that where specified specified in the input options with 
 				this.updatePlayerUI( turnObj );
+				
+				// Test code: show the number of subtrees
+				if( turnObj.subTrees.length > 0 )
+				{
+					$( '#tempdisplay' ).html( 'num sub trees: ' + turnObj.subTrees.length );
+				}// End if
+				else
+					$( '#tempdisplay' ).html( '' );
 			},// End function playTurn
 			
 			// Takes in a turn object and unsets the internal state of the board accordingly
